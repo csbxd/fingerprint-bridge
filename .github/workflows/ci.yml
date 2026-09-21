@@ -27,16 +27,16 @@ jobs:
       - name: Install pinned toolchain
         run: rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
       - run: cargo fmt --check
-      - run: cargo clippy --locked --all-targets -- -D warnings
-      - run: cargo test --locked
-      - run: cargo build --locked
+      - run: sh scripts/cargo-tls.sh clippy --locked --all-targets -- -D warnings
+      - run: sh scripts/cargo-tls.sh test --locked
+      - run: sh scripts/cargo-tls.sh build --locked --bin fingerprint-bridge --example language-client
       - name: Independent HTTPS lab
         run: |
           python3 -m venv .venv
           .venv/bin/pip install -r scripts/requirements-test.txt
           .venv/bin/python scripts/lab.py --output test-results/ci-lab
       - name: Matrix harness regression tests
-        run: .venv/bin/python -m unittest discover -s scripts -p 'test_matrix*.py' -v
+        run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
       - name: TCP capture lab
         run: sudo .venv/bin/python scripts/lab.py --capture-interface lo --output test-results/ci-tcp-lab
       - uses: actions/upload-artifact@v4
