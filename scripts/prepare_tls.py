@@ -23,6 +23,7 @@ def prepare():
     patches = [crate / "patches" / name for name in (
         "boring-pq.patch", "boringssl.patch", "boringssl-loongarch.patch", "boringssl-windows.patch")]
     patches.append(ROOT / "scripts/patches/bridge-tls.patch")
+    patches.append(ROOT / "scripts/patches/bridge-hybrid-groups.patch")
     digest = hashlib.sha256(b"btls-sys=0.5.6\0" + b"".join(p.read_bytes() for p in patches)).hexdigest()
     parent = Path(metadata["target_directory"]) / "bridge-native"
     destination = parent / digest
