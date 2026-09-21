@@ -166,6 +166,12 @@ pub fn mirror(
         0x0806,
         0x0807,
         #[cfg(feature = "patched-tls")]
+        0x0809,
+        #[cfg(feature = "patched-tls")]
+        0x080a,
+        #[cfg(feature = "patched-tls")]
+        0x080b,
+        #[cfg(feature = "patched-tls")]
         0x0904,
         #[cfg(feature = "patched-tls")]
         0x0905,
