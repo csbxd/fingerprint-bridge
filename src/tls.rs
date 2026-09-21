@@ -166,7 +166,7 @@ pub fn mirror(
     if !hello.extensions.contains(&45) {
         b.set_options(SslOptions::NO_PSK_DHE_KE);
     }
-    if hello.ciphers.contains(&0xff) {
+    if !cfg!(feature = "patched-tls") && hello.ciphers.contains(&0xff) {
         limitations.push("renegotiation SCSV cannot be emitted by this backend".into());
     }
     for id in &hello.cert_compression {
@@ -178,8 +178,8 @@ pub fn mirror(
     }
     // Only the backend's supported extension identifiers are passed to its API.
     const KNOWN: &[u16] = &[
-        0, 5, 10, 11, 13, 16, 18, 21, 23, 27, 28, 34, 35, 41, 42, 43, 44, 45, 47, 50, 51, 17513,
-        17613, 65037, 65281,
+        0, 5, 10, 11, 13, 16, 18, 21, 23, 27, 28, 34, 35, 41, 42, 43, 44, 45, 47, 51, 17513, 17613,
+        65037, 65281,
     ];
     let order = extension_order(&hello.extensions);
     b.set_extension_permutation(&order)?;
@@ -190,6 +190,35 @@ pub fn mirror(
     }
     let connector = b.build();
     let mut ssl = connector.configure()?.into_ssl(host)?;
+    #[cfg(feature = "patched-tls")]
+    {
+        use foreign_types::ForeignType;
+        unsafe extern "C" {
+            fn SSL_set_bridge_profile(
+                ssl: *mut std::ffi::c_void,
+                ciphers: *const u16,
+                count: usize,
+                padding: std::ffi::c_int,
+            ) -> std::ffi::c_int;
+        }
+        let order: Vec<_> = hello
+            .ciphers
+            .iter()
+            .copied()
+            .filter(|id| grease(*id) || *id == 0xff || SslCipher::from_value(*id).is_some())
+            .collect();
+        // The backend validates enabled suites and copies the slice. It creates
+        // fresh cryptographic state and hashes the actual emitted handshake.
+        let configured = unsafe {
+            SSL_set_bridge_profile(
+                ssl.as_ptr().cast(),
+                order.as_ptr(),
+                order.len(),
+                i32::from(hello.extensions.contains(&21)),
+            )
+        };
+        ensure!(configured == 1, "patched TLS profile rejected");
+    }
     let shares: Vec<_> = hello
         .key_share_groups
         .iter()

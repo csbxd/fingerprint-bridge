@@ -121,6 +121,74 @@ pub async fn read_hello(stream: &mut TcpStream) -> Result<(Vec<u8>, TlsHello)> {
         }
     }
 }
+
+/// Opt-in diagnostic plaintext capture. Bounded; truncation invalidates evidence.
+#[derive(Default, serde::Serialize)]
+pub struct HttpCapture {
+    pub bytes: Vec<u8>,
+    pub truncated: bool,
+}
+pub async fn write_private_evidence(path: &std::path::Path, bytes: &[u8]) -> Result<()> {
+    use tokio::io::AsyncWriteExt;
+    let temporary = path.with_extension("partial");
+    let mut options = tokio::fs::OpenOptions::new();
+    options.create_new(true).write(true);
+    #[cfg(unix)]
+    options.mode(0o600);
+    let mut file = options.open(&temporary).await?;
+    file.write_all(bytes).await?;
+    file.flush().await?;
+    drop(file);
+    tokio::fs::rename(temporary, path).await?;
+    Ok(())
+}
+impl HttpCapture {
+    fn append(&mut self, bytes: &[u8]) {
+        let n = bytes.len().min((1024 * 1024) - self.bytes.len());
+        self.bytes.extend_from_slice(&bytes[..n]);
+        self.truncated |= n != bytes.len();
+    }
+}
+pub struct HttpTap<S> {
+    pub inner: S,
+    pub capture: Arc<Mutex<HttpCapture>>,
+    pub on_read: bool,
+}
+impl<S: AsyncRead + Unpin> AsyncRead for HttpTap<S> {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        b: &mut ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        let before = b.filled().len();
+        let result = Pin::new(&mut self.inner).poll_read(cx, b);
+        if self.on_read && matches!(result, Poll::Ready(Ok(()))) {
+            self.capture.lock().unwrap().append(&b.filled()[before..]);
+        }
+        result
+    }
+}
+impl<S: AsyncWrite + Unpin> AsyncWrite for HttpTap<S> {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        b: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        let result = Pin::new(&mut self.inner).poll_write(cx, b);
+        if !self.on_read {
+            if let Poll::Ready(Ok(n)) = result {
+                self.capture.lock().unwrap().append(&b[..n]);
+            }
+        }
+        result
+    }
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.inner).poll_flush(cx)
+    }
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.inner).poll_shutdown(cx)
+    }
+}
 pub async fn connect(addr: SocketAddr, mss: Option<u32>, ttl: Option<u32>) -> Result<TcpStream> {
     let socket = if addr.is_ipv4() {
         tokio::net::TcpSocket::new_v4()?

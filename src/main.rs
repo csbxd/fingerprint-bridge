@@ -59,6 +59,9 @@ struct Serve {
     /// Save per-connection TLS evidence, with missing HTTP/TCP layers marked null.
     #[arg(long)]
     reports: Option<PathBuf>,
+    /// Diagnostic plaintext request capture (includes cookies); requires --reports.
+    #[arg(long, requires = "reports")]
+    http_evidence: bool,
     /// Reject before forwarding HTTP if measured normalized TLS features differ.
     #[arg(long)]
     strict_tls: bool,
@@ -220,7 +223,17 @@ if offers[p..p+n]==chosen{return Ok(&offers[p..p+n])}p+=n;}Err(AlpnError::NOACK)
                         Ok::<_,anyhow::Error>((client,upstream,selected))
                     };
                     let (client,upstream,selected)=tokio::time::timeout(Duration::from_secs(cfg.handshake_timeout),setup).await.context("handshake timeout")??;
-                    if selected==b"h2"{h2::bridge(client,upstream,m).await}else{h1::bridge(client,upstream,m).await}
+                    if cfg.http_evidence {
+                        let incoming=Arc::new(Mutex::new(transport::HttpCapture::default()));
+                        let outgoing=Arc::new(Mutex::new(transport::HttpCapture::default()));
+                        let client=transport::HttpTap{inner:client,capture:incoming.clone(),on_read:true};
+                        let upstream=transport::HttpTap{inner:upstream,capture:outgoing.clone(),on_read:false};
+                        let result=if selected==b"h2"{h2::bridge(client,upstream,m).await}else{h1::bridge(client,upstream,m).await};
+                        let evidence=serde_json::json!({"protocol":String::from_utf8_lossy(&selected),"inbound":*incoming.lock().unwrap(),"outbound":*outgoing.lock().unwrap()});
+                        let path=cfg.reports.as_ref().context("reports required")?.join(format!("{id}.http.json"));
+                        transport::write_private_evidence(&path,&serde_json::to_vec(&evidence)?).await?;
+                        result
+                    }else if selected==b"h2"{h2::bridge(client,upstream,m).await}else{h1::bridge(client,upstream,m).await}
                 }).await;
     match result {
         Ok(Ok(())) => {}
