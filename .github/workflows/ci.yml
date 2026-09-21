@@ -10,6 +10,9 @@ on:
         default: true
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: fingerprint-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
