@@ -1011,5 +1011,26 @@
         "unsupported extension 50"
       ]
     }
+  },
+  "tls_version_alignment": {
+    "before_fix_against_tls12_origin": {
+      "direct": "TLSv1.2",
+      "bridged": "TLSv1.3",
+      "regression_pass": false
+    },
+    "after_fix": {
+      "TLSv1_2": [
+        "TLSv1.2",
+        "TLSv1.2"
+      ],
+      "TLSv1_3": [
+        "TLSv1.3",
+        "TLSv1.3"
+      ]
+    },
+    "python_regressions_passed": 18,
+    "rust_tests_passed": 34,
+    "hybrid_cases_passed": 18,
+    "scope": "Actual negotiated protocol at independent OpenSSL clients; both origin versions tested; normal certificate validation and HTTP responses required"
   }
 }
