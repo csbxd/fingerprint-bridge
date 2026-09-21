@@ -10,7 +10,7 @@ Rust HTTPS 域名中转：浏览器访问 **B**，B 请求固定的 **A**；只�
 | --- | --- | --- |
 | TLS | 从入站 ClientHello 映射密码套件及顺序、支持组、签名算法、ALPN、GREASE、KeyShare 组、可配置扩展顺序、OCSP/SCT、zlib/Brotli 证书压缩 | 采集**实际发出的** ClientHello，比较 JA3、JA4 和原始顺序等细项 |
 | HTTP/1.1 | 原始头部字节变换，保留头部大小写、顺序、空格、重复字段、Cookie、消息体、chunk 分界和 trailer；支持 keep-alive、HEAD、100 Continue | 独立 HTTPS 测试站点比较直连/中转接收到的请求 |
-| HTTP/2 | 保留连接和流的对应关系；转发 SETTINGS、WINDOW_UPDATE、PRIORITY、DATA 等帧；保留解码后的头部顺序和重复字段、HEADERS 优先级和填充 | 测试有序 SETTINGS、窗口增量、优先级、流编号、连续请求及 HPACK 动态表 |
+| HTTP/2 | 保留连接和流的对应关系；转发 SETTINGS、WINDOW_UPDATE、PRIORITY、DATA 等帧；保留头部顺序、重复字段、HPACK 表示方式/Huffman 选择/动态索引、HEADERS 优先级和填充，尽量保留 CONTINUATION 边界 | 测试有序 SETTINGS、窗口增量、优先级、流编号、连续请求、HPACK 字节及动态表独立淘汰 |
 | TCP | 读取真实 PCAP 中的 SYN；解析 IP 版本、TTL/跳数、DF、窗口、MSS、WS、SACK、时间戳存在性、选项顺序和标志；可手动设置 Linux TCP_MAXSEG/TTL | 正反例报文测试；可选 Linux loopback 实测抓包 |
 | 验收 | 差异按字段输出 JSON；缺失层也判失败 | CLI 退出码：0 一致、1 差异/缺失、2 输入/运行错误 |
 
@@ -116,6 +116,8 @@ docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
 
 运行期间只使用容器 loopback，`NET_RAW` 用于 SYN 采集，不需要 `--privileged`。本地没有原始套接字权限时可运行 `--no-capture --report-only` 调试客户端，但这类报告始终标记 TCP 缺失，不能用于完整验收。Python 标准库没有 HTTP/2 客户端，所以 Python/h2 不作为假“跳过即通过”的组合；既有 Python/hpack 协议测试仍保留。
 
+本轮修复与本地前后对比见 [指纹修复验证记录](test-results/FINGERPRINT-FIX-VALIDATION.md)；完整跨环境结果以 Actions 实际运行报告为准。
+
 ## 在 Linux 服务器抓包验收
 
 测试脚本支持真实 loopback SYN 抓包，需要 root 或 CAP_NET_RAW：
@@ -158,9 +160,9 @@ TCP 忽略地址、端口、序列号、确认号、校验和以及时间戳数�
 ## 当前边界
 
 * TCP 栈仍属于 B；只有 MSS/TTL 可显式设置。没有自动推测客户端 OS 或复制窗口缩放/拥塞控制/重传策略。
-* TLS backend 不支持的套件、组、签名算法和扩展会被报告；未知扩展不原样注入加密握手。TLS 1.0/1.1 不支持。
+* TLS backend 不支持的套件、组、签名算法和扩展会被报告；未知扩展不原样注入加密握手。缺少重协商或 PSK 扩展时不再主动补入；但 SCSV、混排 TLS 1.3/旧套件、部分签名算法/组/扩展和 padding 策略仍存在限制，TLS 矩阵尚未通过。TLS 1.0/1.1 不支持。
 * ALPS、真实 ECH 内层、客户端证书认证、跨连接 TLS 会话恢复/0-RTT、HelloRetryRequest 后的完整握手指纹未实现一致性。报告只解析首个 ClientHello。不使用固定 User-Agent 模板冒充实测。
-* HTTP/2 的 HPACK 被重新编码为 never-indexed literal，以免重写引发两侧动态表失同步。头部语义、顺序与控制帧保留，**压缩方式、头部块大小及 CONTINUATION 分片边界可能改变**。单帧/单头部块限制 1 MiB，解码动态表上限 64 KiB。
+* HTTP/2 分别维护入站/出站 HPACK 状态；未改字段保留原编码，改写值沿用原 Huffman 选择和索引方式。域名长度改变造成两侧动态表淘汰不同时会修正索引，已淘汰条目必要时改为不索引字面量。原分片边界尽量保留，长度变化由最后一片吸收，超出对端 SETTINGS_MAX_FRAME_SIZE 时增加分片。因此不承诺任意域名长度下的压缩字节和帧长相同。单帧/单头部块限制 1 MiB，动态表上限 64 KiB，单块至多 1024 帧。
 * 不支持 HTTP/3/QUIC、HTTP Upgrade/WebSocket、CONNECT、HTTP/2 server push。HTTP/1.1 只接受 origin-form/OPTIONS `*`，拒绝 CL+TE、重复 Content-Length 和 obs-fold。
 * 这是有界缓冲、并发限制和证书验证的原型，还没有生产负载或恶意流量审计。新增客户端/依赖版本必须重跑验收。
 
