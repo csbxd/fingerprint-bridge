@@ -33,4 +33,21 @@
 
 TLS 仍有后端缺失的套件、签名算法、组、扩展及套件排序差异；Rust 的两次独立直连还会随机排列 TLS 扩展。没有把这些差异变成白名单。仅 B 可改的条件下，B 的 TCP 栈也不能被宣称为任意客户端 TCP 栈的完整复制。
 
-本地没有原始套接字权限，使用 --no-capture --report-only；TCP 缺失，fingerprint_pass=false，不构成全层通过。跨发行版、ARM64、真实 SYN 抓包的结果须读取此次修复提交对应的 GitHub Actions 报告；本文件不预先宣称远端通过。
+本地没有原始套接字权限，使用 --no-capture --report-only；本地 TCP 缺失，fingerprint_pass=false，不构成全层通过。远端实测结果如下。
+
+
+## GitHub Actions 最终实测
+
+[Actions #8](https://github.com/csbxd/fingerprint-bridge/actions/runs/35632578610) 已完成，验证代码提交 [1360525](https://github.com/csbxd/fingerprint-bridge/commit/13605250a3c5e40c1ad64234dafc237ac6748a0b)。2 架构 × 4 发行版的 72 个组合均有结果，无运行错误或缺失组合；常规 test 任务通过，8 份矩阵证据及汇总表已上传。
+
+| 比较范围 | 修复前 #6 | 修复后 #8 |
+| --- | --- | --- |
+| HTTP/1.1 | 40/40 MATCH | 40/40 MATCH |
+| HTTP/2 | 0/32 MATCH | 24/32 MATCH |
+| TLS | 0/72 MATCH | 0/72 MATCH |
+| TCP SYN | 72/72 MATCH | 72/72 MATCH |
+| 全层一致 | 0/72 | 0/72 |
+
+Node、Java、Rust 的 HTTP/2 在全部 8 个环境下均匹配，包括 HPACK 字节摘要和帧布局。Go 的 8 个 HTTP/2 组合仍为 DIFF；其中 7 个两次直连基线也不同，ARM64 Ubuntu 的两次直连基线相同但中转不同。不能只凭两次直连就把后者归为可豁免随机性，保留为未解决差异。
+
+最终为 **49 mismatch、23 inconclusive-baseline**。基线不稳定的另 16 项来自 Rust TLS 扩展排列。TCP 结论仅限同一 runner 内核上的 loopback SYN 特征，不代表任意客户端经过 B 时完整 TCP 行为一致。严格门禁仍失败，没有放宽比较规则。
