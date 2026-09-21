@@ -18,6 +18,7 @@ import sys
 import tempfile
 import threading
 import traceback
+import time
 
 import h2.config
 import h2.connection
@@ -25,6 +26,7 @@ import h2.events
 
 from lab import PREFACE, SynCapture, certificates, exact, frame, head, hello_peek, read_frame, start_bridge
 from matrix_config import CASES, LAYERS, SAMPLES
+from paired_http import compare as compare_paired_http
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -212,13 +214,20 @@ def run_case(binary, path, output, client, protocol, interface):
     proc = log = capture = None
     try:
         capture = SynCapture(interface, origin.port) if interface else None
-        proc, port, log = start_bridge(binary, path, origin, output / "runtime")
+        proc, port, log = start_bridge(binary, path, origin, output / "runtime", ["--http-evidence"])
         completed = subprocess.run(client_command(client, path, protocol, origin.port, port),
                                    capture_output=True, text=True, timeout=65)
         (output / "client.log").write_text(completed.stdout + completed.stderr)
         if completed.returncode:
             raise RuntimeError(f"{client} exited {completed.returncode}: {completed.stderr[-4000:]}")
         origin.finish()
+        deadline = time.monotonic() + 5
+        while not list((output / "runtime").glob("*.http.json")) and time.monotonic() < deadline:
+            time.sleep(.05)
+        paired_path, = (output / "runtime").glob("*.http.json")
+        result["paired_http"] = compare_paired_http(json.loads(paired_path.read_text()), f"b.test:{port}", f"a.test:{origin.port}")
+        tls_path, = (output / "runtime").glob("*.report.json")
+        result["paired_tls"] = json.loads(tls_path.read_text())["comparison"]
     except Exception:
         result["error"] = traceback.format_exc()
     finally:
@@ -252,6 +261,8 @@ def run_case(binary, path, output, client, protocol, interface):
                 result["layers"][layer] = compare(binary, output / "direct-1.json", output / "bridged.json", [layer])
             if "error" not in result:
                 result["status"] = classify(result["baseline"], result["layers"])
+                if result["status"] == "match" and not (result["paired_http"]["pass"] and result["paired_tls"]["pass"]):
+                    result["status"] = "mismatch"
         except Exception:
             result["evidence_error"] = traceback.format_exc()
             result["status"] = "error"

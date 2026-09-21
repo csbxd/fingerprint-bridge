@@ -40,13 +40,22 @@ def inspect_summary(document, directory):
                 evidence = case_dir / f"{sample}.{suffix}"
                 if not evidence.is_file() or evidence.stat().st_size == 0:
                     complete = False
+        for suffix in ("http.json", "report.json"):
+            paired_files = list((case_dir / "runtime").glob(f"*.{suffix}"))
+            if len(paired_files) != 1 or paired_files[0].stat().st_size == 0:
+                complete = False
+        paired_tls = layer_status(r.get("paired_tls"))
+        paired_http = r.get("paired_http", {})
+        paired_http_status = "MISSING" if "pass" not in paired_http else "MATCH" if paired_http["pass"] and paired_http.get("inbound") == paired_http.get("outbound") else "DIFF"
+        if "MISSING" in (paired_tls, paired_http_status):
+            complete = False
         if not complete:
             status = "missing-evidence" if status != "error" else "error"
-        if status == "match" and (set(baseline) != {"MATCH"} or set(layers) != {"MATCH"}):
+        if status == "match" and (set(baseline) != {"MATCH"} or set(layers + [paired_tls, paired_http_status]) != {"MATCH"}):
             raise AssertionError("summary claims a match despite differences")
         rows.append({"arch": key[0], "distro": key[1], "client": client, "protocol": protocol,
                      "baseline": "stable" if set(baseline) == {"MATCH"} else "unstable/missing",
-                     **dict(zip(LAYERS, layers)), "status": status})
+                     **dict(zip(LAYERS, layers)), "paired_tls": paired_tls, "paired_http": paired_http_status, "status": status})
     return key, rows
 
 
@@ -70,7 +79,7 @@ def collect(root):
                 errors.append(f"missing environment: {arch}/{distro}")
                 for client, protocol in CASES:
                     rows.append({"arch": arch, "distro": distro, "client": client, "protocol": protocol,
-                                 "baseline": "missing", **{layer: "MISSING" for layer in LAYERS}, "status": "missing-evidence"})
+                                 "baseline": "missing", **{layer: "MISSING" for layer in LAYERS}, "paired_tls": "MISSING", "paired_http": "MISSING", "status": "missing-evidence"})
     return rows, errors
 
 
@@ -78,10 +87,11 @@ def markdown(rows, errors):
     lines = ["# Direct versus bridged fingerprint matrix", "",
              "Two direct connections establish the baseline; one connection goes through B. Each carries two requests.",
              "Distro containers share the runner kernel. This is loopback coverage, not cross-OS TCP cloning or browser certification.", "",
-             "| Architecture | Distro | Client | Protocol | Direct baseline | TLS | HTTP | TCP | Verdict |",
-             "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+             "B-paired columns compare the very same connection entering/leaving B; they do not replace independent A-side comparisons.", "",
+             "| Architecture | Distro | Client | Protocol | Direct baseline | TLS | HTTP | TCP | B-paired TLS | B-paired HTTP | Verdict |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for row in rows:
-        lines.append("| " + " | ".join(str(row[k]) for k in ["arch", "distro", "client", "protocol", "baseline", "tls", "http", "tcp", "status"]) + " |")
+        lines.append("| " + " | ".join(str(row[k]) for k in ["arch", "distro", "client", "protocol", "baseline", "tls", "http", "tcp", "paired_tls", "paired_http", "status"]) + " |")
     lines += ["", f"Matches: {sum(r['status']=='match' for r in rows)}/{len(rows)}. Missing, unstable or failed cells are never passes.", "",
               "Artifacts contain actual ClientHello bytes, A-side SYN PCAPs, structured evidence, field differences, client/bridge logs and runtime versions.",
               "HTTP/2 comparison includes HPACK bytes and frame layout; semantic equality alone does not imply a match.", ""]

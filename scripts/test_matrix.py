@@ -55,11 +55,15 @@ class CoverageTests(unittest.TestCase):
         for client, protocol in CASES:
             case_dir = directory / f"{client}-{protocol.replace('/', '-')}"
             case_dir.mkdir()
+            (case_dir / "runtime").mkdir()
+            for suffix in ("http.json", "report.json"):
+                (case_dir / "runtime" / f"connection.{suffix}").write_text("test evidence")
             for sample in SAMPLES:
                 for suffix in ("json", "clienthello.bin", "pcap"):
                     (case_dir / f"{sample}.{suffix}").write_bytes(b"test evidence")
             results.append({"client": client, "protocol": protocol, "status": "match",
-                            "baseline": comparisons(), "layers": comparisons()})
+                            "baseline": comparisons(), "layers": comparisons(), "paired_tls": matched(),
+                            "paired_http": {"pass": True, "inbound": {}, "outbound": {}}})
         document = {"environment": {"matrix_arch": arch, "matrix_distro": distro,
                     "architecture": {"amd64": "x86_64", "arm64": "aarch64"}[arch]},
                     "tcp_capture_requested": True, "results": results}
