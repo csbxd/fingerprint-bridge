@@ -1,5 +1,5 @@
 //! Frame bridge: preserves SETTINGS order, flow-control frames, stream ids and DATA.
-//! HPACK blocks are decoded per direction and re-encoded as never-indexed literals.
+//! HPACK representation, Huffman choices and dynamic state are retained when possible.
 use crate::rewrite::Mapping;
 use anyhow::{bail, ensure, Result};
 use std::sync::{
@@ -51,138 +51,15 @@ impl Frame {
         Ok(())
     }
 }
-fn integer(b: &[u8], p: &mut usize, bits: u8) -> Result<usize> {
-    ensure!(*p < b.len(), "truncated HPACK integer");
-    let mask = (1usize << bits) - 1;
-    let mut n = b[*p] as usize & mask;
-    *p += 1;
-    if n < mask {
-        return Ok(n);
-    }
-    let mut shift = 0;
-    loop {
-        ensure!(*p < b.len() && shift <= 28, "invalid HPACK integer");
-        let c = b[*p];
-        *p += 1;
-        n = n
-            .checked_add(((c & 127) as usize) << shift)
-            .ok_or_else(|| anyhow::anyhow!("HPACK overflow"))?;
-        if c & 128 == 0 {
-            return Ok(n);
-        }
-        shift += 7;
-    }
-}
-fn skip_string(b: &[u8], p: &mut usize) -> Result<()> {
-    let n = integer(b, p, 7)?;
-    ensure!(n <= b.len() - *p, "truncated HPACK string");
-    *p += n;
-    Ok(())
-}
-fn validate_block(b: &[u8], table_limit: usize) -> Result<()> {
-    let mut p = 0;
-    let mut fields = false;
-    while p < b.len() {
-        let c = b[p];
-        if c & 128 != 0 {
-            integer(b, &mut p, 7)?;
-            fields = true;
-        } else if c & 0xe0 == 0x20 {
-            ensure!(!fields, "HPACK table update after fields");
-            let n = integer(b, &mut p, 5)?;
-            ensure!(
-                n <= table_limit.min(65536),
-                "HPACK table exceeds advertised/configured limit"
-            );
-        } else {
-            let prefix = if c & 0x40 != 0 { 6 } else { 4 };
-            if integer(b, &mut p, prefix)? == 0 {
-                skip_string(b, &mut p)?
-            }
-            skip_string(b, &mut p)?;
-            fields = true;
-        }
-    }
-    Ok(())
-}
-fn put_int(out: &mut Vec<u8>, mut n: usize, prefix: u8, bits: u8) {
-    let max = (1usize << bits) - 1;
-    if n < max {
-        out.push(prefix | n as u8);
-        return;
-    }
-    out.push(prefix | max as u8);
-    n -= max;
-    while n >= 128 {
-        out.push((n as u8 & 127) | 128);
-        n >>= 7;
-    }
-    out.push(n as u8);
-}
-/// Avoids cross-user compression state; preserves decoded header order and duplicates.
-pub fn encode_headers(headers: &[(Vec<u8>, Vec<u8>)]) -> Vec<u8> {
-    let mut out = vec![];
-    for (n, v) in headers {
-        out.push(0x10);
-        put_int(&mut out, n.len(), 0, 7);
-        out.extend(n);
-        put_int(&mut out, v.len(), 0, 7);
-        out.extend(v);
-    }
-    out
-}
+pub use crate::hpack_wire::{encode_headers, HeaderRewriter};
 pub fn rewrite_block(
-    decoder: &mut hpack::Decoder<'_>,
+    rewriter: &mut HeaderRewriter,
     block: &[u8],
     mapping: &Mapping,
     response: bool,
     limit: usize,
 ) -> Result<Vec<u8>> {
-    ensure!(block.len() <= MAX_BLOCK, "header block too large");
-    validate_block(block, limit)?;
-    let mut headers = decoder
-        .decode(block)
-        .map_err(|e| anyhow::anyhow!("HPACK decode: {e:?}"))?;
-    ensure!(
-        headers
-            .iter()
-            .map(|(n, v)| n.len() + v.len() + 32)
-            .sum::<usize>()
-            <= MAX_BLOCK,
-        "decoded headers too large"
-    );
-    let mut authority = 0;
-    let mut regular = false;
-    for (n, v) in &mut headers {
-        ensure!(
-            !n.is_empty()
-                && !n
-                    .iter()
-                    .any(|c| c.is_ascii_uppercase() || *c <= 32 || *c == 127),
-            "invalid HTTP/2 name"
-        );
-        ensure!(
-            !v.contains(&b'\r') && !v.contains(&b'\n') && !v.contains(&0),
-            "invalid HTTP/2 value"
-        );
-        if n.starts_with(b":") {
-            ensure!(!regular, "pseudo-header after regular header")
-        } else {
-            regular = true;
-        }
-        if n == b":method" {
-            ensure!(v != b"CONNECT", "HTTP/2 CONNECT unsupported")
-        }
-        if n == b":authority" {
-            authority += 1;
-        }
-        *v = mapping.value(n, v, response)?;
-    }
-    // Trailers have no pseudo-headers and are still passed through.
-    if !response && headers.iter().any(|(n, _)| n == b":method") {
-        ensure!(authority == 1, "exactly one :authority required")
-    }
-    Ok(encode_headers(&headers))
+    rewriter.rewrite(block, mapping, response, limit)
 }
 pub fn settings(frame: &Frame) -> Result<Vec<(u16, u32)>> {
     ensure!(frame.kind == 4 && frame.stream == 0, "invalid SETTINGS");
@@ -202,22 +79,53 @@ pub fn settings(frame: &Frame) -> Result<Vec<(u16, u32)>> {
         })
         .collect())
 }
-/// Preserve HEADERS priority metadata, padding, END_STREAM; emit legal-size fragments.
-pub fn reframe(first: &Frame, encoded: &[u8]) -> Result<Vec<Frame>> {
+/// Retain original fragments; only the last fragment absorbs a length change.
+/// Additional CONTINUATION frames are needed only if the peer's limit is exceeded.
+pub fn reframe(original: &[Frame], encoded: &[u8], max_frame: usize) -> Result<Vec<Frame>> {
+    ensure!(
+        (16384..=0xffffff).contains(&max_frame),
+        "invalid frame limit"
+    );
+    let first = original
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("missing HEADERS"))?;
     let (prefix, padding, _) = header_parts(first)?;
     let mut out = vec![];
-    let first_cap = 16384 - prefix.len() - padding.len();
-    let n = first_cap.min(encoded.len());
-    let mut payload = prefix;
-    payload.extend_from_slice(&encoded[..n]);
-    payload.extend(padding);
-    out.push(Frame {
-        kind: 1,
-        flags: (first.flags & !4) | if n == encoded.len() { 4 } else { 0 },
-        stream: first.stream,
-        payload,
-    });
-    for chunk in encoded[n..].chunks(16384) {
+    let mut pos = 0;
+    for (i, frame) in original.iter().enumerate() {
+        ensure!(
+            frame.payload.len() <= max_frame,
+            "header frame exceeds peer limit"
+        );
+        ensure!(
+            i == 0 || (frame.kind == 9 && frame.stream == first.stream),
+            "invalid CONTINUATION"
+        );
+        let overhead = if i == 0 {
+            prefix.len() + padding.len()
+        } else {
+            0
+        };
+        let cap = if i + 1 == original.len() {
+            max_frame - overhead
+        } else {
+            frame.payload.len() - overhead
+        };
+        let n = cap.min(encoded.len() - pos);
+        let mut payload = if i == 0 { prefix.clone() } else { vec![] };
+        payload.extend_from_slice(&encoded[pos..pos + n]);
+        if i == 0 {
+            payload.extend_from_slice(&padding);
+        }
+        out.push(Frame {
+            kind: frame.kind,
+            flags: frame.flags & !4,
+            stream: frame.stream,
+            payload,
+        });
+        pos += n;
+    }
+    for chunk in encoded[pos..].chunks(max_frame) {
         out.push(Frame {
             kind: 9,
             flags: 0,
@@ -227,6 +135,18 @@ pub fn reframe(first: &Frame, encoded: &[u8]) -> Result<Vec<Frame>> {
     }
     out.last_mut().unwrap().flags |= 4;
     Ok(out)
+}
+struct PeerLimits {
+    table: AtomicUsize,
+    frame: AtomicUsize,
+}
+impl PeerLimits {
+    fn new() -> Self {
+        Self {
+            table: AtomicUsize::new(4096),
+            frame: AtomicUsize::new(16384),
+        }
+    }
 }
 fn header_parts(frame: &Frame) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>)> {
     ensure!(
@@ -253,10 +173,10 @@ async fn direction<R: AsyncRead + Unpin, W: AsyncWrite + Unpin>(
     mut w: W,
     mapping: &Mapping,
     response: bool,
-    table: Arc<AtomicUsize>,
-    other: Arc<AtomicUsize>,
+    limits: Arc<PeerLimits>,
+    other: Arc<PeerLimits>,
 ) -> Result<()> {
-    let mut decoder = hpack::Decoder::new();
+    let mut decoder = HeaderRewriter::new();
     if !response {
         let mut preface = [0; 24];
         r.read_exact(&mut preface).await?;
@@ -268,7 +188,13 @@ async fn direction<R: AsyncRead + Unpin, W: AsyncWrite + Unpin>(
             4 => {
                 for (id, value) in settings(&frame)? {
                     if id == 1 {
-                        other.store(value as usize, Ordering::Relaxed)
+                        other.table.store(value as usize, Ordering::Relaxed)
+                    } else if id == 5 {
+                        ensure!(
+                            (16384..=0xffffff).contains(&value),
+                            "invalid SETTINGS_MAX_FRAME_SIZE"
+                        );
+                        other.frame.store(value as usize, Ordering::Relaxed)
                     }
                 }
                 frame.write(&mut w).await?;
@@ -276,12 +202,13 @@ async fn direction<R: AsyncRead + Unpin, W: AsyncWrite + Unpin>(
             1 => {
                 let (_, _, mut block) = header_parts(&frame)?;
                 let mut flags = frame.flags;
+                let mut original = vec![frame];
                 while flags & 4 == 0 {
                     let next = Frame::read(&mut r)
                         .await?
                         .ok_or_else(|| anyhow::anyhow!("truncated CONTINUATION"))?;
                     ensure!(
-                        next.kind == 9 && next.stream == frame.stream,
+                        next.kind == 9 && next.stream == original[0].stream,
                         "interleaved CONTINUATION"
                     );
                     ensure!(
@@ -289,16 +216,18 @@ async fn direction<R: AsyncRead + Unpin, W: AsyncWrite + Unpin>(
                         "header block too large"
                     );
                     flags = next.flags;
-                    block.extend(next.payload);
+                    block.extend_from_slice(&next.payload);
+                    original.push(next);
+                    ensure!(original.len() <= 1024, "too many CONTINUATION frames");
                 }
                 let encoded = rewrite_block(
                     &mut decoder,
                     &block,
                     mapping,
                     response,
-                    table.load(Ordering::Relaxed),
+                    limits.table.load(Ordering::Relaxed),
                 )?;
-                for f in reframe(&frame, &encoded)? {
+                for f in reframe(&original, &encoded, limits.frame.load(Ordering::Relaxed))? {
                     f.write(&mut w).await?;
                 }
             }
@@ -318,8 +247,8 @@ where
 {
     let (cr, cw) = tokio::io::split(client);
     let (ur, uw) = tokio::io::split(upstream);
-    let c = Arc::new(AtomicUsize::new(4096));
-    let s = Arc::new(AtomicUsize::new(4096));
+    let c = Arc::new(PeerLimits::new());
+    let s = Arc::new(PeerLimits::new());
     let requests = direction(cr, uw, &mapping, false, c.clone(), s.clone());
     let responses = direction(ur, cw, &mapping, true, s, c);
     tokio::pin!(requests);

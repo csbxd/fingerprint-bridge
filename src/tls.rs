@@ -6,6 +6,23 @@ use btls::ssl::{
 };
 use std::path::Path;
 
+// Complete kExtensions table in the pinned btls-sys 0.5.6 backend. Supplying
+// all identifiers avoids its random remainder ordering (and the off-by-one
+// seed read in that path). This orders extensions; it does not enable them.
+const BACKEND_EXTENSIONS: &[u16] = &[
+    0, 65037, 23, 65281, 10, 11, 35, 16, 5, 13, 13172, 18, 30032, 14, 51, 45, 42, 43, 44, 57,
+    65445, 27, 34, 17613, 17513, 47, 35387, 51764, 28,
+];
+fn extension_order(incoming: &[u16]) -> Vec<ExtensionType> {
+    let mut order = Vec::new();
+    for id in incoming.iter().chain(BACKEND_EXTENSIONS) {
+        if BACKEND_EXTENSIONS.contains(id) && !order.contains(id) {
+            order.push(*id);
+        }
+    }
+    order.into_iter().map(ExtensionType::from).collect()
+}
+
 struct Brotli;
 impl CertificateCompressor for Brotli {
     const ALGORITHM: CertificateCompressionAlgorithm = CertificateCompressionAlgorithm::BROTLI;
@@ -153,6 +170,15 @@ pub fn mirror(
     if !hello.extensions.contains(&35) {
         b.set_options(SslOptions::NO_TICKET);
     }
+    if !hello.extensions.contains(&65281) {
+        b.set_options(SslOptions::NO_RENEGOTIATION);
+    }
+    if !hello.extensions.contains(&45) {
+        b.set_options(SslOptions::NO_PSK_DHE_KE);
+    }
+    if hello.ciphers.contains(&0xff) {
+        limitations.push("renegotiation SCSV cannot be emitted by this backend".into());
+    }
     for id in &hello.cert_compression {
         match id {
             1 => b.add_certificate_compression_algorithm(Zlib)?,
@@ -165,12 +191,7 @@ pub fn mirror(
         0, 5, 10, 11, 13, 16, 18, 21, 23, 27, 28, 34, 35, 41, 42, 43, 44, 45, 47, 50, 51, 17513,
         17613, 65037, 65281,
     ];
-    let order: Vec<_> = hello
-        .extensions
-        .iter()
-        .filter(|n| KNOWN.contains(n))
-        .map(|n| ExtensionType::from(*n))
-        .collect();
+    let order = extension_order(&hello.extensions);
     b.set_extension_permutation(&order)?;
     for id in &hello.extensions {
         if !grease(*id) && !KNOWN.contains(id) {
