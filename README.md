@@ -47,6 +47,8 @@ Rust 工具链锁定在 `rust-toolchain.toml`；依赖锁定在 `Cargo.lock`。�
 
 `--connect IP:PORT` 可以固定网络连接地址，但 SNI、HTTP authority 和证书验证仍使用 `--upstream`。每个下游连接对应一个上游连接，不跨用户池化连接、不添加 X-Forwarded-For/Via、不覆盖 User-Agent、不解压响应、不自动跟随重定向、不重试应用请求。
 
+B 向客户端协商的 TLS 版本跟随 A 本次连接实际选择的 TLS 1.2 或 TLS 1.3，避免直连 A 使用 1.2、访问 B 却使用 1.3。该约束不等于两侧使用相同证书、密钥或全部握手消息。
+
 `--strict-tls` 在实际出站 ClientHello 与入站的归一化特征不一致时，拒绝继续转发 HTTP。**此时上游 TCP/TLS 握手已经发生**，它不是发送 ClientHello 前的隐藏机制；它也不是 TCP/HTTP 的严格一致保证。
 
 `--max-connections` 限制并发连接（默认 256）；`--handshake-timeout` 默认 15 秒；`--connection-lifetime` 是连接最长寿命（默认 3600 秒），不是空闲超时。默认监听本机 `127.0.0.1:8443`。
