@@ -1,0 +1,103 @@
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -1139,6 +1139,9 @@ OPENSSL_EXPORT int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response,
+ #define SSL_SIGN_RSA_PSS_RSAE_SHA384 0x0805
+ #define SSL_SIGN_RSA_PSS_RSAE_SHA512 0x0806
+ #define SSL_SIGN_ED25519 0x0807
++#define SSL_SIGN_RSA_PSS_PSS_SHA256 0x0809
++#define SSL_SIGN_RSA_PSS_PSS_SHA384 0x080a
++#define SSL_SIGN_RSA_PSS_PSS_SHA512 0x080b
+ #define SSL_SIGN_ML_DSA_44 0x0904
+ #define SSL_SIGN_ML_DSA_65 0x0905
+ #define SSL_SIGN_ML_DSA_87 0x0906
+diff --git a/ssl/extensions.cc b/ssl/extensions.cc
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -267,14 +267,17 @@ static const uint16_t kVerifySignatureAlgorithms[] = {
+     // List our preferred algorithms first.
+     SSL_SIGN_ECDSA_SECP256R1_SHA256,
+     SSL_SIGN_RSA_PSS_RSAE_SHA256,
++    SSL_SIGN_RSA_PSS_PSS_SHA256,
+     SSL_SIGN_RSA_PKCS1_SHA256,
+ 
+     // Larger hashes are acceptable.
+     SSL_SIGN_ECDSA_SECP384R1_SHA384,
+     SSL_SIGN_RSA_PSS_RSAE_SHA384,
++    SSL_SIGN_RSA_PSS_PSS_SHA384,
+     SSL_SIGN_RSA_PKCS1_SHA384,
+ 
+     SSL_SIGN_RSA_PSS_RSAE_SHA512,
++    SSL_SIGN_RSA_PSS_PSS_SHA512,
+     SSL_SIGN_RSA_PKCS1_SHA512,
+ 
+     // For now, SHA-1 is still accepted but least preferable.
+diff --git a/ssl/ssl_privkey.cc b/ssl/ssl_privkey.cc
+--- a/ssl/ssl_privkey.cc
++++ b/ssl/ssl_privkey.cc
+@@ -35,7 +35,8 @@ BSSL_NAMESPACE_BEGIN
+ bool ssl_is_key_type_supported(int key_type) {
+   return key_type == EVP_PKEY_RSA || key_type == EVP_PKEY_EC ||
+          key_type == EVP_PKEY_ED25519 || key_type == EVP_PKEY_ML_DSA_44 ||
+-         key_type == EVP_PKEY_ML_DSA_65 || key_type == EVP_PKEY_ML_DSA_87;
++         key_type == EVP_PKEY_ML_DSA_65 || key_type == EVP_PKEY_ML_DSA_87 ||
++         key_type == EVP_PKEY_RSA_PSS;
+ }
+ 
+ typedef struct {
+@@ -81,6 +82,16 @@ static const SSL_SIGNATURE_ALGORITHM kSignatureAlgorithms[] = {
+      /*is_rsa_pss=*/true, /*tls12_ok=*/true, /*tls13_ok=*/true,
+      /*client_only=*/false},
+ 
++    {SSL_SIGN_RSA_PSS_PSS_SHA256, EVP_PKEY_RSA_PSS, NID_undef, &EVP_sha256,
++     /*is_rsa_pss=*/true, /*tls12_ok=*/true, /*tls13_ok=*/true,
++     /*client_only=*/false},
++    {SSL_SIGN_RSA_PSS_PSS_SHA384, EVP_PKEY_RSA_PSS, NID_undef, &EVP_sha384,
++     /*is_rsa_pss=*/true, /*tls12_ok=*/true, /*tls13_ok=*/true,
++     /*client_only=*/false},
++    {SSL_SIGN_RSA_PSS_PSS_SHA512, EVP_PKEY_RSA_PSS, NID_undef, &EVP_sha512,
++     /*is_rsa_pss=*/true, /*tls12_ok=*/true, /*tls13_ok=*/true,
++     /*client_only=*/false},
++
+     {SSL_SIGN_ECDSA_SHA1, EVP_PKEY_EC, NID_undef, &EVP_sha1,
+      /*is_rsa_pss=*/false, /*tls12_ok=*/true, /*tls13_ok=*/false,
+      /*client_only=*/false},
+@@ -127,9 +138,12 @@ bssl::UniquePtr<EVP_PKEY> ssl_parse_peer_subject_public_key_info(
+   // code elimination, but for now we just specify every algorithm that might be
+   // reachable from libssl.
+   const EVP_PKEY_ALG *const algs[] = {
+-      EVP_pkey_rsa(),       EVP_pkey_ec_p256(),   EVP_pkey_ec_p384(),
+-      EVP_pkey_ec_p521(),   EVP_pkey_ed25519(),   EVP_pkey_ml_dsa_44(),
+-      EVP_pkey_ml_dsa_65(), EVP_pkey_ml_dsa_87(),
++      EVP_pkey_rsa(),                EVP_pkey_rsa_pss_sha256(),
++      EVP_pkey_rsa_pss_sha384(),     EVP_pkey_rsa_pss_sha512(),
++      EVP_pkey_ec_p256(),            EVP_pkey_ec_p384(),
++      EVP_pkey_ec_p521(),            EVP_pkey_ed25519(),
++      EVP_pkey_ml_dsa_44(),          EVP_pkey_ml_dsa_65(),
++      EVP_pkey_ml_dsa_87(),
+   };
+   return bssl::UniquePtr<EVP_PKEY>(EVP_PKEY_from_subject_public_key_info(
+       spki.data(), spki.size(), algs, std::size(algs)));
+@@ -481,6 +495,9 @@ static const SignatureAlgorithmName kSignatureAlgorithmNames[] = {
+     {SSL_SIGN_RSA_PSS_RSAE_SHA256, "rsa_pss_rsae_sha256"},
+     {SSL_SIGN_RSA_PSS_RSAE_SHA384, "rsa_pss_rsae_sha384"},
+     {SSL_SIGN_RSA_PSS_RSAE_SHA512, "rsa_pss_rsae_sha512"},
++    {SSL_SIGN_RSA_PSS_PSS_SHA256, "rsa_pss_pss_sha256"},
++    {SSL_SIGN_RSA_PSS_PSS_SHA384, "rsa_pss_pss_sha384"},
++    {SSL_SIGN_RSA_PSS_PSS_SHA512, "rsa_pss_pss_sha512"},
+     {SSL_SIGN_ED25519, "ed25519"},
+ };
+ 
+@@ -635,9 +652,9 @@ static constexpr struct {
+     {EVP_PKEY_RSA, NID_sha256, SSL_SIGN_RSA_PKCS1_SHA256},
+     {EVP_PKEY_RSA, NID_sha384, SSL_SIGN_RSA_PKCS1_SHA384},
+     {EVP_PKEY_RSA, NID_sha512, SSL_SIGN_RSA_PKCS1_SHA512},
+-    {EVP_PKEY_RSA_PSS, NID_sha256, SSL_SIGN_RSA_PSS_RSAE_SHA256},
+-    {EVP_PKEY_RSA_PSS, NID_sha384, SSL_SIGN_RSA_PSS_RSAE_SHA384},
+-    {EVP_PKEY_RSA_PSS, NID_sha512, SSL_SIGN_RSA_PSS_RSAE_SHA512},
++    {EVP_PKEY_RSA_PSS, NID_sha256, SSL_SIGN_RSA_PSS_PSS_SHA256},
++    {EVP_PKEY_RSA_PSS, NID_sha384, SSL_SIGN_RSA_PSS_PSS_SHA384},
++    {EVP_PKEY_RSA_PSS, NID_sha512, SSL_SIGN_RSA_PSS_PSS_SHA512},
+     {EVP_PKEY_EC, NID_sha1, SSL_SIGN_ECDSA_SHA1},
+     {EVP_PKEY_EC, NID_sha256, SSL_SIGN_ECDSA_SECP256R1_SHA256},
+     {EVP_PKEY_EC, NID_sha384, SSL_SIGN_ECDSA_SECP384R1_SHA384},
