@@ -1,2 +1,138 @@
 # fingerprint-bridge
-Rust HTTPS relay with best-effort TLS/HTTP fingerprint preservation, domain rewriting, and fingerprint regression tests.
+
+Rust HTTPS 域名中转：浏览器访问 **B**，B 请求固定的 **A**；只有 B 需要部署软件和证书。
+
+本项目按实际收到的 TLS ClientHello 配置上游，尽量保留 HTTP 字节、头部顺序和 HTTP/2 控制帧，并用实际报文验证效果。**这是实验性实现，不承诺任意浏览器的全部 TLS/HTTP/TCP 特征完全相同。** 测试失败、缺失证据和未实现功能都明确报告。
+
+## 已实现
+
+| 层 | 实现 | 检验方式 |
+| --- | --- | --- |
+| TLS | 从入站 ClientHello 映射密码套件及顺序、支持组、签名算法、ALPN、GREASE、KeyShare 组、可配置扩展顺序、OCSP/SCT、zlib/Brotli 证书压缩 | 采集**实际发出的** ClientHello，比较 JA3、JA4 和原始顺序等细项 |
+| HTTP/1.1 | 原始头部字节变换，保留头部大小写、顺序、空格、重复字段、Cookie、消息体、chunk 分界和 trailer；支持 keep-alive、HEAD、100 Continue | 独立 HTTPS 测试站点比较直连/中转接收到的请求 |
+| HTTP/2 | 保留连接和流的对应关系；转发 SETTINGS、WINDOW_UPDATE、PRIORITY、DATA 等帧；保留解码后的头部顺序和重复字段、HEADERS 优先级和填充 | 测试有序 SETTINGS、窗口增量、优先级、流编号、连续请求及 HPACK 动态表 |
+| TCP | 读取真实 PCAP 中的 SYN；解析 IP 版本、TTL/跳数、DF、窗口、MSS、WS、SACK、时间戳存在性、选项顺序和标志；可手动设置 Linux TCP_MAXSEG/TTL | 正反例报文测试；可选 Linux loopback 实测抓包 |
+| 验收 | 差异按字段输出 JSON；缺失层也判失败 | CLI 退出码：0 一致、1 差异/缺失、2 输入/运行错误 |
+
+**TCP 数据面仍由 B 的内核创建。** 当前没有实现每客户端独立的 TCP 栈模拟，不会把 MSS/TTL 两个设置宣称为完整 TCP 指纹克隆。原始流量逐包透传又无法实现这里要求的 HTTPS 域名改写。
+
+## 构建
+
+Linux 推荐安装 Rust、C/C++ 编译器、CMake、Perl、libclang 开发文件和系统 CA：
+
+```sh
+sudo apt-get install build-essential cmake perl libclang-dev ca-certificates pkg-config
+cargo build --locked --release
+```
+
+Rust 工具链锁定在 `rust-toolchain.toml`；依赖锁定在 `Cargo.lock`。底层采用 `btls` 的 BoringSSL 绑定，需要编译原生依赖。它是第三方 TLS 依赖，升级时应重跑指纹测试。
+
+## 启动 B
+
+为 B 准备浏览器信任的证书及私钥。A 使用其现有 HTTPS 服务和证书，无需改动：
+
+```sh
+./target/release/fingerprint-bridge serve \
+  --listen 0.0.0.0:8443 \
+  --public b.example:8443 \
+  --upstream a.example:443 \
+  --cert /etc/fingerprint-bridge/b-chain.pem \
+  --key /etc/fingerprint-bridge/b.key \
+  --reports ./reports
+```
+
+浏览器访问 `https://b.example:8443/`。B 的上游固定为启动参数中的 A；客户端不能选择任意转发目标。上游证书链和主机名验证始终开启。`--ca` 用于额外信任的私有 CA；没有关闭验证的选项。
+
+`--connect IP:PORT` 可以固定网络连接地址，但 SNI、HTTP authority 和证书验证仍使用 `--upstream`。每个下游连接对应一个上游连接，不跨用户池化连接、不添加 X-Forwarded-For/Via、不覆盖 User-Agent、不解压响应、不自动跟随重定向、不重试应用请求。
+
+`--strict-tls` 在实际出站 ClientHello 与入站的归一化特征不一致时，拒绝继续转发 HTTP。**此时上游 TCP/TLS 握手已经发生**，它不是发送 ClientHello 前的隐藏机制；它也不是 TCP/HTTP 的严格一致保证。
+
+`--max-connections` 限制并发连接（默认 256）；`--handshake-timeout` 默认 15 秒；`--connection-lifetime` 是连接最长寿命（默认 3600 秒），不是空闲超时。默认监听本机 `127.0.0.1:8443`。
+
+## 域名和 Cookie
+
+会话以浏览器保存在 **B** 的 Cookie 为准：
+
+* 请求 `Cookie` 原样转发，包括值与顺序，不维护另一个服务器端 cookie jar。
+* 请求 `Host` / `:authority` 从配置的 B 改为 A。其他 authority 被拒绝。
+* `Origin` / `Referer` 中**恰好匹配 B 的 HTTPS authority** 改为 A；保留路径、查询和转义形式。
+* 响应 `Location` 中恰好匹配 A 的 HTTPS authority 改为 B。
+* `Set-Cookie` 仅改匹配 A 的 `Domain` 属性，保留值、Path、Secure、HttpOnly、SameSite。没有 Domain 的 cookie 自然由浏览器存为 B 的 host-only cookie。
+* 不进行全局字符串替换，不修改 HTML/JavaScript/响应体中的链接、CSP、CORS 响应头或 cookie 路径。故任意网站的登录、跳转和脚本兼容性不属于当前保证。
+
+## 运行测试
+
+```sh
+cargo fmt --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+python3 -m venv .venv
+.venv/bin/pip install -r scripts/requirements-test.txt
+cargo build --locked
+.venv/bin/python scripts/lab.py
+```
+
+`scripts/lab.py` 建立独立的 A/B 测试证书和本机 HTTPS 站点，以同一个 Python/OpenSSL 客户端分别直连 A 和经过 B，在 A 侧采集真实 ClientHello 与解密后的 HTTP。测试覆盖 HTTP/1.1、HTTP/2、多请求、Cookie、响应重写、二进制消息体、HPACK Huffman/动态表、HEADERS 分片/优先级/填充，以及拒绝错误证书主机名、不受信 CA、strict-TLS 不匹配。
+
+`lab_pass=true` 表示这些功能断言通过，**不表示 `tls.pass=true` 或全层一致**。完整差异在 `test-results/lab/`。仓库内附本次本地实测结果；真实 Chrome/Firefox/Safari 和服务器 TCP 抓包尚待独立验收。
+
+原生 TLS 回归测试另以一个明确配置、底层支持的客户端组合生成真实 ClientHello；该组合经映射后逐字段一致。这是指定组合的回归证据，不是浏览器认证。
+
+## 在 Linux 服务器抓包验收
+
+测试脚本支持真实 loopback SYN 抓包，需要 root 或 CAP_NET_RAW：
+
+```sh
+sudo .venv/bin/python scripts/lab.py \
+  --binary ./target/debug/fingerprint-bridge \
+  --capture-interface lo \
+  --output ./test-results/server-lab
+```
+
+只保存 `127.0.0.1 → 本次测试 A 端口` 的初始 SYN，按 A 实际接受连接的源端口匹配直连和中转。不会修改系统网络参数；服务器 A/B 均只监听 loopback 的临时高位端口。捕获失败会报错，不会自动跳过。**同一 Linux 主机上的匹配也不能代表 Windows/macOS/手机客户端经过 B 时匹配。**
+
+真实部署可在自有测试采集点分别捕获一条直连流和一条中转流，导出 classic pcap 后比较：
+
+```sh
+./target/release/fingerprint-bridge inspect-pcap direct.pcap > direct-tcp.json
+./target/release/fingerprint-bridge inspect-pcap bridged.pcap > bridged-tcp.json
+./target/release/fingerprint-bridge compare direct-tcp.json bridged-tcp.json --layers tcp
+```
+
+先按五元组选择对应流。该命令不猜测多个连接之间的关联，也不重排、去重 PCAP 中的 SYN。支持 Ethernet/VLAN、RAW IP、Linux SLL/SLL2；不支持 PCAPNG、IPv4 分片或 IPv6 扩展头，遇到不能解析的相关包会报错。必要时用 `editcap -F pcap` 转换格式。
+
+## TLS 报告与归一化
+
+运行时 `--reports` 生成 `<id>.inbound.json`、`<id>.outbound.json` 和 `<id>.report.json`。它比较 **B 入站与 B 出站**；与独立的直连 A 基线是不同证据，不能混为一谈。运行时报表中的 HTTP/TCP 是 `null`，不会虚构在线观测。
+
+```sh
+./target/release/fingerprint-bridge compare reports/ID.inbound.json reports/ID.outbound.json --layers tls
+# 默认要求 tls,http,tcp 三层，因此上述两个运行时文件默认完整验收会失败。
+./target/release/fingerprint-bridge inspect-hello clienthello-records.bin > client-tls.json
+```
+
+TLS 归一化忽略 ClientRandom、session-id 值、密钥字节、SNI 值、padding 内容与长度、session ticket/PSK binder/cookie/ECH 密文；保留相应扩展的存在性和顺序，KeyShare 组与长度等结构。GREASE 数值归一化为同一保留值，位置保留。JA3/JA4 按其定义忽略 GREASE，并同时输出细项，防止“哈希一样但其他字段不同”被误判。
+
+TCP 忽略地址、端口、序列号、确认号、校验和以及时间戳数值；保留时间戳是否存在、选项顺序、窗口、MSS、WS、SACK、TTL、DF 等。**TTL/MSS 差异不会自动以网络变化为由豁免。**
+
+这些是明确的测量范围，不覆盖所有未知指纹。运行时报告不记录明文 Cookie、请求体、TLS 私钥或会话密钥。
+
+## 当前边界
+
+* TCP 栈仍属于 B；只有 MSS/TTL 可显式设置。没有自动推测客户端 OS 或复制窗口缩放/拥塞控制/重传策略。
+* TLS backend 不支持的套件、组、签名算法和扩展会被报告；未知扩展不原样注入加密握手。TLS 1.0/1.1 不支持。
+* ALPS、真实 ECH 内层、客户端证书认证、跨连接 TLS 会话恢复/0-RTT、HelloRetryRequest 后的完整握手指纹未实现一致性。报告只解析首个 ClientHello。不使用固定 User-Agent 模板冒充实测。
+* HTTP/2 的 HPACK 被重新编码为 never-indexed literal，以免重写引发两侧动态表失同步。头部语义、顺序与控制帧保留，**压缩方式、头部块大小及 CONTINUATION 分片边界可能改变**。单帧/单头部块限制 1 MiB，解码动态表上限 64 KiB。
+* 不支持 HTTP/3/QUIC、HTTP Upgrade/WebSocket、CONNECT、HTTP/2 server push。HTTP/1.1 只接受 origin-form/OPTIONS `*`，拒绝 CL+TE、重复 Content-Length 和 obs-fold。
+* 这是有界缓冲、并发限制和证书验证的原型，还没有生产负载或恶意流量审计。新增客户端/依赖版本必须重跑验收。
+
+## 参考
+
+* [TLS 1.3 / RFC 8446](https://www.rfc-editor.org/rfc/rfc8446.html)
+* [HTTP/2 / RFC 9113](https://www.rfc-editor.org/rfc/rfc9113.html)
+* [HPACK / RFC 7541](https://www.rfc-editor.org/rfc/rfc7541.html)
+* [JA3 算法](https://github.com/salesforce/ja3)
+* [JA4 TLS 指纹规范](https://github.com/FoxIO-LLC/ja4/blob/main/technical_details/JA4.md)
+* [btls](https://github.com/0x676e67/btls)
+
+JA3/JA4 算法在本项目中独立实现；未复制 JA4+ 的非开源实现。本项目不实现 JA4H/JA4T 品牌算法，而是直接比较所列 HTTP/TCP 字段。

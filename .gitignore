@@ -1,0 +1,13 @@
+/target/
+/captures/
+/certs/
+/reports/
+*.key
+*.pem
+*.pcap
+*.pcapng
+*.keylog
+__pycache__/
+.venv/
+/test-results/ci-*/
+/test-results/server-lab/
