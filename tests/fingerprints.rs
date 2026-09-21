@@ -608,3 +608,26 @@ async fn native_tls_mirror_preserves_supported_client_profile() {
         differences(&incoming.evidence(), &outgoing.evidence())
     );
 }
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_interleaved_ciphers_scsv_and_padding_presence() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    incoming.ciphers = vec![0xc02f, 0x1302, 0xc02b, 0x1301, 0xff, 0x1303];
+    incoming.extensions.retain(|id| *id != 65281 && *id != 21);
+    for padding in [false, true] {
+        if padding {
+            incoming.extensions.push(21);
+        }
+        let (ssl, limitations) =
+            fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+        assert!(!limitations.iter().any(|s| s.contains("SCSV")));
+        let outgoing = emitted_hello(ssl).await;
+        assert_eq!(incoming.ciphers, outgoing.ciphers);
+        assert!(!outgoing.extensions.contains(&65281));
+        assert_eq!(outgoing.extensions.contains(&21), padding);
+    }
+}
