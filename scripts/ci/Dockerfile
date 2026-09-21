@@ -23,8 +23,8 @@ COPY scripts ./scripts
 RUN if [ -f /etc/alpine-release ]; then \
       mkdir -p .cargo && printf '[build]\nrustflags = ["-C", "target-feature=-crt-static"]\n' > .cargo/config.toml; \
     fi \
-    && cargo build --locked --bin fingerprint-bridge --example language-client \
-    && cargo test --locked --no-run \
+    && sh scripts/cargo-tls.sh build --locked --bin fingerprint-bridge --example language-client \
+    && sh scripts/cargo-tls.sh test --locked --no-run \
     && mkdir -p target/matrix-clients \
     && go build -o target/matrix-clients/go-client scripts/clients/go_client.go \
     && javac -d target/matrix-clients scripts/clients/JavaClient.java
