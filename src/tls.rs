@@ -1,8 +1,8 @@
 use crate::fingerprint::{grease, TlsHello};
 use anyhow::{ensure, Result};
 use btls::ssl::{
-    CertificateCompressionAlgorithm, CertificateCompressor, ExtensionType, KeyShare, SslCipher,
-    SslConnector, SslMethod, SslOptions, SslSignatureAlgorithm, SslVersion,
+    CertificateCompressionAlgorithm, CertificateCompressor, ExtensionType, SslCipher, SslConnector,
+    SslMethod, SslOptions, SslSignatureAlgorithm, SslVersion,
 };
 use std::path::Path;
 
@@ -50,13 +50,19 @@ fn group(id: u16) -> Option<&'static str> {
         25 => Some("P-521"),
         29 => Some("X25519"),
         4588 => Some("X25519MLKEM768"),
+        #[cfg(feature = "patched-tls")]
+        4587 => Some("SecP256r1MLKEM768"),
+        #[cfg(feature = "patched-tls")]
+        4589 => Some("SecP384r1MLKEM1024"),
         25497 => Some("X25519Kyber768Draft00"),
         256 => Some("ffdhe2048"),
         257 => Some("ffdhe3072"),
         _ => None,
     }
 }
-fn share(id: u16) -> Option<KeyShare> {
+#[cfg(not(feature = "patched-tls"))]
+fn share(id: u16) -> Option<btls::ssl::KeyShare> {
+    use btls::ssl::KeyShare;
     match id {
         23 => Some(KeyShare::P256),
         24 => Some(KeyShare::P384),
@@ -68,6 +74,15 @@ fn share(id: u16) -> Option<KeyShare> {
         257 => Some(KeyShare::FFDHE3072),
         _ => None,
     }
+}
+
+/// Retain legacy TLS 1.2 cipher compatibility while accepting TLS 1.3.
+/// btls's historical Mozilla v4 profile sets NO_TLSV1_3 explicitly.
+pub fn server_builder() -> Result<btls::ssl::SslAcceptorBuilder> {
+    let mut builder = btls::ssl::SslAcceptor::mozilla_intermediate(SslMethod::tls())?;
+    builder.clear_options(SslOptions::NO_TLSV1_3);
+    builder.set_min_proto_version(Some(SslVersion::TLS1_2))?;
+    Ok(builder)
 }
 
 /// Configure from observed wire features, never from User-Agent or an OS guess.
@@ -82,7 +97,16 @@ pub fn mirror(
     if let Some(ca) = ca {
         b.set_ca_file(ca)?;
     }
-    b.set_min_proto_version(Some(SslVersion::TLS1_2))?;
+    let only_tls13 = hello.supported_versions.contains(&0x0304)
+        && !hello
+            .supported_versions
+            .iter()
+            .any(|version| !grease(*version) && *version < 0x0304);
+    b.set_min_proto_version(Some(if only_tls13 {
+        SslVersion::TLS1_3
+    } else {
+        SslVersion::TLS1_2
+    }))?;
     if !hello.supported_versions.contains(&0x0304) {
         b.set_max_proto_version(Some(SslVersion::TLS1_2))?;
     }
@@ -189,7 +213,9 @@ pub fn mirror(
         }
     }
     let connector = b.build();
-    let mut ssl = connector.configure()?.into_ssl(host)?;
+    let ssl = connector.configure()?.into_ssl(host)?;
+    #[cfg(not(feature = "patched-tls"))]
+    let mut ssl = ssl;
     #[cfg(feature = "patched-tls")]
     {
         use foreign_types::ForeignType;
@@ -219,13 +245,41 @@ pub fn mirror(
         };
         ensure!(configured == 1, "patched TLS profile rejected");
     }
-    let shares: Vec<_> = hello
-        .key_share_groups
-        .iter()
-        .filter_map(|id| share(*id))
-        .collect();
-    if !shares.is_empty() {
-        ssl.set_client_key_shares(&shares)?;
+    #[cfg(feature = "patched-tls")]
+    {
+        use foreign_types::ForeignType;
+        unsafe extern "C" {
+            fn SSL_set1_client_key_shares(
+                ssl: *mut std::ffi::c_void,
+                groups: *const u16,
+                count: usize,
+            ) -> std::ffi::c_int;
+        }
+        let shares: Vec<_> = hello
+            .key_share_groups
+            .iter()
+            .copied()
+            .filter(|id| group(*id).is_some())
+            .collect();
+        if !shares.is_empty() {
+            // btls's KeyShare wrapper does not expose these new wire IDs.
+            // The native API validates and copies them, and generates fresh keys.
+            let ok = unsafe {
+                SSL_set1_client_key_shares(ssl.as_ptr().cast(), shares.as_ptr(), shares.len())
+            };
+            ensure!(ok == 1, "patched TLS key shares rejected");
+        }
+    }
+    #[cfg(not(feature = "patched-tls"))]
+    {
+        let shares: Vec<_> = hello
+            .key_share_groups
+            .iter()
+            .filter_map(|id| share(*id))
+            .collect();
+        if !shares.is_empty() {
+            ssl.set_client_key_shares(&shares)?;
+        }
     }
     ssl.set_enable_ech_grease(hello.extensions.contains(&65037));
     // ALPS carries HTTP/2 settings outside HTTP frames. Do not invent settings;
