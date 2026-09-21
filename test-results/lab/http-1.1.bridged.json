@@ -1,0 +1,112 @@
+{
+  "tls": {
+    "fields": {
+      "alpn": [
+        "687474702f312e31"
+      ],
+      "cert_compression": [],
+      "ciphers": [
+        4866,
+        4867,
+        4865,
+        49196,
+        49200,
+        49195,
+        49199,
+        52393,
+        52392,
+        49188,
+        49192,
+        49187,
+        159,
+        158,
+        107,
+        103
+      ],
+      "compression": [
+        0
+      ],
+      "extensions": [
+        65281,
+        0,
+        11,
+        10,
+        35,
+        16,
+        23,
+        13,
+        43,
+        45,
+        51
+      ],
+      "groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "key_share_groups": [
+        4588,
+        29
+      ],
+      "key_share_lengths": [
+        1216,
+        32
+      ],
+      "legacy_version": 771,
+      "other_extensions": [
+        [
+          65281,
+          "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+        ],
+        [
+          23,
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        ]
+      ],
+      "point_formats": [
+        0
+      ],
+      "psk_modes": [
+        1
+      ],
+      "signature_algorithms": [
+        1027,
+        1283,
+        1539,
+        2055,
+        2052,
+        2053,
+        2054,
+        1025,
+        1281,
+        1537
+      ],
+      "sni_present": true,
+      "supported_versions": [
+        772,
+        771
+      ]
+    },
+    "ja3": "2f1bd7b96dfc534f6fc572aea37c99fc",
+    "ja3_string": "771,4866-4867-4865-49196-49200-49195-49199-52393-52392-49188-49192-49187-159-158-107-103,65281-0-11-10-35-16-23-13-43-45-51,4588-29-23-24-25-256-257,0",
+    "ja4": "t13d1611h1_de6911fb999f_e9aa652fc668"
+  },
+  "http": {
+    "protocol": "HTTP/1.1",
+    "requests": [
+      {
+        "head": "GET /test%2Fpath?q=1 HTTP/1.1\r\nhOsT:\ta.test:45725 \r\nX-Order-Z: z\r\nCookie: sid=from_B; flag=yes\r\nReferer: https://a.test:45725/home\r\nX-Order-A: a\r\n\r\n",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "head": "POST /test%2Fpath?q=1 HTTP/1.1\r\nhOsT:\ta.test:45725 \r\nX-Order-Z: z\r\nCookie: sid=from_B; flag=yes\r\nReferer: https://a.test:45725/home\r\nX-Order-A: a\r\nContent-Length: 7\r\n\r\n",
+        "body_sha256": "5e045ce557f3fe1ce28b13defdd99033938b58c2040d3cbf99b3dc6d1eff571d"
+      }
+    ]
+  },
+  "tcp": null
+}

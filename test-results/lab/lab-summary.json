@@ -1,0 +1,428 @@
+{
+  "lab_pass": true,
+  "scope": "loopback Python/OpenSSL client, HTTP/1.1 and HTTP/2; no Chrome/Firefox/Safari certification",
+  "results": [
+    {
+      "protocol": "http/1.1",
+      "http_match": true,
+      "tls": {
+        "differences": [
+          {
+            "baseline": [
+              4866,
+              4867,
+              4865,
+              49196,
+              49200,
+              49195,
+              49199,
+              52393,
+              52392,
+              49188,
+              49192,
+              49187,
+              49191,
+              159,
+              158,
+              107,
+              103
+            ],
+            "field": "/tls/fields/ciphers",
+            "observed": [
+              4866,
+              4867,
+              4865,
+              49196,
+              49200,
+              49195,
+              49199,
+              52393,
+              52392,
+              49188,
+              49192,
+              49187,
+              159,
+              158,
+              107,
+              103
+            ]
+          },
+          {
+            "baseline": [
+              65281,
+              0,
+              11,
+              10,
+              35,
+              16,
+              22,
+              23,
+              13,
+              43,
+              45,
+              51
+            ],
+            "field": "/tls/fields/extensions",
+            "observed": [
+              65281,
+              0,
+              11,
+              10,
+              35,
+              16,
+              23,
+              13,
+              43,
+              45,
+              51
+            ]
+          },
+          {
+            "baseline": [
+              4588,
+              29,
+              23,
+              30,
+              24,
+              25,
+              256,
+              257
+            ],
+            "field": "/tls/fields/groups",
+            "observed": [
+              4588,
+              29,
+              23,
+              24,
+              25,
+              256,
+              257
+            ]
+          },
+          {
+            "baseline": [
+              [
+                65281,
+                "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+              ],
+              [
+                22,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ],
+              [
+                23,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            ],
+            "field": "/tls/fields/other_extensions",
+            "observed": [
+              [
+                65281,
+                "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+              ],
+              [
+                23,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            ]
+          },
+          {
+            "baseline": [
+              0,
+              1,
+              2
+            ],
+            "field": "/tls/fields/point_formats",
+            "observed": [
+              0
+            ]
+          },
+          {
+            "baseline": [
+              2309,
+              2310,
+              2308,
+              1027,
+              1283,
+              1539,
+              2055,
+              2056,
+              2074,
+              2075,
+              2076,
+              2057,
+              2058,
+              2059,
+              2052,
+              2053,
+              2054,
+              1025,
+              1281,
+              1537,
+              771,
+              769,
+              770,
+              1026,
+              1282,
+              1538
+            ],
+            "field": "/tls/fields/signature_algorithms",
+            "observed": [
+              1027,
+              1283,
+              1539,
+              2055,
+              2052,
+              2053,
+              2054,
+              1025,
+              1281,
+              1537
+            ]
+          },
+          {
+            "baseline": "37f7d09ced1a845dc48872abc1a29d7b",
+            "field": "/tls/ja3",
+            "observed": "2f1bd7b96dfc534f6fc572aea37c99fc"
+          },
+          {
+            "baseline": "771,4866-4867-4865-49196-49200-49195-49199-52393-52392-49188-49192-49187-49191-159-158-107-103,65281-0-11-10-35-16-22-23-13-43-45-51,4588-29-23-30-24-25-256-257,0-1-2",
+            "field": "/tls/ja3_string",
+            "observed": "771,4866-4867-4865-49196-49200-49195-49199-52393-52392-49188-49192-49187-159-158-107-103,65281-0-11-10-35-16-23-13-43-45-51,4588-29-23-24-25-256-257,0"
+          },
+          {
+            "baseline": "t13d1712h1_ab0a1bf427ad_8e6e362c5eac",
+            "field": "/tls/ja4",
+            "observed": "t13d1611h1_de6911fb999f_e9aa652fc668"
+          }
+        ],
+        "missing_layers": [],
+        "pass": false,
+        "schema_version": 1,
+        "scope": [
+          "tls"
+        ]
+      },
+      "tcp": "not captured: raw-socket privileges required",
+      "independent_origin_capture": true
+    },
+    {
+      "protocol": "h2",
+      "http_match": true,
+      "tls": {
+        "differences": [
+          {
+            "baseline": [
+              4866,
+              4867,
+              4865,
+              49196,
+              49200,
+              49195,
+              49199,
+              52393,
+              52392,
+              49188,
+              49192,
+              49187,
+              49191,
+              159,
+              158,
+              107,
+              103
+            ],
+            "field": "/tls/fields/ciphers",
+            "observed": [
+              4866,
+              4867,
+              4865,
+              49196,
+              49200,
+              49195,
+              49199,
+              52393,
+              52392,
+              49188,
+              49192,
+              49187,
+              159,
+              158,
+              107,
+              103
+            ]
+          },
+          {
+            "baseline": [
+              65281,
+              0,
+              11,
+              10,
+              35,
+              16,
+              22,
+              23,
+              13,
+              43,
+              45,
+              51
+            ],
+            "field": "/tls/fields/extensions",
+            "observed": [
+              65281,
+              0,
+              11,
+              10,
+              35,
+              16,
+              23,
+              13,
+              43,
+              45,
+              51
+            ]
+          },
+          {
+            "baseline": [
+              4588,
+              29,
+              23,
+              30,
+              24,
+              25,
+              256,
+              257
+            ],
+            "field": "/tls/fields/groups",
+            "observed": [
+              4588,
+              29,
+              23,
+              24,
+              25,
+              256,
+              257
+            ]
+          },
+          {
+            "baseline": [
+              [
+                65281,
+                "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+              ],
+              [
+                22,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ],
+              [
+                23,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            ],
+            "field": "/tls/fields/other_extensions",
+            "observed": [
+              [
+                65281,
+                "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+              ],
+              [
+                23,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            ]
+          },
+          {
+            "baseline": [
+              0,
+              1,
+              2
+            ],
+            "field": "/tls/fields/point_formats",
+            "observed": [
+              0
+            ]
+          },
+          {
+            "baseline": [
+              2309,
+              2310,
+              2308,
+              1027,
+              1283,
+              1539,
+              2055,
+              2056,
+              2074,
+              2075,
+              2076,
+              2057,
+              2058,
+              2059,
+              2052,
+              2053,
+              2054,
+              1025,
+              1281,
+              1537,
+              771,
+              769,
+              770,
+              1026,
+              1282,
+              1538
+            ],
+            "field": "/tls/fields/signature_algorithms",
+            "observed": [
+              1027,
+              1283,
+              1539,
+              2055,
+              2052,
+              2053,
+              2054,
+              1025,
+              1281,
+              1537
+            ]
+          },
+          {
+            "baseline": "37f7d09ced1a845dc48872abc1a29d7b",
+            "field": "/tls/ja3",
+            "observed": "2f1bd7b96dfc534f6fc572aea37c99fc"
+          },
+          {
+            "baseline": "771,4866-4867-4865-49196-49200-49195-49199-52393-52392-49188-49192-49187-49191-159-158-107-103,65281-0-11-10-35-16-22-23-13-43-45-51,4588-29-23-30-24-25-256-257,0-1-2",
+            "field": "/tls/ja3_string",
+            "observed": "771,4866-4867-4865-49196-49200-49195-49199-52393-52392-49188-49192-49187-159-158-107-103,65281-0-11-10-35-16-23-13-43-45-51,4588-29-23-24-25-256-257,0"
+          },
+          {
+            "baseline": "t13d1712h2_ab0a1bf427ad_8e6e362c5eac",
+            "field": "/tls/ja4",
+            "observed": "t13d1611h2_de6911fb999f_e9aa652fc668"
+          }
+        ],
+        "missing_layers": [],
+        "pass": false,
+        "schema_version": 1,
+        "scope": [
+          "tls"
+        ]
+      },
+      "tcp": "not captured: raw-socket privileges required",
+      "independent_origin_capture": true
+    }
+  ],
+  "security_checks": [
+    {
+      "case": "wrong_hostname",
+      "rejected_before_http": true
+    },
+    {
+      "case": "untrusted_ca",
+      "rejected_before_http": true
+    },
+    {
+      "case": "strict_tls",
+      "rejected_before_http": true
+    }
+  ]
+}
