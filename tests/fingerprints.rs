@@ -631,3 +631,50 @@ async fn patched_tls_preserves_interleaved_ciphers_scsv_and_padding_presence() {
         assert_eq!(outgoing.extensions.contains(&21), padding);
     }
 }
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_nist_mlkem_groups_and_share_shapes() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    // Shape of modern Go's group preference list, with both new shares selected
+    // to verify native generation, not merely supported_groups advertisement.
+    incoming.groups = vec![4588, 4587, 4589, 29, 23, 24, 25];
+    incoming.key_share_groups = vec![4587, 4589];
+    incoming.key_share_lengths = vec![1249, 1665];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations.is_empty(), "{limitations:?}");
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.groups, outgoing.groups);
+    assert_eq!(incoming.key_share_groups, outgoing.key_share_groups);
+    assert_eq!(incoming.key_share_lengths, outgoing.key_share_lengths);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_accepts_tls13_only_profile_without_legacy_suites() {
+    use btls::ssl::{SslConnector, SslMethod, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_min_proto_version(Some(SslVersion::TLS1_3)).unwrap();
+    c.set_preserve_tls13_cipher_list(true);
+    c.set_strict_cipher_list("TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256")
+        .unwrap();
+    c.set_curves_list("X25519").unwrap();
+    let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    assert_eq!(incoming.ciphers, [0x1302, 0x1301]);
+    assert_eq!(incoming.supported_versions, [0x0304]);
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations.is_empty(), "{limitations:?}");
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.ciphers, outgoing.ciphers);
+    assert_eq!(incoming.supported_versions, outgoing.supported_versions);
+
+    let mut invalid = SslConnector::builder(SslMethod::tls()).unwrap();
+    invalid.set_preserve_tls13_cipher_list(true);
+    assert!(invalid.set_strict_cipher_list("").is_err());
+    assert!(invalid
+        .set_strict_cipher_list("TLS_AES_128_GCM_SHA256:NOT-A-CIPHER")
+        .is_err());
+}
