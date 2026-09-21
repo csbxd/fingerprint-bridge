@@ -155,6 +155,12 @@ pub fn mirror(
     const SIGNATURES: &[u16] = &[
         0x0201, 0x0203, 0x0401, 0x0501, 0x0601, 0x0403, 0x0503, 0x0603, 0x0804, 0x0805, 0x0806,
         0x0807,
+        #[cfg(feature = "patched-tls")]
+        0x0904,
+        #[cfg(feature = "patched-tls")]
+        0x0905,
+        #[cfg(feature = "patched-tls")]
+        0x0906,
     ];
     let mut signatures = vec![];
     for id in &hello.signature_algorithms {
