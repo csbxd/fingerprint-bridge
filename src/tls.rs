@@ -76,12 +76,17 @@ fn share(id: u16) -> Option<btls::ssl::KeyShare> {
     }
 }
 
-/// Retain legacy TLS 1.2 cipher compatibility while accepting TLS 1.3.
+/// Match the origin's negotiated version on the incoming connection.
 /// btls's historical Mozilla v4 profile sets NO_TLSV1_3 explicitly.
-pub fn server_builder() -> Result<btls::ssl::SslAcceptorBuilder> {
+pub fn server_builder(version: SslVersion) -> Result<btls::ssl::SslAcceptorBuilder> {
+    ensure!(
+        version == SslVersion::TLS1_2 || version == SslVersion::TLS1_3,
+        "unsupported negotiated origin TLS version"
+    );
     let mut builder = btls::ssl::SslAcceptor::mozilla_intermediate(SslMethod::tls())?;
     builder.clear_options(SslOptions::NO_TLSV1_3);
-    builder.set_min_proto_version(Some(SslVersion::TLS1_2))?;
+    builder.set_min_proto_version(Some(version))?;
+    builder.set_max_proto_version(Some(version))?;
     Ok(builder)
 }
 

@@ -215,7 +215,8 @@ async fn handle_connection(
                         tracing::info!(connection=%id,tls_match=comparison["pass"]==true,differences=comparison["differences"].as_array().map_or(0,|v|v.len()),limitations=?limitations,"TLS comparison");
                         ensure!(!cfg.strict_tls||comparison["pass"]==true,"strict TLS comparison failed; no HTTP forwarded");
                         let selected=upstream.ssl().selected_alpn_protocol().unwrap_or(b"http/1.1").to_vec();ensure!(selected==b"h2"||selected==b"http/1.1","unsupported upstream ALPN");
-                        let mut accept=tls::server_builder()?;accept.set_certificate(&chain[0])?;
+                        let version=upstream.ssl().version2().context("missing negotiated origin TLS version")?;
+                        let mut accept=tls::server_builder(version)?;accept.set_certificate(&chain[0])?;
                         for c in chain.iter().skip(1){accept.add_extra_chain_cert(c.clone())?;}accept.set_private_key(&key)?;accept.check_private_key()?;
                         let chosen=selected.clone();accept.set_alpn_select_callback(move|_,offers|{let mut p=0;while p<offers.len(){let n=offers[p] as usize;p+=1;if p+n>offers.len(){return Err(AlpnError::ALERT_FATAL)}
 if offers[p..p+n]==chosen{return Ok(&offers[p..p+n])}p+=n;}Err(AlpnError::NOACK)});
