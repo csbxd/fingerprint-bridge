@@ -81,6 +81,9 @@ jobs:
           if [ "$ENFORCE" != true ]; then args+=(--report-only); fi
           image_id=$(docker image inspect fingerprint-matrix --format '{{.Id}}')
           docker image inspect fingerprint-matrix > test-results/ci-matrix/image.json
+          # Container root has no DAC_OVERRIDE; grant access only to root and the runner group.
+          chmod 0770 test-results/ci-matrix
+          sudo chown "0:$(id -g)" test-results/ci-matrix
           docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
             --security-opt no-new-privileges \
             -e MATRIX_ARCH -e MATRIX_DISTRO -e MATRIX_IMAGE_ID="$image_id" \
