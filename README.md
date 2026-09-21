@@ -119,7 +119,7 @@ docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
 
 运行期间只使用容器 loopback，`NET_RAW` 用于 SYN 采集，不需要 `--privileged`。本地没有原始套接字权限时可运行 `--no-capture --report-only` 调试客户端，但这类报告始终标记 TCP 缺失，不能用于完整验收。Python 标准库没有 HTTP/2 客户端，所以 Python/h2 不作为假“跳过即通过”的组合；既有 Python/hpack 协议测试仍保留。
 
-本轮修复与本地前后对比见 [指纹修复验证记录](test-results/FINGERPRINT-FIX-VALIDATION.md)；完整跨环境结果以 Actions 实际运行报告为准。
+HPACK 修复与前后对比见 [第一轮验证记录](test-results/FINGERPRINT-FIX-VALIDATION.md)；后续 TLS 后端修复和同请求对照见 [TLS 后端验证记录](test-results/TLS-BACKEND-VALIDATION.md)。完整跨环境结果以各记录链接的 Actions 实际运行报告为准。
 
 ## 在 Linux 服务器抓包验收
 
