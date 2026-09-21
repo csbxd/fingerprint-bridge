@@ -1,8 +1,8 @@
 use crate::fingerprint::{grease, TlsHello};
 use anyhow::{ensure, Result};
 use btls::ssl::{
-    CertificateCompressionAlgorithm, CertificateCompressor, ExtensionType, KeyShare, SslConnector,
-    SslMethod, SslOptions, SslSignatureAlgorithm, SslVersion,
+    CertificateCompressionAlgorithm, CertificateCompressor, ExtensionType, KeyShare, SslCipher,
+    SslConnector, SslMethod, SslOptions, SslSignatureAlgorithm, SslVersion,
 };
 use std::path::Path;
 
@@ -86,25 +86,15 @@ pub fn mirror(
     if !hello.supported_versions.contains(&0x0304) {
         b.set_max_proto_version(Some(SslVersion::TLS1_2))?;
     }
-    b.set_cipher_list("ALL")?;
-    let mut catalog: std::collections::HashMap<_, _> = b
-        .ciphers()
-        .unwrap()
-        .iter()
-        .map(|c| (c.protocol_id(), c.name().to_string()))
-        .collect();
-    // SSL_CTX_get_ciphers enumerates the legacy list; TLS 1.3 has a separate
-    // internal table even though the patched setter accepts these names.
-    catalog.insert(0x1301, "TLS_AES_128_GCM_SHA256".into());
-    catalog.insert(0x1302, "TLS_AES_256_GCM_SHA384".into());
-    catalog.insert(0x1303, "TLS_CHACHA20_POLY1305_SHA256".into());
     let mut ciphers = vec![];
     for id in &hello.ciphers {
         if grease(*id) || *id == 0xff {
             continue;
         }
-        if let Some(name) = catalog.get(id) {
-            ciphers.push(name.clone())
+        // ALL is a policy alias, not a capability catalog: it excludes 0xc027
+        // and 3DES even when explicitly offered by this client and supported.
+        if let Some(cipher) = SslCipher::from_value(*id) {
+            ciphers.push(cipher.name().to_string())
         } else {
             limitations.push(format!("unsupported cipher {id}"))
         }
