@@ -3,12 +3,13 @@ import copy
 import json
 from pathlib import Path
 import socket
+import subprocess
 import tempfile
 import threading
 import time
 import unittest
 
-from lab import hello_peek
+from lab import certificates, hello_peek
 from matrix_config import ARCHITECTURES, CASES, DISTRIBUTIONS, LAYERS, SAMPLES
 from matrix_lab import classify
 from matrix_report import collect, inspect_summary, layer_status
@@ -104,6 +105,19 @@ class CoverageTests(unittest.TestCase):
             document["environment"]["architecture"] = "aarch64"
             with self.assertRaisesRegex(AssertionError, "architecture"):
                 inspect_summary(document, directory)
+
+
+class CertificateTests(unittest.TestCase):
+    def test_lab_certificates_pass_strict_server_auth(self):
+        # Python 3.13+ enables X509_STRICT by default. Keep validation enabled.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            certificates(root)
+            for name in ("a", "b"):
+                checked = subprocess.run(["openssl", "verify", "-x509_strict", "-purpose", "sslserver",
+                    "-verify_hostname", f"{name}.test", "-CAfile", str(root / "ca.pem"),
+                    str(root / f"{name}.pem")], capture_output=True, text=True)
+                self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
 
 
 class HelloCaptureTests(unittest.TestCase):

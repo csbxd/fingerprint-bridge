@@ -303,6 +303,9 @@ def main():
                                   client, protocol, None if args.no_capture else args.capture_interface)
                 results.append(result)
                 print(f"{client:6} {protocol:8} {result['status']}", flush=True)
+                for error_key in ("error", "evidence_error"):
+                    if result.get(error_key):
+                        print(result[error_key], flush=True)
     summary = {"schema_version": 1, "environment": environment(), "results": results,
                "fingerprint_pass": bool(results) and all(r["status"] == "match" for r in results),
                "report_only": args.report_only, "tcp_capture_requested": not args.no_capture}

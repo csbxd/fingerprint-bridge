@@ -103,10 +103,15 @@ def hello_peek(s):
 def certificates(path):
     def openssl(*args):
         subprocess.run(["openssl", *args], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-subj", "/CN=Fingerprint Bridge Lab CA", "-keyout", str(path/"ca.key"), "-out", str(path/"ca.pem"))
+    openssl("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-subj", "/CN=Fingerprint Bridge Lab CA",
+            "-addext", "basicConstraints=critical,CA:TRUE,pathlen:0",
+            "-addext", "keyUsage=critical,keyCertSign,cRLSign", "-addext", "subjectKeyIdentifier=hash",
+            "-keyout", str(path/"ca.key"), "-out", str(path/"ca.pem"))
     for name in ["a", "b"]:
         openssl("req", "-new", "-newkey", "rsa:2048", "-nodes", "-subj", f"/CN={name}.test", "-keyout", str(path/f"{name}.key"), "-out", str(path/f"{name}.csr"))
-        (path/f"{name}.ext").write_text(f"subjectAltName=DNS:{name}.test\n")
+        (path/f"{name}.ext").write_text(f"subjectAltName=DNS:{name}.test\n"
+            "basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n"
+            "extendedKeyUsage=serverAuth\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid,issuer\n")
         openssl("x509", "-req", "-in", str(path/f"{name}.csr"), "-CA", str(path/"ca.pem"), "-CAkey", str(path/"ca.key"), "-CAcreateserial", "-days", "1", "-extfile", str(path/f"{name}.ext"), "-out", str(path/f"{name}.pem"))
 
 class Origin:
