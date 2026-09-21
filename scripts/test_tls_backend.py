@@ -5,6 +5,7 @@ import socket
 import ssl
 import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 from lab import Origin, certificates, exact, head, start_bridge
@@ -12,6 +13,49 @@ from matrix_lab import MatrixOrigin, client_command, ROOT
 
 
 class BackendHandshakeTests(unittest.TestCase):
+    def test_mldsa_certificate_verify_and_tampered_chain_rejection(self):
+        binary = ROOT / 'target/debug/fingerprint-bridge'
+        probe = ROOT / 'target/matrix-clients/mldsa-probe'
+        self.assertTrue(probe.is_file(), 'build scripts/clients/mldsa_probe.go first')
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary); certificates(path)
+            for tamper in (False, True):
+                with self.subTest(tampered_certificate_signature=tamper):
+                    case = path / ('tampered' if tamper else 'valid'); case.mkdir()
+                    command = [str(probe), 'origin', '--dir', str(case)]
+                    if tamper: command.append('--tamper-certificate-signature')
+                    origin = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    proc = log = None
+                    try:
+                        ready = json.loads(origin.stdout.readline())
+                        with (path / 'ca.pem').open('ab') as bundle, Path(ready['ca']).open('rb') as ca:
+                            bundle.write(ca.read())
+                        upstream = SimpleNamespace(port=int(ready['address'].rsplit(':', 1)[1]))
+                        proc, port, log = start_bridge(binary, path, upstream, case / 'runtime')
+                        result = subprocess.run([str(probe), 'client', '--address', f'127.0.0.1:{port}',
+                                                 '--ca', str(path / 'ca.pem')], capture_output=True,
+                                                text=True, timeout=30)
+                        origin_output, origin_error = origin.communicate(timeout=30)
+                        peer = json.loads(origin_output.strip().splitlines()[-1])
+                        if tamper:
+                            self.assertNotEqual(result.returncode, 0, result.stdout)
+                            self.assertFalse(peer['handshake'])
+                            self.assertFalse(peer['http'])
+                            self.assertTrue(peer['error'], origin_error)
+                        else:
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertTrue(peer['handshake'])
+                            self.assertTrue(peer['http'])
+                            outgoing, = (case / 'runtime').glob('*.outbound.json')
+                            signatures = json.loads(outgoing.read_text())['tls']['fields']['signature_algorithms']
+                            self.assertEqual(signatures[:3], [0x0904, 0x0905, 0x0906])
+                    finally:
+                        if proc:
+                            proc.terminate(); proc.wait(timeout=5)
+                        if log: log.close()
+                        if origin.poll() is None:
+                            origin.terminate(); origin.wait(timeout=5)
+
     def test_client_observes_the_origin_negotiated_tls_version(self):
         binary = ROOT / 'target/debug/fingerprint-bridge'
         with tempfile.TemporaryDirectory() as temporary:
