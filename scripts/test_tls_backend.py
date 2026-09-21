@@ -37,13 +37,17 @@ class BackendHandshakeTests(unittest.TestCase):
                                                 text=True, timeout=30)
                         origin_output, origin_error = origin.communicate(timeout=30)
                         peer = json.loads(origin_output.strip().splitlines()[-1])
+                        log.flush(); log.seek(0)
+                        diagnostics = (result.stdout + result.stderr + '\norigin: ' +
+                                       json.dumps(peer) + '\norigin stderr: ' + origin_error +
+                                       '\nbridge: ' + log.read())
                         if tamper:
-                            self.assertNotEqual(result.returncode, 0, result.stdout)
+                            self.assertNotEqual(result.returncode, 0, diagnostics)
                             self.assertFalse(peer['handshake'])
                             self.assertFalse(peer['http'])
                             self.assertTrue(peer['error'], origin_error)
                         else:
-                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertEqual(result.returncode, 0, diagnostics)
                             self.assertTrue(peer['handshake'])
                             self.assertTrue(peer['http'])
                             outgoing, = (case / 'runtime').glob('*.outbound.json')
