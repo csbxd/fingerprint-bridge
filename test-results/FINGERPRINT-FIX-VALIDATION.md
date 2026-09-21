@@ -11,11 +11,12 @@
 - HEADERS/CONTINUATION 保留原分片、优先级、填充与标志；长度变化先由最后一片吸收，遵守对端最大帧长。
 - TLS 不再补入客户端未发送的 renegotiation_info/psk_key_exchange_modes；明确报告无法发送 renegotiation SCSV 的限制。
 - 对固定版本 btls 的扩展排序传入完整的后端扩展表，避开其随机补齐路径及该路径中 seeds[i - offset] 的越界读取。补齐排序不等于启用扩展。
+- TLS 套件按真实编号查询后端能力，不再误把 ALL 策略别名当完整列表；修复 0xc027 的遗漏。新增真实 ClientHello 回归，Python/OpenSSL 本地套件列表现已完全一致，但其他 TLS 字段仍有差异。
 - 一致性比较规则、失败退出码、72 格覆盖要求均未放宽。
 
 ## 本地验证
 
-30 项 Rust 测试（原 24 项及新增 6 项）、11 项 Python 测试、fmt、clippy 通过。新增回归覆盖 RFC 7541 Huffman 向量/全部字节、原编码不变、动态表不同淘汰与索引修复、连续响应 Cookie/Location、分帧/对端帧限制和 TLS 额外扩展。
+31 项 Rust 测试（原 24 项及新增 7 项）、11 项 Python 测试、fmt、clippy 通过。新增回归覆盖 RFC 7541 Huffman 向量/全部字节、原编码不变、动态表不同淘汰与索引修复、连续响应 Cookie/Location、分帧/对端帧限制和 TLS 额外扩展。
 
 五种语言的 9 个真实组合均完成请求、响应、Cookie、证书校验；HTTP/1.1 五种语言一致。HTTP/2 的结果如下，比较包含实际 A 侧 HPACK SHA-256、完整头部顺序及帧布局：
 
