@@ -1,0 +1,281 @@
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index a24754f..6a37411 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -2584,6 +2584,8 @@ OPENSSL_EXPORT size_t SSL_CTX_get_num_tickets(const SSL_CTX *ctx);
+ #define SSL_GROUP_SECP521R1 25
+ #define SSL_GROUP_X25519 29
+ #define SSL_GROUP_X25519_MLKEM768 0x11ec
++#define SSL_GROUP_SECP256R1_MLKEM768 0x11eb
++#define SSL_GROUP_SECP384R1_MLKEM1024 0x11ed
+ #define SSL_GROUP_X25519_KYBER768_DRAFT00 0x6399
+ #define SSL_GROUP_MLKEM1024 0x0202
+ #define SSL_GROUP_P256_KYBER768_DRAFT00 0xfe32
+diff --git a/ssl/extensions.cc b/ssl/extensions.cc
+index 522cd6b..9826407 100644
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -103,6 +103,8 @@ static bool is_post_quantum_group(uint16_t id) {
+     case SSL_GROUP_X25519_KYBER768_DRAFT00:
+     case SSL_GROUP_P256_KYBER768_DRAFT00:
+     case SSL_GROUP_X25519_MLKEM768:
++    case SSL_GROUP_SECP256R1_MLKEM768:
++    case SSL_GROUP_SECP384R1_MLKEM1024:
+     case SSL_GROUP_MLKEM1024:
+       return true;
+     default:
+@@ -2348,8 +2350,10 @@ bool ssl_ext_key_share_parse_serverhello(SSL_HANDSHAKE *hs,
+     OPENSSL_PUT_ERROR(SSL, SSL_R_WRONG_CURVE);
+     return false;
+   }
++  *out_alert = SSL_AD_INTERNAL_ERROR;
+   if (!(*key_share_it)->Decap(out_secret, out_alert, ciphertext)) {
+-    *out_alert = SSL_AD_INTERNAL_ERROR;
++    // Preserve illegal_parameter for malformed peer key material. Overwriting
++    // it with internal_error hides a protocol validation failure on the wire.
+     return false;
+   }
+ 
+diff --git a/ssl/internal.h b/ssl/internal.h
+index 0e40f12..db8844b 100644
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -370,7 +370,7 @@ const EVP_MD *ssl_get_handshake_digest(uint16_t version,
+ // list should be ordered based on having support for AES in hardware or not.
+ bool ssl_create_cipher_list(UniquePtr<SSLCipherPreferenceList> *out_cipher_list,
+                             const bool has_aes_hw, const char *rule_str,
+-                            bool strict);
++                            bool strict, bool allow_empty = false);
+ 
+ // ssl_create_tls13_cipher_list is like |ssl_create_cipher_list| but only
+ // supports TLS 1.3 cipher suites.
+@@ -963,7 +963,7 @@ struct NamedGroup {
+ Span<const NamedGroup> NamedGroups();
+ 
+ // kNumNamedGroups is the number of supported groups.
+-constexpr size_t kNumNamedGroups = 10u;
++constexpr size_t kNumNamedGroups = 12u;
+ 
+ // DefaultSupportedGroupIds returns the list of IDs for the default groups that
+ // are supported when the caller hasn't explicitly configured supported groups.
+diff --git a/ssl/ssl_cipher.cc b/ssl/ssl_cipher.cc
+index 89d7b62..c05c28b 100644
+--- a/ssl/ssl_cipher.cc
++++ b/ssl/ssl_cipher.cc
+@@ -1244,7 +1244,7 @@ bool ssl_create_preserve_tls13_cipher_list(UniquePtr<SSLCipherPreferenceList> *o
+ 
+ bool ssl_create_cipher_list(UniquePtr<SSLCipherPreferenceList> *out_cipher_list,
+                             const bool has_aes_hw, const char *rule_str,
+-                            bool strict) {
++                            bool strict, bool allow_empty) {
+   // Return with error if nothing to do.
+   if (rule_str == nullptr || out_cipher_list == nullptr) {
+     return false;
+@@ -1386,7 +1386,7 @@ bool ssl_create_cipher_list(UniquePtr<SSLCipherPreferenceList> *out_cipher_list,
+ 
+   // Configuring an empty cipher list is an error but still updates the
+   // output.
+-  if (sk_SSL_CIPHER_num((*out_cipher_list)->ciphers.get()) == 0) {
++  if (!allow_empty && sk_SSL_CIPHER_num((*out_cipher_list)->ciphers.get()) == 0) {
+     OPENSSL_PUT_ERROR(SSL, SSL_R_NO_CIPHER_MATCH);
+     return false;
+   }
+diff --git a/ssl/ssl_key_share.cc b/ssl/ssl_key_share.cc
+index 94d83ee..bbb2cf3 100644
+--- a/ssl/ssl_key_share.cc
++++ b/ssl/ssl_key_share.cc
+@@ -18,6 +18,7 @@
+ #include <string.h>
+ 
+ #include <iterator>
++#include <type_traits>
+ #include <utility>
+ 
+ #include <openssl/bn.h>
+@@ -538,6 +539,119 @@ class MLKEM1024KeyShare : public SSLKeyShare {
+   MLKEM1024_private_key private_key_;
+ };
+ 
++// draft-ietf-tls-ecdhe-mlkem: NIST curve hybrids put ECDH first, unlike
++// X25519MLKEM768. Reuse the backend's checked EC and ML-KEM implementations.
++template <bool kP384>
++class NistMLKEMKeyShare : public SSLKeyShare {
++ public:
++  NistMLKEMKeyShare()
++      : ec_(kP384 ? EC_group_p384() : EC_group_p256(),
++            kP384 ? SSL_GROUP_SECP384R1 : SSL_GROUP_SECP256R1) {}
++
++  uint16_t GroupID() const override {
++    return kP384 ? SSL_GROUP_SECP384R1_MLKEM1024
++                 : SSL_GROUP_SECP256R1_MLKEM768;
++  }
++
++  bool Generate(CBB *out) override {
++    uint8_t public_key[kPublicKeyBytes];
++    if constexpr (kP384) {
++      MLKEM1024_generate_key(public_key, nullptr, &private_key_);
++    } else {
++      MLKEM768_generate_key(public_key, nullptr, &private_key_);
++    }
++    return ec_.Generate(out) &&
++           CBB_add_bytes(out, public_key, sizeof(public_key));
++  }
++
++  bool Encap(CBB *out_ciphertext, Array<uint8_t> *out_secret,
++             uint8_t *out_alert, Span<const uint8_t> peer_key) override {
++    *out_alert = SSL_AD_INTERNAL_ERROR;
++    if (peer_key.size() != kECBytes + kPublicKeyBytes) {
++      return InvalidPeer(out_alert);
++    }
++    std::conditional_t<kP384, MLKEM1024_public_key, MLKEM768_public_key> pub;
++    CBS encoded;
++    CBS_init(&encoded, peer_key.data() + kECBytes, kPublicKeyBytes);
++    bool valid;
++    if constexpr (kP384) {
++      valid = MLKEM1024_parse_public_key(&pub, &encoded);
++    } else {
++      valid = MLKEM768_parse_public_key(&pub, &encoded);
++    }
++    if (!valid || CBS_len(&encoded) != 0) {
++      return InvalidPeer(out_alert);
++    }
++    Array<uint8_t> ec_secret, secret;
++    if (!ec_.Encap(out_ciphertext, &ec_secret, out_alert,
++                   peer_key.first(kECBytes)) ||
++        !secret.InitForOverwrite(ec_secret.size() + MLKEM_SHARED_SECRET_BYTES)) {
++      return false;
++    }
++    OPENSSL_memcpy(secret.data(), ec_secret.data(), ec_secret.size());
++    uint8_t ciphertext[kCiphertextBytes];
++    if constexpr (kP384) {
++      MLKEM1024_encap(ciphertext, secret.data() + ec_secret.size(), &pub);
++    } else {
++      MLKEM768_encap(ciphertext, secret.data() + ec_secret.size(), &pub);
++    }
++    if (!CBB_add_bytes(out_ciphertext, ciphertext, sizeof(ciphertext))) {
++      return false;
++    }
++    *out_secret = std::move(secret);
++    return true;
++  }
++
++  bool Decap(Array<uint8_t> *out_secret, uint8_t *out_alert,
++             Span<const uint8_t> ciphertext) override {
++    *out_alert = SSL_AD_INTERNAL_ERROR;
++    if (ciphertext.size() != kECBytes + kCiphertextBytes) {
++      return InvalidPeer(out_alert);
++    }
++    Array<uint8_t> ec_secret, secret;
++    if (!ec_.Decap(&ec_secret, out_alert, ciphertext.first(kECBytes)) ||
++        !secret.InitForOverwrite(ec_secret.size() + MLKEM_SHARED_SECRET_BYTES)) {
++      return false;
++    }
++    OPENSSL_memcpy(secret.data(), ec_secret.data(), ec_secret.size());
++    int ok;
++    if constexpr (kP384) {
++      ok = MLKEM1024_decap(secret.data() + ec_secret.size(),
++                           ciphertext.data() + kECBytes, kCiphertextBytes,
++                           &private_key_);
++    } else {
++      ok = MLKEM768_decap(secret.data() + ec_secret.size(),
++                          ciphertext.data() + kECBytes, kCiphertextBytes,
++                          &private_key_);
++    }
++    // ML-KEM implicit rejection returns a pseudorandom secret for a corrupted
++    // ciphertext. TLS authenticates it via the transcript and Finished. An
++    // actual decapsulation API error is an internal_error, never a fallback.
++    if (!ok) {
++      OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
++      *out_alert = SSL_AD_INTERNAL_ERROR;
++      return false;
++    }
++    *out_secret = std::move(secret);
++    return true;
++  }
++
++ private:
++  static bool InvalidPeer(uint8_t *out_alert) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_BAD_ECPOINT);
++    *out_alert = SSL_AD_ILLEGAL_PARAMETER;
++    return false;
++  }
++  static constexpr size_t kECBytes = kP384 ? 97 : 65;
++  static constexpr size_t kPublicKeyBytes =
++      kP384 ? MLKEM1024_PUBLIC_KEY_BYTES : MLKEM768_PUBLIC_KEY_BYTES;
++  static constexpr size_t kCiphertextBytes =
++      kP384 ? MLKEM1024_CIPHERTEXT_BYTES : MLKEM768_CIPHERTEXT_BYTES;
++  ECKeyShare ec_;
++  std::conditional_t<kP384, MLKEM1024_private_key, MLKEM768_private_key>
++      private_key_;
++};
++
+ constexpr NamedGroup kNamedGroups[] = {
+     {NID_X9_62_prime256v1, SSL_GROUP_SECP256R1, "P-256", "prime256v1"},
+     {NID_secp384r1, SSL_GROUP_SECP384R1, "P-384", "secp384r1"},
+@@ -546,6 +660,9 @@ constexpr NamedGroup kNamedGroups[] = {
+     {NID_X25519Kyber768Draft00, SSL_GROUP_X25519_KYBER768_DRAFT00,
+      "X25519Kyber768Draft00", "Xyber768D00"},
+     {NID_X25519MLKEM768, SSL_GROUP_X25519_MLKEM768, "X25519MLKEM768", ""},
++    // These groups have wire identifiers and names, but no legacy OpenSSL NID.
++    {NID_undef, SSL_GROUP_SECP256R1_MLKEM768, "SecP256r1MLKEM768", "P256MLKEM768"},
++    {NID_undef, SSL_GROUP_SECP384R1_MLKEM1024, "SecP384r1MLKEM1024", "P384MLKEM1024"},
+     {NID_ML_KEM_1024, SSL_GROUP_MLKEM1024, "MLKEM1024", ""},
+     {NID_P256Kyber768Draft00, SSL_GROUP_P256_KYBER768_DRAFT00,
+      "P256Kyber768Draft00", "P256Kyber768D00"},
+@@ -563,6 +680,8 @@ Span<const NamedGroup> NamedGroups() { return kNamedGroups; }
+ Span<const uint16_t> DefaultSupportedGroupIds() {
+   static const uint16_t kDefaultSupportedGroupIds[] = {
+       SSL_GROUP_X25519_MLKEM768,
++      SSL_GROUP_SECP256R1_MLKEM768,
++      SSL_GROUP_SECP384R1_MLKEM1024,
+       SSL_GROUP_P256_KYBER768_DRAFT00,
+       SSL_GROUP_X25519,
+       SSL_GROUP_SECP256R1,
+@@ -585,6 +704,10 @@ UniquePtr<SSLKeyShare> SSLKeyShare::Create(uint16_t group_id) {
+       return MakeUnique<X25519Kyber768KeyShare>();
+     case SSL_GROUP_X25519_MLKEM768:
+       return MakeUnique<X25519MLKEM768KeyShare>();
++    case SSL_GROUP_SECP256R1_MLKEM768:
++      return MakeUnique<NistMLKEMKeyShare<false>>();
++    case SSL_GROUP_SECP384R1_MLKEM1024:
++      return MakeUnique<NistMLKEMKeyShare<true>>();
+     case SSL_GROUP_MLKEM1024:
+       return MakeUnique<MLKEM1024KeyShare>();
+     case SSL_GROUP_P256_KYBER768_DRAFT00:
+@@ -595,6 +718,9 @@ UniquePtr<SSLKeyShare> SSLKeyShare::Create(uint16_t group_id) {
+ }
+ 
+ bool ssl_nid_to_group_id(uint16_t *out_group_id, int nid) {
++  if (nid == NID_undef) {
++    return false;
++  }
+   for (const auto &group : kNamedGroups) {
+     if (group.nid == nid) {
+       *out_group_id = group.group_id;
+diff --git a/ssl/ssl_lib.cc b/ssl/ssl_lib.cc
+index d1ae025..2cf4bbc 100644
+--- a/ssl/ssl_lib.cc
++++ b/ssl/ssl_lib.cc
+@@ -2108,11 +2108,19 @@ int SSL_CTX_set_cipher_list(SSL_CTX *ctx, const char *str) {
+ int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
+   const bool has_aes_hw = ctx->aes_hw_override ? ctx->aes_hw_override_value
+                                                : EVP_has_aes_hardware();
++  bool has_tls13_ciphers = false;
+   if (ctx->preserve_tls13_cipher_list) {
+-    ssl_create_preserve_tls13_cipher_list(&ctx->tls13_cipher_list, str, true /* strict */);
+-  }    
++    if (!ssl_create_preserve_tls13_cipher_list(&ctx->tls13_cipher_list, str,
++                                               true /* strict */)) {
++      return 0;
++    }
++    has_tls13_ciphers = sk_SSL_CIPHER_num(ctx->tls13_cipher_list->ciphers.get()) != 0;
++  }
++  // A TLS 1.3-only profile legitimately has no legacy suites. Keep strict
++  // parsing errors fatal, and permit an empty legacy list only with a real,
++  // successfully configured TLS 1.3 list.
+   return ssl_create_cipher_list(&ctx->cipher_list, has_aes_hw, str,
+-                                true /* strict */);
++                                true /* strict */, has_tls13_ciphers);
+ }
+ 
+ int SSL_set_cipher_list(SSL *ssl, const char *str) {
