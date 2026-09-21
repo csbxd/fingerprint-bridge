@@ -92,6 +92,9 @@ func origin(args []string) error {
 		if err != nil { r.Error = err.Error(); emit(r); return nil }
 	}
 	if !bytes.Contains(request, []byte("Cookie: sid=from_B")) { r.Error = "B cookie missing"; emit(r); return nil }
+	_, port, err := net.SplitHostPort(listener.Addr().String())
+	if err != nil { r.Error = err.Error(); emit(r); return nil }
+	if !bytes.Contains(request, []byte("Host: a.test:"+port+"\r\n")) { r.Error = "rewritten A authority missing"; emit(r); return nil }
 	if _, err := conn.Write([]byte("HTTP/1.1 200 OK\r\nContent-Length: 7\r\nConnection: close\r\n\r\na\x00b\xffcde")); err != nil {
 		r.Error = err.Error(); emit(r); return nil
 	}
@@ -110,7 +113,10 @@ func client(args []string) error {
 	conn, err := tls.Dial("tcp", *address, &tls.Config{RootCAs: roots, ServerName: "b.test", MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13})
 	if err != nil { return err }
 	defer conn.Close()
-	if _, err := conn.Write([]byte("GET /mldsa HTTP/1.1\r\nHost: b.test\r\nCookie: sid=from_B\r\nConnection: close\r\n\r\n")); err != nil { return err }
+	_, port, err := net.SplitHostPort(*address)
+	if err != nil { return err }
+	authority := net.JoinHostPort("b.test", port)
+	if _, err := conn.Write([]byte("GET /mldsa HTTP/1.1\r\nHost: "+authority+"\r\nCookie: sid=from_B\r\nConnection: close\r\n\r\n")); err != nil { return err }
 	body, err := io.ReadAll(conn)
 	if err != nil { return err }
 	ok := bytes.Contains(body, []byte("HTTP/1.1 200")) && bytes.Contains(body, []byte("a\x00b\xffcde"))
