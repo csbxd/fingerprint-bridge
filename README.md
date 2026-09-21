@@ -27,7 +27,7 @@ sh scripts/cargo-tls.sh build --locked --release
 
 Rust 工具链锁定在 `rust-toolchain.toml`；依赖锁定在 `Cargo.lock`。底层采用 `btls` 的 BoringSSL 绑定，需要编译原生依赖。它是第三方 TLS 依赖，升级时应重跑指纹测试。
 
-推荐构建脚本启用 `patched-tls`：从 Cargo 校验过的固定版 `btls-sys 0.5.6` 源码建立隔离副本，先应用依赖自带补丁，再应用 `scripts/patches/` 中的项目补丁。补丁在握手序列化内部保留 TLS 1.3/旧套件的混排顺序、SCSV 与 padding 存在性，支持仅 TLS 1.3 的套件配置，并补齐 `SecP256r1MLKEM768` / `SecP384r1MLKEM1024` 的真实密钥交换。保留 transcript/Finished、密码学输入校验和证书验证；不修改加密后的网络字节、不宣称支持未实现算法。源文件/补丁改变会生成新的构建目录，补丁不适配时构建失败。普通 `cargo build` 仍使用未追加项目补丁的后端，不能获得这些修复；CI 使用推荐构建方式。
+推荐构建脚本启用 `patched-tls`：从 Cargo 校验过的固定版 `btls-sys 0.5.6` 源码建立隔离副本，先应用依赖自带补丁，再应用 `scripts/patches/` 中的项目补丁。补丁在握手序列化内部保留 TLS 1.3/旧套件的混排顺序、SCSV 与 padding 存在性，支持仅 TLS 1.3 的套件配置，补齐 `SecP256r1MLKEM768` / `SecP384r1MLKEM1024` 的真实密钥交换，并支持 ML-DSA-44/65/87 证书密钥解析和签名验证。保留 transcript/Finished、密码学输入校验和证书验证；不修改加密后的网络字节、不宣称支持未实现算法。源文件/补丁改变会生成新的构建目录，补丁不适配时构建失败。普通 `cargo build` 仍使用未追加项目补丁的后端，不能获得这些修复；CI 使用推荐构建方式。
 
 ## 启动 B
 
@@ -93,6 +93,8 @@ go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
 
 每个新组测试正常握手、HelloRetryRequest、错误 EC 点、错误 key_share 长度、非规范 ML-KEM 公钥、被篡改的 ML-KEM 密文、错误证书主机名。正常情况必须完成真实 TLS 1.3 握手并传输带 B Cookie 的 HTTP；畸形点/长度/公钥必须产生 `illegal_parameter`，密文篡改和错误主机名必须在 HTTP 到达 A 前失败。该测试显式限定组以强制覆盖新能力；不改变下面矩阵中的默认客户端，也不把 HRR 功能通过视为完整 HRR 指纹一致。
 
+ML-DSA 另用 Go 1.27.1 `crypto/mldsa` 独立对端生成 ML-DSA-44 CA、服务器证书和密钥：有效证书必须完成 TLS 1.3 与 HTTP，篡改证书签名必须在 HTTP 到达 A 前失败；A 同时验证 B Cookie 和改写后的 authority。它验证真实协商和签名，不只是 ClientHello 中出现算法编号。
+
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
 
 工作流 `.github/workflows/ci.yml` 在 push、pull request 和手动运行时执行。原有 Rust、HTTP/1.1、HTTP/2、证书拒绝测试保留；增加 **8 个原生环境、72 个客户端/协议组合**：
@@ -131,7 +133,7 @@ docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
 
 运行期间只使用容器 loopback，`NET_RAW` 用于 SYN 采集，不需要 `--privileged`。本地没有原始套接字权限时可运行 `--no-capture --report-only` 调试客户端，但这类报告始终标记 TCP 缺失，不能用于完整验收。Python 标准库没有 HTTP/2 客户端，所以 Python/h2 不作为假“跳过即通过”的组合；既有 Python/hpack 协议测试仍保留。
 
-HPACK 修复与前后对比见 [第一轮验证记录](test-results/FINGERPRINT-FIX-VALIDATION.md)；后续修复见 [TLS 后端验证记录](test-results/TLS-BACKEND-VALIDATION.md) 和 [混合组 / TLS 1.3 验证记录](test-results/HYBRID-GROUP-VALIDATION.md)。完整跨环境结果以各记录链接的 Actions 实际运行报告为准。
+HPACK 修复与前后对比见 [第一轮验证记录](test-results/FINGERPRINT-FIX-VALIDATION.md)；后续修复见 [TLS 后端验证记录](test-results/TLS-BACKEND-VALIDATION.md)、[混合组 / TLS 1.3 验证记录](test-results/HYBRID-GROUP-VALIDATION.md) 和 [ML-DSA 证书验证记录](test-results/MLDSA-VALIDATION.md)。完整跨环境结果以各记录链接的 Actions 实际运行报告为准。
 
 ## 在 Linux 服务器抓包验收
 
