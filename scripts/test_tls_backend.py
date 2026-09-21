@@ -1,10 +1,13 @@
-"""Real OpenSSL TLS 1.2 ServerHello/Finished regression for SCSV handling."""
+"""Real TLS negotiation regressions for the patched BoringSSL backend."""
+import base64
 import json
 from pathlib import Path
 import socket
 import ssl
 import subprocess
 import tempfile
+import textwrap
+import time
 from types import SimpleNamespace
 import unittest
 
@@ -13,6 +16,108 @@ from matrix_lab import MatrixOrigin, client_command, ROOT
 
 
 class BackendHandshakeTests(unittest.TestCase):
+    @staticmethod
+    def _rsapss_certificate(path, tamper):
+        root_key = path / 'root.key'
+        root_cert = path / 'root.pem'
+        leaf_key = path / 'leaf.key'
+        leaf_csr = path / 'leaf.csr'
+        leaf_cert = path / 'leaf.pem'
+        extensions = path / 'leaf.ext'
+        extensions.write_text('subjectAltName=DNS:a.test\n'
+                              'basicConstraints=critical,CA:FALSE\n'
+                              'keyUsage=critical,digitalSignature\n'
+                              'extendedKeyUsage=serverAuth\n')
+
+        def openssl(*args):
+            result = subprocess.run(['openssl', *args], capture_output=True, text=True, timeout=30)
+            if result.returncode:
+                raise AssertionError(result.stdout + result.stderr)
+
+        openssl('genpkey', '-algorithm', 'RSA', '-pkeyopt', 'rsa_keygen_bits:2048',
+                '-out', str(root_key))
+        openssl('req', '-x509', '-new', '-key', str(root_key), '-sha256', '-days', '1',
+                '-subj', '/CN=RSA-PSS test CA', '-addext', 'basicConstraints=critical,CA:TRUE',
+                '-addext', 'keyUsage=critical,keyCertSign', '-out', str(root_cert))
+        openssl('genpkey', '-algorithm', 'RSA-PSS', '-pkeyopt', 'rsa_keygen_bits:2048',
+                '-pkeyopt', 'rsa_pss_keygen_md:sha256',
+                '-pkeyopt', 'rsa_pss_keygen_mgf1_md:sha256',
+                '-pkeyopt', 'rsa_pss_keygen_saltlen:32', '-out', str(leaf_key))
+        openssl('req', '-new', '-key', str(leaf_key), '-subj', '/CN=a.test',
+                '-out', str(leaf_csr))
+        openssl('x509', '-req', '-in', str(leaf_csr), '-CA', str(root_cert),
+                '-CAkey', str(root_key), '-CAcreateserial', '-days', '1', '-sha256',
+                '-sigopt', 'rsa_padding_mode:pss', '-sigopt', 'rsa_pss_saltlen:digest',
+                '-extfile', str(extensions), '-out', str(leaf_cert))
+        if tamper:
+            lines = leaf_cert.read_text().strip().splitlines()
+            der = bytearray(base64.b64decode(''.join(lines[1:-1])))
+            der[-1] ^= 1  # Certificate.signatureValue, not the SPKI or extensions.
+            encoded = base64.b64encode(der).decode()
+            body = '\n'.join(textwrap.wrap(encoded, 64))
+            leaf_cert.write_text(f'-----BEGIN CERTIFICATE-----\n{body}\n'
+                                 '-----END CERTIFICATE-----\n')
+        return root_cert, leaf_cert, leaf_key
+
+    def test_rsapss_pss_certificate_verify_and_tampered_chain_rejection(self):
+        binary = ROOT / 'target/debug/fingerprint-bridge'
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary); certificates(path)
+            for tamper in (False, True):
+                with self.subTest(tampered_certificate_signature=tamper):
+                    case = path / ('pss-tampered' if tamper else 'pss-valid'); case.mkdir()
+                    root, cert, key = self._rsapss_certificate(case, tamper)
+                    with (path / 'ca.pem').open('ab') as bundle, root.open('rb') as ca:
+                        bundle.write(ca.read())
+                    with socket.socket() as reserved:
+                        reserved.bind(('127.0.0.1', 0))
+                        origin_port = reserved.getsockname()[1]
+                    origin = subprocess.Popen([
+                        'openssl', 's_server', '-accept', f'127.0.0.1:{origin_port}',
+                        '-cert', str(cert), '-key', str(key), '-www', '-tls1_3',
+                        '-trace', '-naccept', '1'
+                    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    proc = log = None
+                    try:
+                        time.sleep(0.2)
+                        self.assertIsNone(origin.poll(), origin.stdout.read() if origin.poll() else '')
+                        upstream = SimpleNamespace(port=origin_port)
+                        proc, port, log = start_bridge(binary, path, upstream, case / 'runtime')
+                        ctx = ssl.create_default_context(cafile=str(path / 'ca.pem'))
+                        response = b''
+                        error = None
+                        try:
+                            with socket.create_connection(('127.0.0.1', port), timeout=10) as raw:
+                                with ctx.wrap_socket(raw, server_hostname='b.test') as conn:
+                                    conn.sendall(f'GET / HTTP/1.1\r\nHost: b.test:{port}\r\n'
+                                                 'Cookie: sid=from_B\r\nConnection: close\r\n\r\n'.encode())
+                                    while True:
+                                        chunk = conn.recv(4096)
+                                        if not chunk: break
+                                        response += chunk
+                        except (OSError, ssl.SSLError) as exc:
+                            error = exc
+                        trace = origin.communicate(timeout=15)[0]
+                        log.flush(); log.seek(0); diagnostics = trace + '\nbridge: ' + log.read()
+                        if tamper:
+                            self.assertFalse(response.startswith(b'HTTP/1.0 200'),
+                                             diagnostics + f'\nclient error: {error!r}')
+                            self.assertIn('fatal', trace.lower(), diagnostics)
+                        else:
+                            self.assertIsNone(error, diagnostics)
+                            self.assertTrue(response.startswith(b'HTTP/1.0 200'), diagnostics)
+                            self.assertIn('rsa_pss_pss_sha256 (0x0809)', trace, diagnostics)
+                            outgoing, = (case / 'runtime').glob('*.outbound.json')
+                            signatures = json.loads(outgoing.read_text())['tls']['fields']['signature_algorithms']
+                            self.assertTrue(all(value in signatures for value in (0x0809, 0x080a, 0x080b)),
+                                            signatures)
+                    finally:
+                        if proc:
+                            proc.terminate(); proc.wait(timeout=5)
+                        if log: log.close()
+                        if origin.poll() is None:
+                            origin.terminate(); origin.wait(timeout=5)
+
     def test_mldsa_certificate_verify_and_tampered_chain_rejection(self):
         binary = ROOT / 'target/debug/fingerprint-bridge'
         probe = ROOT / 'target/matrix-clients/mldsa-probe'
