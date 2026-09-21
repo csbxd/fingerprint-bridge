@@ -6,6 +6,9 @@ rust-version = "1.85"
 description = "A measured, best-effort HTTPS domain bridge with TLS and HTTP fingerprint comparison"
 license = "MIT"
 
+[features]
+patched-tls = ["dep:foreign-types"]
+
 [dependencies]
 anyhow = "1"
 btls = "=0.5.6"
@@ -24,6 +27,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 brotli = "8"
 flate2 = "1"
+foreign-types = { version = "0.5", optional = true }
 
 [dev-dependencies]
 proptest = "1"

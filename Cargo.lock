@@ -421,6 +421,7 @@ dependencies = [
  "btls",
  "clap",
  "flate2",
+ "foreign-types",
  "hex",
  "hpack",
  "md5",

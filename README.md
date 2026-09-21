@@ -21,11 +21,13 @@ Rust HTTPS 域名中转：浏览器访问 **B**，B 请求固定的 **A**；只�
 Linux 推荐安装 Rust、C/C++ 编译器、CMake、Perl、libclang 开发文件和系统 CA：
 
 ```sh
-sudo apt-get install build-essential cmake perl libclang-dev ca-certificates pkg-config
-cargo build --locked --release
+sudo apt-get install build-essential cmake perl libclang-dev ca-certificates pkg-config python3 git
+sh scripts/cargo-tls.sh build --locked --release
 ```
 
 Rust 工具链锁定在 `rust-toolchain.toml`；依赖锁定在 `Cargo.lock`。底层采用 `btls` 的 BoringSSL 绑定，需要编译原生依赖。它是第三方 TLS 依赖，升级时应重跑指纹测试。
+
+推荐构建脚本启用 `patched-tls`：从 Cargo 校验过的固定版 `btls-sys 0.5.6` 源码建立隔离副本，先应用依赖自带补丁，再应用 `scripts/patches/bridge-tls.patch`。补丁在握手序列化内部保留 TLS 1.3/旧套件的混排顺序、SCSV 与 padding 存在性，并保留真实 transcript/Finished 和证书验证；不修改加密后的网络字节、不宣称支持未实现算法。源文件/补丁改变会生成新的构建目录，补丁不适配时构建失败。普通 `cargo build` 仍使用未追加项目补丁的后端，不能获得这些修复；CI 使用推荐构建方式。
 
 ## 启动 B
 
@@ -64,12 +66,13 @@ Rust 工具链锁定在 `rust-toolchain.toml`；依赖锁定在 `Cargo.lock`。�
 
 ```sh
 cargo fmt --check
-cargo clippy --locked --all-targets -- -D warnings
-cargo test --locked
+sh scripts/cargo-tls.sh clippy --locked --all-targets -- -D warnings
+sh scripts/cargo-tls.sh test --locked
 python3 -m venv .venv
 .venv/bin/pip install -r scripts/requirements-test.txt
-cargo build --locked
+sh scripts/cargo-tls.sh build --locked --bin fingerprint-bridge --example language-client
 .venv/bin/python scripts/lab.py
+.venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
 ```
 
 `scripts/lab.py` 建立独立的 A/B 测试证书和本机 HTTPS 站点，以同一个 Python/OpenSSL 客户端分别直连 A 和经过 B，在 A 侧采集真实 ClientHello 与解密后的 HTTP。测试覆盖 HTTP/1.1、HTTP/2、多请求、Cookie、响应重写、二进制消息体、HPACK Huffman/动态表、HEADERS 分片/优先级/填充，以及拒绝错误证书主机名、不受信 CA、strict-TLS 不匹配。
@@ -143,7 +146,9 @@ sudo .venv/bin/python scripts/lab.py \
 
 ## TLS 报告与归一化
 
-运行时 `--reports` 生成 `<id>.inbound.json`、`<id>.outbound.json` 和 `<id>.report.json`。它比较 **B 入站与 B 出站**；与独立的直连 A 基线是不同证据，不能混为一谈。运行时报表中的 HTTP/TCP 是 `null`，不会虚构在线观测。
+运行时 `--reports` 生成 `<id>.inbound.json`、`<id>.outbound.json` 和 `<id>.report.json`。它比较 **B 入站与 B 出站**；与独立的直连 A 基线是不同证据，不能混为一谈。这些 TLS 文件中的 HTTP/TCP 是 `null`，不会虚构在线观测。
+
+实验室额外开启 `--http-evidence`，在 TLS 解密后、HTTP 改写前后记录同一条连接，并生成 `<id>.http.json`。该选项默认关闭，要求 `--reports`，会记录请求 Cookie 等明文；只用于受控测试，Unix 文件权限为 0600，每侧最多 1 MiB，截断会使验证失败。独立 Python 检查器比较请求顺序、控制帧、HPACK 表示/Huffman/索引及帧布局，仅豁免允许改写的 authority/origin/referer 值和必要编码长度。矩阵新增 B-paired TLS/HTTP 列；它们不替代 A 侧的两次直连与中转比较，也不会把不稳定基线改成通过。
 
 ```sh
 ./target/release/fingerprint-bridge compare reports/ID.inbound.json reports/ID.outbound.json --layers tls
@@ -155,12 +160,12 @@ TLS 归一化忽略 ClientRandom、session-id 值、密钥字节、SNI 值、pad
 
 TCP 忽略地址、端口、序列号、确认号、校验和以及时间戳数值；保留时间戳是否存在、选项顺序、窗口、MSS、WS、SACK、TTL、DF 等。**TTL/MSS 差异不会自动以网络变化为由豁免。**
 
-这些是明确的测量范围，不覆盖所有未知指纹。运行时报告不记录明文 Cookie、请求体、TLS 私钥或会话密钥。
+这些是明确的测量范围，不覆盖所有未知指纹。默认 TLS 报告不记录明文 Cookie、请求体、TLS 私钥或会话密钥。`--http-evidence` 会额外记录有界的明文请求，请勿对真实用户流量开启。
 
 ## 当前边界
 
 * TCP 栈仍属于 B；只有 MSS/TTL 可显式设置。没有自动推测客户端 OS 或复制窗口缩放/拥塞控制/重传策略。
-* TLS backend 不支持的套件、组、签名算法和扩展会被报告；未知扩展不原样注入加密握手。缺少重协商或 PSK 扩展时不再主动补入；但 SCSV、混排 TLS 1.3/旧套件、部分签名算法/组/扩展和 padding 策略仍存在限制，TLS 矩阵尚未通过。TLS 1.0/1.1 不支持。
+* TLS backend 不支持的套件、组、签名算法和扩展会被报告；未知扩展不原样注入加密握手。缺少重协商或 PSK 扩展时不再主动补入；推荐构建已修复 SCSV、混排 TLS 1.3/旧套件和无 padding 时误添加扩展的问题；部分签名算法/组/扩展仍不支持，padding 的任意位置、HelloRetryRequest 等完整指纹仍未保证，TLS 矩阵尚未通过。TLS 1.0/1.1 不支持。
 * ALPS、真实 ECH 内层、客户端证书认证、跨连接 TLS 会话恢复/0-RTT、HelloRetryRequest 后的完整握手指纹未实现一致性。报告只解析首个 ClientHello。不使用固定 User-Agent 模板冒充实测。
 * HTTP/2 分别维护入站/出站 HPACK 状态；未改字段保留原编码，改写值沿用原 Huffman 选择和索引方式。域名长度改变造成两侧动态表淘汰不同时会修正索引，已淘汰条目必要时改为不索引字面量。原分片边界尽量保留，长度变化由最后一片吸收，超出对端 SETTINGS_MAX_FRAME_SIZE 时增加分片。因此不承诺任意域名长度下的压缩字节和帧长相同。单帧/单头部块限制 1 MiB，动态表上限 64 KiB，单块至多 1024 帧。
 * 不支持 HTTP/3/QUIC、HTTP Upgrade/WebSocket、CONNECT、HTTP/2 server push。HTTP/1.1 只接受 origin-form/OPTIONS `*`，拒绝 CL+TE、重复 Content-Length 和 obs-fold。
