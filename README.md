@@ -78,6 +78,44 @@ cargo build --locked
 
 原生 TLS 回归测试另以一个明确配置、底层支持的客户端组合生成真实 ClientHello；该组合经映射后逐字段一致。这是指定组合的回归证据，不是浏览器认证。
 
+## GitHub Actions 跨架构 / 发行版 / 语言矩阵
+
+工作流 `.github/workflows/ci.yml` 在 push、pull request 和手动运行时执行。原有 Rust、HTTP/1.1、HTTP/2、证书拒绝测试保留；增加 **8 个原生环境、72 个客户端/协议组合**：
+
+| 维度 | 覆盖 |
+| --- | --- |
+| 架构 | x86_64（`ubuntu-24.04`）、ARM64（`ubuntu-24.04-arm`）；不使用 QEMU |
+| Linux 用户态 | Ubuntu 24.04、Debian 13、Fedora 43、Alpine 3.23（musl）官方容器 |
+| Python | `http.client` + OpenSSL，HTTP/1.1 |
+| Node.js | `https` / `http2` + OpenSSL，HTTP/1.1 和 HTTP/2 |
+| Go | `net/http` + `crypto/tls`，HTTP/1.1 和 HTTP/2 |
+| Java | JDK `HttpClient` + JSSE，HTTP/1.1 和 HTTP/2 |
+| Rust 客户端 | `reqwest` + rustls，HTTP/1.1 和 HTTP/2；独立于 B 的 BoringSSL |
+
+每个组合由**同一个客户端进程依次建立直连 1、直连 2、中转三个独立连接**，每条连接发送两次请求，验证 keep-alive/流复用。A 是隔离的测试站点，保持固定端口、证书、HTTP 响应；B 仅执行正常中转。证书链和主机名校验开启，Cookie 固定为浏览器保存在 B 的测试值，不访问真实网站或真实账号。
+
+`scripts/matrix_lab.py` 在 A 侧采集实际 ClientHello、原始 HTTP/1.1 头部、有序 HTTP/2 头部、SETTINGS/WINDOW_UPDATE/PRIORITY、HPACK 字节摘要、HEADERS/CONTINUATION 长度/标志/优先级/填充，以及按源端口关联的初始 TCP SYN。先比较两次直连，建立基线；再逐层比较直连和中转。自然随机字段沿用前述归一化规则；**不按观察到的差异自动扩大忽略列表**。例如 rustls 自身随机排列扩展时，会保留 JA3/JA4 和原始顺序证据，报告基线不稳定，不伪称全层匹配。
+
+默认启用严格验收：`match` 才通过；`mismatch`、`missing-evidence`、`inconclusive-baseline` 退出 1；编译、抓包、协议、客户端或采集错误退出 2。已知 TLS/HPACK 差异会让一致性检查变红，这是实际验收结果，不用 `continue-on-error` 掩盖。各环境 `fail-fast: false`，任何一个失败仍继续收集其他环境。
+
+手动运行可设置 `strict=false` 只收集差异；它只放宽差异退出码，基础设施错误仍失败，报告中的 `fingerprint_pass` 不变。报告模式下绿色的任务不表示指纹一致。
+
+Actions 的 `fingerprint consistency gate` 汇总完整的 72 行表。缺失环境、重复组合、错误架构、丢失 PCAP/ClientHello 均不能得到通过。每个 `matrix-evidence-架构-发行版` artifact 包含三个样本 JSON、实际 ClientHello、SYN PCAP、逐字段差异、客户端/B 日志、运行时和 TLS 库版本、镜像 ID；另有 `fingerprint-matrix-report` 总表。产物保留 14 天，不上传 CA 私钥。
+
+**容器共享 GitHub runner 的 Linux 内核。** 该矩阵验证不同架构和发行版用户态/TLS 库，TCP 是对应 runner 的内核与 loopback 路径；它不代表各发行版独立内核、Windows/macOS 客户端、真实网络路径、浏览器、HTTP/3、会话恢复或任意其他 CPU 架构都已覆盖。TCP 缺失时不会降级成通过。
+
+本机完整重现某个环境（需要 Docker；在 ARM64 主机上原生得到 ARM64 结果）：
+
+```sh
+docker build --build-arg BASE_IMAGE=debian:13 -f scripts/ci/Dockerfile -t fp-matrix .
+mkdir -p test-results/ci-matrix-local
+docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
+  --security-opt no-new-privileges \
+  -v "$PWD/test-results/ci-matrix-local:/evidence" fp-matrix
+```
+
+运行期间只使用容器 loopback，`NET_RAW` 用于 SYN 采集，不需要 `--privileged`。本地没有原始套接字权限时可运行 `--no-capture --report-only` 调试客户端，但这类报告始终标记 TCP 缺失，不能用于完整验收。Python 标准库没有 HTTP/2 客户端，所以 Python/h2 不作为假“跳过即通过”的组合；既有 Python/hpack 协议测试仍保留。
+
 ## 在 Linux 服务器抓包验收
 
 测试脚本支持真实 loopback SYN 抓包，需要 root 或 CAP_NET_RAW：

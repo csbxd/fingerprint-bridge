@@ -1,0 +1,12 @@
+.git
+target
+.venv
+test-results
+reports
+captures
+certs
+**/__pycache__
+*.zip
+*.key
+*.pem
+*.pcap
