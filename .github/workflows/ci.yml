@@ -42,17 +42,20 @@ jobs:
           python3 -m venv .venv
           .venv/bin/pip install -r scripts/requirements-test.txt
           .venv/bin/python scripts/lab.py --output test-results/ci-lab
-      - name: Matrix harness regression tests
-        run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
-      - name: Install independent hybrid TLS peer
+      - name: Install independent Go TLS peers
         uses: actions/setup-go@v5
         with:
           go-version: '1.27.1'
           cache: false
-      - name: Hybrid group handshakes and malformed key shares
+      - name: Build independent Go TLS peers
         run: |
           mkdir -p target/matrix-clients
+          go build -o target/matrix-clients/mldsa-probe scripts/clients/mldsa_probe.go
           go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
+      - name: Matrix harness regression tests
+        run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Hybrid group handshakes and malformed key shares
+        run: |
           .venv/bin/python scripts/hybrid_lab.py --output test-results/ci-hybrid-lab
       - name: TCP capture lab
         run: sudo .venv/bin/python scripts/lab.py --capture-interface lo --output test-results/ci-tcp-lab
