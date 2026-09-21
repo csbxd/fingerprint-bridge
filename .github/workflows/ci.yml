@@ -2,8 +2,17 @@ name: fingerprint-regression
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: Fail on any fingerprint difference, missing layer or unstable direct baseline
+        type: boolean
+        default: true
 permissions:
   contents: read
+concurrency:
+  group: fingerprint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -23,6 +32,8 @@ jobs:
           python3 -m venv .venv
           .venv/bin/pip install -r scripts/requirements-test.txt
           .venv/bin/python scripts/lab.py --output test-results/ci-lab
+      - name: Matrix harness regression tests
+        run: .venv/bin/python -m unittest discover -s scripts -p 'test_matrix*.py' -v
       - name: TCP capture lab
         run: sudo .venv/bin/python scripts/lab.py --capture-interface lo --output test-results/ci-tcp-lab
       - uses: actions/upload-artifact@v4
@@ -30,3 +41,85 @@ jobs:
         with:
           name: fingerprint-evidence
           path: test-results/
+          retention-days: 14
+
+  matrix:
+    name: fingerprints / ${{ matrix.distro.id }} / ${{ matrix.arch.id }}
+    runs-on: ${{ matrix.arch.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        arch:
+          - {id: amd64, runner: ubuntu-24.04, platform: linux/amd64}
+          - {id: arm64, runner: ubuntu-24.04-arm, platform: linux/arm64}
+        distro:
+          - {id: ubuntu-24.04, image: 'ubuntu:24.04'}
+          - {id: debian-13, image: 'debian:13'}
+          - {id: fedora-43, image: 'fedora:43'}
+          - {id: alpine-3.23, image: 'alpine:3.23'}
+    env:
+      MATRIX_ARCH: ${{ matrix.arch.id }}
+      MATRIX_DISTRO: ${{ matrix.distro.id }}
+      ENFORCE: ${{ github.event_name != 'workflow_dispatch' || inputs.strict }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build clients and bridge on the native architecture
+        run: |
+          mkdir -p test-results/ci-matrix
+          docker build --platform '${{ matrix.arch.platform }}' \
+            --build-arg BASE_IMAGE='${{ matrix.distro.image }}' \
+            -f scripts/ci/Dockerfile -t fingerprint-matrix . \
+            2>&1 | tee test-results/ci-matrix/build.log
+      - name: Compare direct, repeated direct and bridged requests
+        run: |
+          args=()
+          if [ "$ENFORCE" != true ]; then args+=(--report-only); fi
+          image_id=$(docker image inspect fingerprint-matrix --format '{{.Id}}')
+          docker image inspect fingerprint-matrix > test-results/ci-matrix/image.json
+          docker run --rm --network none --cap-drop ALL --cap-add NET_RAW \
+            --security-opt no-new-privileges \
+            -e MATRIX_ARCH -e MATRIX_DISTRO -e MATRIX_IMAGE_ID="$image_id" \
+            -v "$PWD/test-results/ci-matrix:/evidence" fingerprint-matrix \
+            python3 scripts/matrix_lab.py --output /evidence "${args[@]}" \
+            2>&1 | tee test-results/ci-matrix/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matrix-evidence-${{ matrix.arch.id }}-${{ matrix.distro.id }}
+          path: test-results/ci-matrix/
+          if-no-files-found: error
+          retention-days: 14
+
+  matrix-summary:
+    name: fingerprint consistency gate
+    needs: matrix
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      ENFORCE: ${{ github.event_name != 'workflow_dispatch' || inputs.strict }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-evidence-*
+          path: collected-evidence
+      - name: Require all architectures, distributions, clients and evidence
+        run: |
+          args=()
+          if [ "$ENFORCE" != true ]; then args+=(--report-only); fi
+          python3 scripts/matrix_report.py --root collected-evidence \
+            --output matrix-report.md "${args[@]}"
+      - name: Publish comparison table
+        if: always()
+        run: |
+          if [ -f matrix-report.md ]; then cat matrix-report.md >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerprint-matrix-report
+          path: matrix-report.md
+          if-no-files-found: error
+          retention-days: 14
