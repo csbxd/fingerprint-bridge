@@ -73,11 +73,30 @@ def read_frame(s):
 def hello_peek(s):
     deadline = time.monotonic()+10
     while time.monotonic() < deadline:
-        b = s.recv(65536, socket.MSG_PEEK)
+        b = s.recv(256 * 1024, socket.MSG_PEEK)
         if not b:
             raise EOFError("no hello")
-        if len(b) >= 5 and len(b) >= 5+int.from_bytes(b[3:5], "big"):
-            return b[:5+int.from_bytes(b[3:5], "big")]
+        offset = 0
+        handshake = bytearray()
+        while offset + 5 <= len(b):
+            if b[offset] != 22:
+                raise ValueError("expected TLS handshake record")
+            size = int.from_bytes(b[offset+3:offset+5], "big")
+            if size > 18432:
+                raise ValueError("oversized TLS record")
+            end = offset + 5 + size
+            if end > len(b):
+                break
+            handshake.extend(b[offset+5:end])
+            offset = end
+            if len(handshake) >= 4:
+                if handshake[0] != 1:
+                    raise ValueError("expected ClientHello")
+                needed = 4 + int.from_bytes(handshake[1:4], "big")
+                if needed > 256 * 1024:
+                    raise ValueError("oversized ClientHello")
+                if len(handshake) >= needed:
+                    return b[:offset]
         time.sleep(.001)
     raise TimeoutError("hello")
 

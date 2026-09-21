@@ -1,1 +1,3 @@
 hpack==4.1.0
+h2==4.3.0
+hyperframe==6.1.0
