@@ -1,0 +1,151 @@
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -3426,6 +3426,12 @@
+   // record_size_limit is whether to send record size limit extension.
+   uint16_t record_size_limit = 0;
+ 
++  // fingerprint-bridge: supported wire order, serialized inside the transcript.
++  Array<uint16_t> bridge_cipher_order;
++  // -1 retains backend heuristics; 0 omits padding; 1 includes padding.
++  int bridge_padding = -1;
++  bool bridge_scsv_sent = false;
++
+   // delegated_credentials, if not empty, is the set of signature algorithms
+   // supported by the client.
+   Array<uint16_t> delegated_credentials;
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -5309,6 +5309,11 @@
+ // Note: This function must be called before |SSL_set_cipher_list| to take
+ // effect.
+ OPENSSL_EXPORT void SSL_set_preserve_tls13_cipher_list(SSL *ssl, int preserve_tls13_cipher_list);
++
++// Bridge-only, before the initial handshake. Real suites must already be enabled
++// in the configured lists; unsupported suites are rejected. padding is 0 or 1.
++OPENSSL_EXPORT int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
++                                         size_t count, int padding);
+ 
+ 
+ // SSL_CTX_set_aes_hw_override sets |override_value| to
+--- a/ssl/ssl_lib.cc
++++ b/ssl/ssl_lib.cc
+@@ -2216,6 +2216,39 @@
+   ctx->preserve_tls13_cipher_list = !!preserve_tls13_cipher_list;
+ }
+ 
++int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
++                           size_t count, int padding) {
++  if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||
++      count == 0 || count > 512 || ciphers == nullptr ||
++      (padding != 0 && padding != 1)) {
++    return 0;
++  }
++  for (size_t i = 0; i < count; i++) {
++    const uint16_t id = ciphers[i];
++    if (id == SSL_CIPHER_EMPTY_RENEGOTIATION_INFO_SCSV ||
++        ((id & 0x0f0f) == 0x0a0a && (id >> 8) == (id & 0xff))) {
++      continue;
++    }
++    bool enabled = false;
++    for (const SSL_CIPHER *cipher : SSL_get_ciphers(ssl)) {
++      enabled |= SSL_CIPHER_get_protocol_id(cipher) == id;
++    }
++    if (ssl->ctx->tls13_cipher_list) {
++      for (const SSL_CIPHER *cipher : ssl->ctx->tls13_cipher_list->ciphers.get()) {
++        enabled |= SSL_CIPHER_get_protocol_id(cipher) == id;
++      }
++    }
++    if (!enabled) {
++      return 0;
++    }
++  }
++  if (!ssl->config->bridge_cipher_order.CopyFrom(Span(ciphers, count))) {
++    return 0;
++  }
++  ssl->config->bridge_padding = padding;
++  return 1;
++}
++
+ void SSL_set_preserve_tls13_cipher_list(SSL *ssl, int preserve_tls13_cipher_list) {
+   if (!ssl->config) {
+     return;
+--- a/ssl/handshake_client.cc
++++ b/ssl/handshake_client.cc
+@@ -101,6 +101,41 @@
+   CBB child;
+   if (!CBB_add_u16_length_prefixed(out, &child)) {
+     return false;
++  }
++
++  if (!ssl->config->bridge_cipher_order.empty()) {
++    // ECH inner and renegotiation have different invariants. Never silently
++    // replay an initial public ClientHello profile in either context.
++    if (type == ssl_client_hello_inner || ssl->s3->initial_handshake_complete) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_UNSUPPORTED_PROTOCOL);
++      return false;
++    }
++    ssl->config->bridge_scsv_sent = false;
++    bool any_enabled = false;
++    for (uint16_t id : ssl->config->bridge_cipher_order) {
++      if (id == SSL_CIPHER_EMPTY_RENEGOTIATION_INFO_SCSV) {
++        ssl->config->bridge_scsv_sent = true;
++      } else if ((id & 0x0f0f) == 0x0a0a && (id >> 8) == (id & 0xff)) {
++        id = ssl_get_grease_value(hs, ssl_grease_cipher);
++      } else {
++        const SSL_CIPHER *cipher = SSL_get_cipher_by_value(id);
++        if (cipher == nullptr || (cipher->algorithm_mkey & mask_k) ||
++            (cipher->algorithm_auth & mask_a) ||
++            SSL_CIPHER_get_min_version(cipher) > hs->max_version ||
++            SSL_CIPHER_get_max_version(cipher) < hs->min_version) {
++          continue;
++        }
++        any_enabled = true;
++      }
++      if (!CBB_add_u16(&child, id)) {
++        return false;
++      }
++    }
++    if (!any_enabled) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_NO_CIPHERS_AVAILABLE);
++      return false;
++    }
++    return CBB_flush(out);
+   }
+ 
+   // Add a fake cipher suite. See RFC 8701.
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -4095,7 +4095,8 @@
+   // bugs. We also apply this padding to ClientHelloOuter, to keep the wire
+   // images aligned.
+   size_t psk_extension_len = ext_pre_shared_key_clienthello_length(hs, type);
+-  if (!SSL_is_dtls(ssl) && !SSL_is_quic(ssl) &&
++  if (ssl->config->bridge_padding != 0 &&
++      !SSL_is_dtls(ssl) && !SSL_is_quic(ssl) &&
+       !ssl->s3->used_hello_retry_request) {
+     header_len +=
+         SSL3_HM_HEADER_LENGTH + 2 + CBB_len(&extensions) + psk_extension_len;
+@@ -4132,6 +4133,9 @@
+       }
+     }
+ 
++    if (ssl->config->bridge_padding == 1 && padding_len == 0) {
++      padding_len = 1;
++    }
+     if (padding_len != 0 &&
+         !add_padding_extension(&extensions, TLSEXT_TYPE_padding, padding_len)) {
+       return false;
+@@ -4306,7 +4310,12 @@
+     static_assert(kNumExtensions <= sizeof(hs->extensions.sent) * 8,
+                   "too many bits");
+ 
+-    if (!(hs->extensions.sent & (1u << ext_index))) {
++    // RFC 5746: SCSV signals renegotiation_info without emitting the extension.
++    // Retain the normal parser's TLS-version and finished-data validation.
++    const bool signaled_ri = type == TLSEXT_TYPE_renegotiate &&
++                            hs->ssl->config->bridge_scsv_sent &&
++                            !hs->ssl->s3->initial_handshake_complete;
++    if (!(hs->extensions.sent & (1u << ext_index)) && !signaled_ri) {
+       // If the extension was never sent then it is illegal.
+       OPENSSL_PUT_ERROR(SSL, SSL_R_UNEXPECTED_EXTENSION);
+       ERR_add_error_dataf("extension %u", (unsigned)type);
