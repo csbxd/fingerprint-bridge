@@ -1,0 +1,32 @@
+name: fingerprint-regression
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake perl libclang-dev build-essential ca-certificates pkg-config
+      - name: Install pinned toolchain
+        run: rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --locked
+      - name: Independent HTTPS lab
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r scripts/requirements-test.txt
+          .venv/bin/python scripts/lab.py --output test-results/ci-lab
+      - name: TCP capture lab
+        run: sudo .venv/bin/python scripts/lab.py --capture-interface lo --output test-results/ci-tcp-lab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerprint-evidence
+          path: test-results/
