@@ -1,3 +1,17 @@
+diff --git a/crypto/evp/internal.h b/crypto/evp/internal.h
+index 0a385c3..19594bc 100644
+--- a/crypto/evp/internal.h
++++ b/crypto/evp/internal.h
+@@ -286,6 +286,9 @@ inline auto GetDefaultEVPAlgorithms() {
+       EVP_pkey_ed25519(),
+       EVP_pkey_rsa(),
+       EVP_pkey_x25519(),
++      EVP_pkey_ml_dsa_44(),
++      EVP_pkey_ml_dsa_65(),
++      EVP_pkey_ml_dsa_87(),
+       // TODO(crbug.com/438761503): Remove DSA from this set, after callers that
+       // need DSA pass in |EVP_pkey_dsa| explicitly.
+       EVP_pkey_dsa(),
 diff --git a/crypto/x509/algorithm.cc b/crypto/x509/algorithm.cc
 index 6d06985..b73297a 100644
 --- a/crypto/x509/algorithm.cc
@@ -30,7 +44,7 @@ index 6d06985..b73297a 100644
  
    // Default behavior: look up the OID for the algorithm/hash pair and encode
 @@ -115,7 +129,8 @@ int x509_digest_verify_init(EVP_MD_CTX *ctx, const X509_ALGOR *sigalg,
-     if (sigalg_nid == NID_rsassaPss) {
+     if (sigalg_nid == NID_rsassPss) {
        return x509_rsa_pss_to_ctx(ctx, sigalg, pkey);
      }
 -    if (sigalg_nid == NID_ED25519) {
@@ -50,7 +64,7 @@ index 7d15ce1..60bc3a6 100644
 +#define SSL_SIGN_ML_DSA_44 0x0904
 +#define SSL_SIGN_ML_DSA_65 0x0905
 +#define SSL_SIGN_ML_DSA_87 0x0906
- 
+
  // SSL_SIGN_RSA_PKCS1_SHA256_LEGACY is a backport of RSASSA-PKCS1-v1_5 with
  // SHA-256 to TLS 1.3. It is disabled by default and only defined for client
 diff --git a/ssl/extensions.cc b/ssl/extensions.cc
@@ -73,14 +87,14 @@ index f21c0d5..3190c5c 100644
 --- a/ssl/ssl_privkey.cc
 +++ b/ssl/ssl_privkey.cc
 @@ -34,7 +34,8 @@ BSSL_NAMESPACE_BEGIN
- 
+
  bool ssl_is_key_type_supported(int key_type) {
    return key_type == EVP_PKEY_RSA || key_type == EVP_PKEY_EC ||
 -         key_type == EVP_PKEY_ED25519;
 +         key_type == EVP_PKEY_ED25519 || key_type == EVP_PKEY_ML_DSA_44 ||
 +         key_type == EVP_PKEY_ML_DSA_65 || key_type == EVP_PKEY_ML_DSA_87;
  }
- 
+
  typedef struct {
 @@ -98,6 +99,16 @@ static const SSL_SIGNATURE_ALGORITHM kSignatureAlgorithms[] = {
      {SSL_SIGN_ED25519, EVP_PKEY_ED25519, NID_undef, nullptr,
@@ -97,7 +111,7 @@ index f21c0d5..3190c5c 100644
 +     /*is_rsa_pss=*/false, /*tls12_ok=*/false, /*tls13_ok=*/true,
 +     /*client_only=*/false},
  };
- 
+
  static const SSL_SIGNATURE_ALGORITHM *get_signature_algorithm(uint16_t sigalg) {
 @@ -115,8 +126,9 @@ bssl::UniquePtr<EVP_PKEY> ssl_parse_peer_subject_public_key_info(
    // code elimination, but for now we just specify every algorithm that might be
@@ -108,6 +122,6 @@ index f21c0d5..3190c5c 100644
 +      EVP_pkey_rsa(),       EVP_pkey_ec_p256(),   EVP_pkey_ec_p384(),
 +      EVP_pkey_ec_p521(),   EVP_pkey_ed25519(),   EVP_pkey_ml_dsa_44(),
 +      EVP_pkey_ml_dsa_65(), EVP_pkey_ml_dsa_87(),
-   };
-   return bssl::UniquePtr<EVP_PKEY>(EVP_PKEY_from_subject_public_key_info(
+  };
+  return bssl::UniquePtr<EVP_PKEY>(EVP_PKEY_from_subject_public_key_info(
        spki.data(), spki.size(), algs, std::size(algs)));
