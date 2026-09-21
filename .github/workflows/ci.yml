@@ -18,8 +18,15 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    name: regression / ${{ matrix.arch.id }}
+    runs-on: ${{ matrix.arch.runner }}
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - {id: amd64, runner: ubuntu-24.04}
+          - {id: arm64, runner: ubuntu-24.04-arm}
     steps:
       - uses: actions/checkout@v4
       - name: Native dependencies
@@ -37,12 +44,22 @@ jobs:
           .venv/bin/python scripts/lab.py --output test-results/ci-lab
       - name: Matrix harness regression tests
         run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Install independent hybrid TLS peer
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Hybrid group handshakes and malformed key shares
+        run: |
+          mkdir -p target/matrix-clients
+          go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
+          .venv/bin/python scripts/hybrid_lab.py --output test-results/ci-hybrid-lab
       - name: TCP capture lab
         run: sudo .venv/bin/python scripts/lab.py --capture-interface lo --output test-results/ci-tcp-lab
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: fingerprint-evidence
+          name: fingerprint-evidence-${{ matrix.arch.id }}
           path: test-results/
           retention-days: 14
 
