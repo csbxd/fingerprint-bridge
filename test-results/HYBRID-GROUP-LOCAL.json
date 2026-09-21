@@ -1,0 +1,1015 @@
+{
+  "date": "2026-09-21",
+  "scope": "synthetic loopback capability tests; not full fingerprint acceptance",
+  "hybrid_lab": {
+    "pass": true,
+    "cases": [
+      {
+        "group": 4587,
+        "case": "normal",
+        "pass": true,
+        "client": {
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": true,
+          "mode": "client",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin": {
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": true,
+          "mode": "server",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4587,
+        "case": "hrr",
+        "pass": true,
+        "client": {
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": true,
+          "mode": "client",
+          "negotiated_group": 4588,
+          "tls_version": 772
+        },
+        "origin": {
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": true,
+          "mode": "server",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4588,
+                "length": 1216
+              }
+            ]
+          },
+          {
+            "kind": "hrr"
+          },
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4587,
+        "case": "server-point",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [
+          {
+            "direction": "client",
+            "description": 47
+          }
+        ],
+        "client_alerts": []
+      },
+      {
+        "group": 4587,
+        "case": "server-length",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [
+          {
+            "direction": "client",
+            "description": 47
+          }
+        ],
+        "client_alerts": []
+      },
+      {
+        "group": 4587,
+        "case": "server-ciphertext",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4587,
+        "case": "client-point",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4587,
+        "case": "client-public",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4587,
+        "case": "client-length",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4587,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4587,
+        "case": "wrong-hostname",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "remote error: tls: bad certificate",
+          "go": "go1.27.1",
+          "group": 4587,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1249
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4587,
+                "length": 1153
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "normal",
+        "pass": true,
+        "client": {
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": true,
+          "mode": "client",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin": {
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": true,
+          "mode": "server",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "hrr",
+        "pass": true,
+        "client": {
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": true,
+          "mode": "client",
+          "negotiated_group": 4588,
+          "tls_version": 772
+        },
+        "origin": {
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": true,
+          "mode": "server",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4588,
+                "length": 1216
+              }
+            ]
+          },
+          {
+            "kind": "hrr"
+          },
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "server-point",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [
+          {
+            "direction": "client",
+            "description": 47
+          }
+        ],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "server-length",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [
+          {
+            "direction": "client",
+            "description": 47
+          }
+        ],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "server-ciphertext",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "local error: tls: bad record MAC",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      },
+      {
+        "group": 4589,
+        "case": "client-point",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4589,
+        "case": "client-public",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4589,
+        "case": "client-length",
+        "pass": true,
+        "client": {
+          "error": "remote error: tls: illegal parameter",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": true,
+          "http": false,
+          "mode": "server",
+          "negotiated_group": 4589,
+          "tls_version": 772
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": [
+          {
+            "direction": "server",
+            "description": 47
+          }
+        ]
+      },
+      {
+        "group": 4589,
+        "case": "wrong-hostname",
+        "pass": true,
+        "client": {
+          "error": "EOF",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "client"
+        },
+        "origin": {
+          "error": "remote error: tls: bad certificate",
+          "go": "go1.27.1",
+          "group": 4589,
+          "handshake": false,
+          "http": false,
+          "mode": "server"
+        },
+        "origin_hellos": [
+          {
+            "kind": "client",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          },
+          {
+            "kind": "server",
+            "shares": [
+              {
+                "group": 4589,
+                "length": 1665
+              }
+            ]
+          }
+        ],
+        "origin_alerts": [],
+        "client_alerts": []
+      }
+    ]
+  },
+  "local_matrix": [
+    {
+      "case": "go-h2",
+      "layers": {
+        "tls": false,
+        "http": false,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "go-http-1.1",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "java-h2",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "java-http-1.1",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "node-h2",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "node-http-1.1",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "python-http-1.1",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": false,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "rust-h2",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": true,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    },
+    {
+      "case": "rust-http-1.1",
+      "layers": {
+        "tls": false,
+        "http": true,
+        "tcp": false
+      },
+      "paired_tls": true,
+      "paired_http": true,
+      "full_verdict": "missing-evidence"
+    }
+  ],
+  "go_before_after": {
+    "before": {
+      "diff_fields": [
+        "/tls/fields/extensions",
+        "/tls/fields/groups",
+        "/tls/fields/other_extensions",
+        "/tls/fields/signature_algorithms",
+        "/tls/ja3",
+        "/tls/ja3_string",
+        "/tls/ja4"
+      ],
+      "limitations": [
+        "unsupported group 4587",
+        "unsupported group 4589",
+        "unsupported signature algorithm 2308",
+        "unsupported signature algorithm 2309",
+        "unsupported signature algorithm 2310",
+        "unsupported extension 50"
+      ]
+    },
+    "after": {
+      "diff_fields": [
+        "/tls/fields/extensions",
+        "/tls/fields/other_extensions",
+        "/tls/fields/signature_algorithms",
+        "/tls/ja3",
+        "/tls/ja3_string",
+        "/tls/ja4"
+      ],
+      "limitations": [
+        "unsupported signature algorithm 2308",
+        "unsupported signature algorithm 2309",
+        "unsupported signature algorithm 2310",
+        "unsupported extension 50"
+      ]
+    }
+  }
+}
