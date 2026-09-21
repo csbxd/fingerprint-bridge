@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/mldsa"
 	"crypto/rand"
@@ -17,6 +18,7 @@ import (
 	"io"
 	"math/big"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -117,9 +119,12 @@ func client(args []string) error {
 	if err != nil { return err }
 	authority := net.JoinHostPort("b.test", port)
 	if _, err := conn.Write([]byte("GET /mldsa HTTP/1.1\r\nHost: "+authority+"\r\nCookie: sid=from_B\r\nConnection: close\r\n\r\n")); err != nil { return err }
-	body, err := io.ReadAll(conn)
+	response, err := http.ReadResponse(bufio.NewReader(conn), nil)
 	if err != nil { return err }
-	ok := bytes.Contains(body, []byte("HTTP/1.1 200")) && bytes.Contains(body, []byte("a\x00b\xffcde"))
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil { return err }
+	ok := response.StatusCode == http.StatusOK && bytes.Equal(body, []byte("a\x00b\xffcde"))
 	emit(result{Handshake: true, HTTP: ok, TLSVersion: conn.ConnectionState().Version})
 	if !ok { return fmt.Errorf("unexpected bridged response") }
 	return nil
