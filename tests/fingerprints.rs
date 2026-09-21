@@ -276,7 +276,7 @@ fn ambiguous_framing_is_rejected() {
 fn hpack_dynamic_state_is_kept_between_requests() {
     let m = map();
     let mut encoder = hpack::Encoder::new();
-    let mut decoder = hpack::Decoder::new();
+    let mut decoder = h2::HeaderRewriter::new();
     let mut out = hpack::Decoder::new();
     let headers = vec![
         (b":method".to_vec(), b"GET".to_vec()),
@@ -284,9 +284,16 @@ fn hpack_dynamic_state_is_kept_between_requests() {
         (b"cookie".to_vec(), b"id=from_B".to_vec()),
         (b"x-repeat".to_vec(), b"yes".to_vec()),
     ];
-    for _ in 0..3 {
+    for round in 0..3 {
         let block = encoder.encode(headers.iter().map(|(n, v)| (n.as_slice(), v.as_slice())));
         let rewritten = h2::rewrite_block(&mut decoder, &block, &m, false, 4096).unwrap();
+        if round > 0 {
+            assert_eq!(
+                rewritten.last(),
+                block.last(),
+                "dynamic x-repeat index must be retained"
+            );
+        }
         let got = out.decode(&rewritten).unwrap();
         let mut expected = headers.clone();
         expected[1].1 = b"a.test:9443".to_vec();
@@ -297,17 +304,144 @@ fn hpack_dynamic_state_is_kept_between_requests() {
 fn hpack_rfc7541_huffman_vector_decodes() {
     let block = hex::decode("828684418cf1e3c2e5f23a6ba0ab90f4ff").unwrap();
     let m = Mapping::new("www.example.com", "upstream.example.com").unwrap();
-    let output = h2::rewrite_block(&mut hpack::Decoder::new(), &block, &m, false, 4096).unwrap();
+    let output =
+        h2::rewrite_block(&mut h2::HeaderRewriter::new(), &block, &m, false, 4096).unwrap();
+    assert_eq!(&output[..4], &block[..4]);
+    assert_ne!(
+        output[4] & 0x80,
+        0,
+        "rewritten value must retain Huffman coding"
+    );
     let headers = hpack::Decoder::new().decode(&output).unwrap();
     assert_eq!(
         headers[3],
         (b":authority".to_vec(), b"upstream.example.com".to_vec())
     );
+    let mut rewriter = h2::HeaderRewriter::new();
+    h2::rewrite_block(&mut rewriter, &block, &m, false, 4096).unwrap();
+    let second = hex::decode("828684be5886a8eb10649cbf").unwrap();
+    assert_eq!(
+        h2::rewrite_block(&mut rewriter, &second, &m, false, 4096).unwrap(),
+        second
+    );
 }
 #[test]
 fn hpack_excessive_table_update_rejected() {
     let block = [0x3f, 0xe2, 0x1f];
-    assert!(h2::rewrite_block(&mut hpack::Decoder::new(), &block, &map(), false, 4096).is_err());
+    assert!(
+        h2::rewrite_block(&mut h2::HeaderRewriter::new(), &block, &map(), false, 4096).is_err()
+    );
+}
+#[test]
+fn hpack_unchanged_representations_are_byte_identical() {
+    let m = Mapping::new("www.example.com", "www.example.com").unwrap();
+    let mut rewriter = h2::HeaderRewriter::new();
+    // RFC 7541 C.4.1/C.4.2 exercise indexed, literal, Huffman and dynamic state.
+    for hex in [
+        "828684418cf1e3c2e5f23a6ba0ab90f4ff",
+        "828684be5886a8eb10649cbf",
+    ] {
+        let block = hex::decode(hex).unwrap();
+        assert_eq!(
+            h2::rewrite_block(&mut rewriter, &block, &m, false, 4096).unwrap(),
+            block
+        );
+    }
+    let block = b"\x1f\x11\x06secret\x0f\x2b\x02ua\x00\x01x\x01y";
+    assert_eq!(
+        h2::rewrite_block(&mut rewriter, block, &m, false, 4096).unwrap(),
+        block
+    );
+}
+#[test]
+fn hpack_rewrite_survives_different_evictions_and_indexed_names() {
+    let m = Mapping::new("b.test", "long-long-long-long-long-long-long.a.test").unwrap();
+    let mut rewrite = h2::HeaderRewriter::new();
+    let mut receiver = hpack::Decoder::new();
+    // At 128 bytes, the longer A authority evicts x-old only at the receiver.
+    let blocks: &[&[u8]] = &[
+        b"\x3f\x61\x40\x05x-old\x1412345678901234567890\x66\x06b.test",
+        b"\xbf",            // indexed field whose receiver entry was evicted
+        b"\x7f\x00\x03new", // indexed name whose receiver entry was evicted
+        b"\xbe",
+        b"\x20\x40\x01x\x01y", // zero table and oversize insertion clear tables
+    ];
+    for (i, block) in blocks.iter().enumerate() {
+        let output = h2::rewrite_block(&mut rewrite, block, &m, false, 128).unwrap();
+        let got = receiver.decode(&output).unwrap();
+        match i {
+            0 => assert_eq!(got[1].1, m.upstream.as_bytes()),
+            1 => assert_eq!(
+                got,
+                vec![(b"x-old".to_vec(), b"12345678901234567890".to_vec())]
+            ),
+            2 | 3 => assert_eq!(got, vec![(b"x-old".to_vec(), b"new".to_vec())]),
+            4 => assert_eq!(got, vec![(b"x".to_vec(), b"y".to_vec())]),
+            _ => unreachable!(),
+        }
+    }
+}
+#[test]
+fn hpack_response_indexing_rewrites_location_and_cookie() {
+    let mut encoder = hpack::Encoder::new();
+    let mut rewriter = h2::HeaderRewriter::new();
+    let mut receiver = hpack::Decoder::new();
+    let headers: &[(&[u8], &[u8])] = &[
+        (b":status", b"200"),
+        (b"location", b"https://a.test:9443/next"),
+        (b"set-cookie", b"sid=value; Domain=a.test; Secure"),
+    ];
+    for _ in 0..3 {
+        let block = encoder.encode(headers.iter().copied());
+        let output = h2::rewrite_block(&mut rewriter, &block, &map(), true, 4096).unwrap();
+        let got = receiver.decode(&output).unwrap();
+        assert_eq!(got[1].1, b"https://b.test:8443/next");
+        assert_eq!(got[2].1, b"sid=value; Domain=b.test; Secure");
+    }
+}
+#[test]
+fn h2_keeps_fragment_boundaries_and_peer_frame_limit() {
+    let original = vec![
+        h2::Frame {
+            kind: 1,
+            flags: 0x29,
+            stream: 7,
+            payload: vec![2, 0, 0, 0, 0, 255, 1, 2, 9, 9],
+        },
+        h2::Frame {
+            kind: 9,
+            flags: 0,
+            stream: 7,
+            payload: vec![3, 4],
+        },
+        h2::Frame {
+            kind: 9,
+            flags: 4,
+            stream: 7,
+            payload: vec![5, 6],
+        },
+    ];
+    assert_eq!(
+        h2::reframe(&original, &[1, 2, 3, 4, 5, 6], 16384).unwrap(),
+        original
+    );
+    let resized = h2::reframe(&original, &[1, 2, 3, 4, 5, 6, 7], 16384).unwrap();
+    assert_eq!(&resized[..2], &original[..2]);
+    assert_eq!(resized[2].payload, [5, 6, 7]);
+    let shorter = h2::reframe(&original, &[1], 16384).unwrap();
+    assert_eq!(shorter.len(), 3);
+    assert_eq!(shorter[2].flags, 4);
+    let large = h2::Frame {
+        kind: 1,
+        flags: 4,
+        stream: 1,
+        payload: vec![0; 20000],
+    };
+    assert!(h2::reframe(std::slice::from_ref(&large), &large.payload, 16384).is_err());
+    assert_eq!(
+        h2::reframe(std::slice::from_ref(&large), &large.payload, 32768).unwrap(),
+        vec![large]
+    );
 }
 #[test]
 fn h2_settings_priority_padding_and_order() {
@@ -327,7 +461,7 @@ fn h2_settings_priority_padding_and_order() {
         stream: 7,
         payload: vec![2, 0, 0, 0, 0, 255, 1, 2, 9, 9],
     };
-    let frames = h2::reframe(&f, &vec![42; 18000]).unwrap();
+    let frames = h2::reframe(std::slice::from_ref(&f), &vec![42; 18000], 16384).unwrap();
     assert_eq!(frames[0].stream, 7);
     assert_eq!(frames[0].flags, 0x29);
     assert_eq!(&frames[0].payload[..6], &f.payload[..6]);
@@ -411,6 +545,21 @@ async fn emitted_hello(ssl: btls::ssl::Ssl) -> TlsHello {
     drop(peer);
     client.await.unwrap();
     parsed
+}
+
+#[tokio::test]
+async fn tls_mirror_does_not_add_absent_renegotiation_or_psk_extensions() {
+    use btls::ssl::{SslConnector, SslMethod, SslOptions};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_options(SslOptions::NO_RENEGOTIATION | SslOptions::NO_PSK_DHE_KE);
+    c.set_curves_list("X25519:P-256").unwrap();
+    let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    assert!(!incoming.extensions.contains(&65281));
+    assert!(!incoming.extensions.contains(&45));
+    let (ssl, _) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    let outgoing = emitted_hello(ssl).await;
+    assert!(!outgoing.extensions.contains(&65281));
+    assert!(!outgoing.extensions.contains(&45));
 }
 
 #[tokio::test]
