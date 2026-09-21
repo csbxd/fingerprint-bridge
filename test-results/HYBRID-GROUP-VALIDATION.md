@@ -82,9 +82,39 @@ Go h2 baselines is natural across runs, not a relaxed criterion. The improvement
 is real hybrid capability, removal of the local Go 1.27 group-list difference,
 and TLS 1.3 connection compatibility, not a claim of more full-matrix matches.
 
-The follow-up negotiated-version fix has passed local Rust/Clippy, all 18 Python
-regressions and all 18 hybrid cases. Its complete cross-platform rerun is pending;
-the run #11 measurements must not be attributed to that follow-up revision.
+### Final rerun: origin-version alignment
+
+[Run #12](https://github.com/csbxd/fingerprint-bridge/actions/runs/35650666880)
+tested code [`7421d86`](https://github.com/csbxd/fingerprint-bridge/commit/7421d86abe1353e52108b73c80e9f31e0ccc3976),
+including the origin-version fix. It completed on 2026-09-21 with all 72 cases,
+eight matrix environments and 11 uploaded artifacts. There were no missing
+environments/evidence or runtime errors. Both amd64 and arm64 regression jobs
+passed 34 Rust tests, 18 Python regressions and 18 independent hybrid cases each,
+along with Clippy and the HTTPS/SYN labs. The Python regression confirms both
+TLS-1.2-only and TLS-1.3-only origins give the client the same negotiated version
+on direct and bridged connections, with certificate verification enabled.
+
+| Run #12 measurement | Matches | Other |
+| --- | ---: | --- |
+| Independent TLS | 8/72 | 64 differences |
+| Independent HTTP | 64/72 | 8 differences |
+| TCP SYN | 72/72 | same runner kernel, loopback only |
+| B-paired TLS | 24/72 | 48 differences |
+| B-paired HTTP | 72/72 | 0 differences |
+| Whole-case verdict | 4/72 | 46 mismatch, 22 inconclusive-baseline |
+
+The [archived run #12 summary](HYBRID-GROUP-MATRIX-12.json) contains all 72 rows,
+regression job IDs and artifact metadata/digests. Its rendered Actions table was
+cross-checked against the consistency-gate job log. Artifact uploads were
+verified through GitHub metadata; their raw archives were not independently
+downloaded in this review. Raw evidence remains in the linked CI artifacts.
+
+Per-layer match counts remain unchanged from runs #10 and #11. The variation in
+unstable direct baselines is not a fingerprint improvement. The strict gate is
+still failing, with no widened normalization or modified default clients. The
+four complete matches are Go HTTP/1.1 on Ubuntu and Debian, on both architectures.
+Version alignment is a targeted regression improvement; it does not establish
+identical certificates, keys, record boundaries or complete handshake messages.
 
 Outstanding areas include ML-DSA/signature_algorithms_cert, other unsupported
 groups/ciphers/extensions, full HRR/resumption behavior, cross-kernel TCP behavior
