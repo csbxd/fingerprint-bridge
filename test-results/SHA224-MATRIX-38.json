@@ -1,0 +1,110 @@
+{
+  "run_started_at": "2026-09-22T03:27:21Z",
+  "run_completed_at": "2026-09-22T03:37:00Z",
+  "code_sha": "9b28880b2797d42a65e337f5c8bfcce8c4130f8c",
+  "run_id": 35683217273,
+  "run_url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35683217273",
+  "conclusion": "failure",
+  "expected_failure": "unchanged strict fingerprint consistency gate",
+  "source": "GitHub Actions 72-row report, both regression logs, artifact metadata, and all eight per-environment evidence archives",
+  "counts": {
+    "Direct baseline": {
+      "stable": 48,
+      "unstable/missing": 24
+    },
+    "TLS": {
+      "MATCH": 8,
+      "DIFF": 64
+    },
+    "HTTP": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "TCP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "B-paired TLS": {
+      "MATCH": 24,
+      "DIFF": 48
+    },
+    "B-paired HTTP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "Verdict": {
+      "match": 4,
+      "mismatch": 44,
+      "inconclusive-baseline": 24
+    }
+  },
+  "sha224_signature_matrix_assertion": {
+    "rsa_pkcs1_sha224": {
+      "signature_scheme": 769,
+      "direct_cells_offering": 40,
+      "bridge_outbound_cells_preserving": 40,
+      "unsupported_limitations": 0,
+      "missing": [],
+      "by_client": {
+        "python": {"offering": 8, "preserved": 8},
+        "node": {"offering": 16, "preserved": 16},
+        "java": {"offering": 16, "preserved": 16}
+      }
+    },
+    "ecdsa_sha224": {
+      "signature_scheme": 771,
+      "direct_cells_offering": 40,
+      "bridge_outbound_cells_preserving": 40,
+      "unsupported_limitations": 0,
+      "missing": [],
+      "by_client": {
+        "python": {"offering": 8, "preserved": 8},
+        "node": {"offering": 16, "preserved": 16},
+        "java": {"offering": 16, "preserved": 16}
+      }
+    }
+  },
+  "regressions": [
+    {
+      "architecture": "amd64",
+      "job_id": 106604657741,
+      "conclusion": "success",
+      "rust_tests": 35,
+      "python_tests": 22,
+      "hybrid_cases": 18,
+      "sha224_signatures": {
+        "rsa_pkcs1_sha224_tls12_http": "pass",
+        "ecdsa_sha224_tls12_http": "pass",
+        "unoffered_rsa_pkcs1_sha224": "rejected without HTTP 200",
+        "unoffered_ecdsa_sha224": "rejected without HTTP 200"
+      }
+    },
+    {
+      "architecture": "arm64",
+      "job_id": 106604657837,
+      "conclusion": "success",
+      "rust_tests": 35,
+      "python_tests": 22,
+      "hybrid_cases": 18,
+      "sha224_signatures": {
+        "rsa_pkcs1_sha224_tls12_http": "pass",
+        "ecdsa_sha224_tls12_http": "pass",
+        "unoffered_rsa_pkcs1_sha224": "rejected without HTTP 200",
+        "unoffered_ecdsa_sha224": "rejected without HTTP 200"
+      }
+    }
+  ],
+  "artifacts": [
+    {"id": 10676460621, "name": "fingerprint-matrix-report", "digest": "sha256:d4f02abfb8a6157ea08af84cd727e35a6ab73fbd6a7aec018b545d2054af9496", "size_in_bytes": 1097},
+    {"id": 10676355337, "name": "fingerprint-evidence-amd64", "digest": "sha256:25190fcacf56e3d4fb91fbe443b921a7ca189ddde71bfb6128f797e50efe50f4", "size_in_bytes": 172833},
+    {"id": 10676320460, "name": "matrix-evidence-amd64-ubuntu-24.04", "digest": "sha256:c8973c60e8ad2516cc631a12136c34f40a137732167400ebe157f149fe65af2d", "size_in_bytes": 135999},
+    {"id": 10676250577, "name": "matrix-evidence-amd64-fedora-43", "digest": "sha256:c81016cb258ce2fd37b19c44ed7a4324829cfc528102fafa15c422433c53b1e7", "size_in_bytes": 188562},
+    {"id": 10676067540, "name": "matrix-evidence-amd64-alpine-3.23", "digest": "sha256:dacf7cdfd7c8c0d3a4f2e11fbc966c2dc9e6682fdc6d2fd7e1cb8ef8ca74e53c", "size_in_bytes": 147374},
+    {"id": 10675672781, "name": "matrix-evidence-arm64-alpine-3.23", "digest": "sha256:582accae9fd068723f134b247a226a81278e7f1e91f06575b4bed0183f0c0f86", "size_in_bytes": 147298},
+    {"id": 10675593053, "name": "matrix-evidence-arm64-fedora-43", "digest": "sha256:c8de04aed9f832bd87cad57460c3cea24784e03dba652e6093062ba79b24af29", "size_in_bytes": 187749},
+    {"id": 10675532673, "name": "matrix-evidence-arm64-ubuntu-24.04", "digest": "sha256:d8896e734d5baa08eca32aca1747ba1f00dbe61724dec6c7e2c7e1ecaaa73557", "size_in_bytes": 135822},
+    {"id": 10675482447, "name": "fingerprint-evidence-arm64", "digest": "sha256:15de4e1e28c51515790144c25a61002eedee09f3cfb9b312c1e788a82ca2bc58", "size_in_bytes": 172822},
+    {"id": 10675432982, "name": "matrix-evidence-arm64-debian-13", "digest": "sha256:a6e5e737f4dcbe781bd64ba8ca7136670267e2e08991ec2f35d4e568e24231f3", "size_in_bytes": 156237},
+    {"id": 10675357782, "name": "matrix-evidence-amd64-debian-13", "digest": "sha256:d05ffa5f71877e915c23d0d5f6c51515c4fee2107a674fc3546ed27e0fa023ad", "size_in_bytes": 156303}
+  ]
+}
