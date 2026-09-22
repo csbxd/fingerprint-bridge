@@ -10,8 +10,37 @@ use std::path::Path;
 // all identifiers avoids its random remainder ordering (and the off-by-one
 // seed read in that path). This orders extensions; it does not enable them.
 const BACKEND_EXTENSIONS: &[u16] = &[
-    0, 65037, 23, 65281, 10, 11, 35, 16, 5, 13, 13172, 18, 30032, 14, 51, 45, 42, 43, 44, 57,
-    65445, 27, 34, 17613, 17513, 47, 35387, 51764, 28,
+    0,
+    65037,
+    23,
+    65281,
+    10,
+    11,
+    35,
+    16,
+    5,
+    13,
+    #[cfg(feature = "patched-tls")]
+    50,
+    13172,
+    18,
+    30032,
+    14,
+    51,
+    45,
+    42,
+    43,
+    44,
+    57,
+    65445,
+    27,
+    34,
+    17613,
+    17513,
+    47,
+    35387,
+    51764,
+    28,
 ];
 fn extension_order(incoming: &[u16]) -> Vec<ExtensionType> {
     let mut order = Vec::new();
@@ -196,6 +225,19 @@ pub fn mirror(
     if !signatures.is_empty() {
         b.set_verify_algorithm_prefs(&signatures)?;
     }
+    #[cfg(feature = "patched-tls")]
+    let mut certificate_signatures = vec![];
+    #[cfg(feature = "patched-tls")]
+    for id in &hello.signature_algorithms_cert {
+        if grease(*id) {
+            continue;
+        }
+        if SIGNATURES.contains(id) {
+            certificate_signatures.push(*id);
+        } else {
+            limitations.push(format!("unsupported certificate signature algorithm {id}"));
+        }
+    }
     let mut alpn = vec![];
     for p in &hello.alpn {
         let p = hex::decode(p)?;
@@ -233,8 +275,32 @@ pub fn mirror(
     }
     // Only the backend's supported extension identifiers are passed to its API.
     const KNOWN: &[u16] = &[
-        0, 5, 10, 11, 13, 16, 18, 21, 23, 27, 28, 34, 35, 41, 42, 43, 44, 45, 47, 51, 17513, 17613,
-        65037, 65281,
+        0,
+        5,
+        10,
+        11,
+        13,
+        16,
+        18,
+        21,
+        23,
+        27,
+        28,
+        34,
+        35,
+        41,
+        42,
+        43,
+        44,
+        45,
+        47,
+        #[cfg(feature = "patched-tls")]
+        50,
+        51,
+        17513,
+        17613,
+        65037,
+        65281,
     ];
     let order = extension_order(&hello.extensions);
     b.set_extension_permutation(&order)?;
@@ -257,6 +323,11 @@ pub fn mirror(
                 count: usize,
                 padding: std::ffi::c_int,
             ) -> std::ffi::c_int;
+            fn SSL_set_bridge_cert_verify_algorithm_prefs(
+                ssl: *mut std::ffi::c_void,
+                prefs: *const u16,
+                count: usize,
+            ) -> std::ffi::c_int;
         }
         let order: Vec<_> = hello
             .ciphers
@@ -275,6 +346,19 @@ pub fn mirror(
             )
         };
         ensure!(configured == 1, "patched TLS profile rejected");
+        if !certificate_signatures.is_empty() {
+            let configured = unsafe {
+                SSL_set_bridge_cert_verify_algorithm_prefs(
+                    ssl.as_ptr().cast(),
+                    certificate_signatures.as_ptr(),
+                    certificate_signatures.len(),
+                )
+            };
+            ensure!(
+                configured == 1,
+                "patched certificate signature profile rejected"
+            );
+        }
     }
     #[cfg(feature = "patched-tls")]
     {
