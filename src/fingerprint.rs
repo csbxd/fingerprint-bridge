@@ -69,6 +69,7 @@ pub struct TlsHello {
     pub groups: Vec<u16>,
     pub point_formats: Vec<u8>,
     pub signature_algorithms: Vec<u16>,
+    pub signature_algorithms_cert: Vec<u16>,
     pub supported_versions: Vec<u16>,
     pub alpn: Vec<String>,
     pub key_share_groups: Vec<u16>,
@@ -225,6 +226,7 @@ fn parse_hello(bytes: &[u8]) -> Result<TlsHello> {
         groups: vec![],
         point_formats: vec![],
         signature_algorithms: vec![],
+        signature_algorithms_cert: vec![],
         supported_versions: vec![],
         alpn: vec![],
         key_share_groups: vec![],
@@ -273,6 +275,17 @@ fn parse_hello(bytes: &[u8]) -> Result<TlsHello> {
             13 => {
                 hello.signature_algorithms = words(v.v16()?)?;
                 v.done()?;
+            }
+            50 => {
+                hello.signature_algorithms_cert = words(v.v16()?)?;
+                ensure!(
+                    !hello.signature_algorithms_cert.is_empty(),
+                    "empty certificate signature algorithms"
+                );
+                v.done()?;
+                // Keep the pre-existing raw-body check as well as decoded fields.
+                // Parsing a known extension must not enlarge the exemptions.
+                hello.other_extensions.push((id, digest(raw)));
             }
             16 => {
                 let mut protocols = Reader::new(v.v16()?);
