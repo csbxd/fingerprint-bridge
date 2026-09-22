@@ -70,7 +70,7 @@ func open(aead cipher.AEAD, salt []byte, seq uint64, kind byte, data []byte) ([]
 	return aead.Open(nil, nonce, data[8:], additional(seq, kind, len(data)-8-aead.Overhead()))
 }
 
-func parseHello(data []byte, evidence map[string]any) ([]byte, bool, error) {
+func parseHello(data []byte, expectedGroup uint16, evidence map[string]any) ([]byte, bool, error) {
 	if len(data) < 42 || data[0] != 1 || data[4] != 3 || data[5] != 3 {
 		return nil, false, errors.New("expected TLS 1.2 ClientHello")
 	}
@@ -92,7 +92,7 @@ func parseHello(data []byte, evidence map[string]any) ([]byte, bool, error) {
 	if pos+2 > len(data) { return nil, false, errors.New("missing extensions") }
 	n = int(binary.BigEndian.Uint16(data[pos:])); pos += 2
 	if pos+n != len(data) { return nil, false, errors.New("bad extension length") }
-	found := false
+	found, groupOffered := false, false
 	for pos < len(data) {
 		if pos+4 > len(data) { return nil, false, errors.New("short extension") }
 		id, size := binary.BigEndian.Uint16(data[pos:]), int(binary.BigEndian.Uint16(data[pos+2:])); pos += 4
@@ -102,27 +102,49 @@ func parseHello(data []byte, evidence map[string]any) ([]byte, bool, error) {
 			found = len(body) == 3 && body[0] == 2 && body[1] == 0 && body[2] == 1
 			evidence["outgoing_point_formats"] = []int{int(body[1]), int(body[2])}
 		}
+		if id == 10 {
+			body := data[pos:pos+size]
+			if len(body) >= 2 && int(binary.BigEndian.Uint16(body)) == len(body)-2 {
+				for i := 2; i+1 < len(body); i += 2 {
+					groupOffered = groupOffered || binary.BigEndian.Uint16(body[i:]) == expectedGroup
+				}
+			}
+		}
 		if id == 65281 { reneg = true }
 		pos += size
 	}
 	if !found { return nil, false, errors.New("exact point formats [0,1] not offered") }
+	if !groupOffered { return nil, false, errors.New("selected EC group not offered") }
 	evidence["compressed_prime_offered"] = true
+	evidence["selected_group_offered"] = true
 	return randomBytes, reneg, nil
 }
 
-func compressedP256(uncompressed []byte) ([]byte, error) {
-	if len(uncompressed) != 65 || uncompressed[0] != 4 { return nil, errors.New("bad P-256 public key") }
-	out := make([]byte, 33)
-	out[0] = 2 | (uncompressed[64] & 1)
-	copy(out[1:], uncompressed[1:33])
+func compressedPrime(uncompressed []byte, coordinateSize int) ([]byte, error) {
+	if len(uncompressed) != 1+2*coordinateSize || uncompressed[0] != 4 {
+		return nil, errors.New("bad prime-curve public key")
+	}
+	out := make([]byte, 1+coordinateSize)
+	out[0] = 2 | (uncompressed[len(uncompressed)-1] & 1)
+	copy(out[1:], uncompressed[1:1+coordinateSize])
 	return out, nil
 }
 
-func serve(c net.Conn, certificate tls.Certificate, mode string, evidence map[string]any) error {
+func curveByName(name string) (ecdh.Curve, uint16, int, error) {
+	switch name {
+	case "p256": return ecdh.P256(), 23, 32, nil
+	case "p384": return ecdh.P384(), 24, 48, nil
+	case "p521": return ecdh.P521(), 25, 66, nil
+	default: return nil, 0, 0, fmt.Errorf("unsupported curve %q", name)
+	}
+}
+
+func serve(c net.Conn, certificate tls.Certificate, mode, curveName string, evidence map[string]any) error {
 	c.SetDeadline(time.Now().Add(20 * time.Second))
+	curve, group, coordinateSize, err := curveByName(curveName); if err != nil { return err }
 	kind, ch, err := readRecord(c); if err != nil { return err }
 	if kind != 22 { return errors.New("missing ClientHello") }
-	clientRandom, reneg, err := parseHello(ch, evidence); if err != nil { return err }
+	clientRandom, reneg, err := parseHello(ch, group, evidence); if err != nil { return err }
 	serverRandom := make([]byte, 32); if _, err = rand.Read(serverRandom); err != nil { return err }
 	extensions := []byte{}
 	if reneg { extensions = append(extensions, 255, 1, 0, 1, 0) }
@@ -132,10 +154,10 @@ func serve(c net.Conn, certificate tls.Certificate, mode string, evidence map[st
 	chain := []byte{}
 	for _, der := range certificate.Certificate { chain = append(chain, u24(len(der))...); chain = append(chain, der...) }
 	key, ok := certificate.PrivateKey.(*rsa.PrivateKey); if !ok { return errors.New("RSA key required") }
-	ecdhe, err := ecdh.P256().GenerateKey(rand.Reader); if err != nil { return err }
-	point, err := compressedP256(ecdhe.PublicKey().Bytes()); if err != nil { return err }
+	ecdhe, err := curve.GenerateKey(rand.Reader); if err != nil { return err }
+	point, err := compressedPrime(ecdhe.PublicKey().Bytes(), coordinateSize); if err != nil { return err }
 	if mode == "malformed" { for i := 1; i < len(point); i++ { point[i] = 0xff } }
-	params := append([]byte{3, 0, 23, byte(len(point))}, point...)
+	params := append([]byte{3, byte(group >> 8), byte(group), byte(len(point))}, point...)
 	signed := append(append(append([]byte{}, clientRandom...), serverRandom...), params...)
 	digest := sha256.Sum256(signed)
 	signature, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:]); if err != nil { return err }
@@ -156,7 +178,7 @@ func serve(c net.Conn, certificate tls.Certificate, mode string, evidence map[st
 	if mode == "malformed" { return errors.New("malformed point was accepted") }
 	if kind != 22 || len(cke) < 6 || cke[0] != 16 { return errors.New("expected ECDHE ClientKeyExchange") }
 	n := int(cke[4]); if n != len(cke)-5 { return errors.New("bad ECDHE CKE length") }
-	peer, err := ecdh.P256().NewPublicKey(cke[5:]); if err != nil { return err }
+	peer, err := curve.NewPublicKey(cke[5:]); if err != nil { return err }
 	premaster, err := ecdhe.ECDH(peer); if err != nil { return err }
 	transcript = append(transcript, cke...)
 	master := prf(premaster, "master secret", append(append([]byte{}, clientRandom...), serverRandom...), 48)
@@ -190,13 +212,14 @@ func main() {
 	certPath := flag.String("cert", "", "synthetic chain")
 	keyPath := flag.String("key", "", "synthetic key")
 	mode := flag.String("mode", "valid", "valid or malformed")
+	curve := flag.String("curve", "p256", "p256, p384, or p521")
 	flag.Parse()
 	certificate, err := tls.LoadX509KeyPair(*certPath, *keyPath); if err != nil { panic(err) }
 	listener, err := net.Listen("tcp4", "127.0.0.1:0"); if err != nil { panic(err) }
 	defer listener.Close(); fmt.Printf("{\"port\":%d}\n", listener.Addr().(*net.TCPAddr).Port)
 	listener.(*net.TCPListener).SetDeadline(time.Now().Add(20 * time.Second))
-	c, err := listener.Accept(); evidence := map[string]any{"mode": *mode}
-	if err == nil { err = serve(c, certificate, *mode, evidence); c.Close() }
+	c, err := listener.Accept(); evidence := map[string]any{"mode": *mode, "curve": *curve}
+	if err == nil { err = serve(c, certificate, *mode, *curve, evidence); c.Close() }
 	if err != nil { evidence["error"] = err.Error() }
 	encoded, _ := json.Marshal(evidence); fmt.Println(string(encoded))
 }

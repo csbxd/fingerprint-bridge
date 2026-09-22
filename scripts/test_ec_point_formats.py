@@ -44,56 +44,64 @@ class ECPointFormatTests(unittest.TestCase):
                                     str(ROOT / 'scripts/clients/ec_point_probe.go')],
                                    capture_output=True, text=True, timeout=120)
             self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
-            for mode in ('valid', 'malformed'):
-                with self.subTest(mode=mode):
-                    origin = subprocess.Popen([str(peer), '-cert', str(path / 'a.pem'),
-                                               '-key', str(path / 'a.key'), '-mode', mode],
-                                              stdout=subprocess.PIPE,
-                                              stderr=subprocess.PIPE, text=True)
-                    proc = log = None
-                    try:
-                        startup = json.loads(origin.stdout.readline())
-                        proc, port, log = start_bridge(
-                            ROOT / 'target/debug/fingerprint-bridge', path,
-                            SimpleNamespace(port=startup['port']), path / f'runtime-point-{mode}')
-                        if mode == 'valid':
-                            response = python_client(path / 'ca.pem', port)
-                            self.assertIn(b'200 OK', response)
-                            self.assertIn(b'EC_POINT_OK', response)
-                        else:
-                            with self.assertRaises((ssl.SSLError, ConnectionError, OSError)):
-                                python_client(path / 'ca.pem', port)
-                        output, errors = origin.communicate(timeout=25)
-                        evidence = json.loads(output)
-                        log.flush(); log.seek(0)
-                        diagnostic = repr(evidence) + errors + log.read()
-                        self.assertEqual(evidence.get('outgoing_point_formats'), [0, 1], diagnostic)
-                        self.assertTrue(evidence.get('compressed_prime_offered'), diagnostic)
-                        self.assertTrue(evidence.get('compressed_server_key_sent'), diagnostic)
-                        if mode == 'valid':
-                            self.assertNotIn('error', evidence, diagnostic)
-                            for field in ('client_finished_verified', 'http_request_received',
-                                          'cookie_preserved', 'authority_rewritten'):
-                                self.assertTrue(evidence.get(field), diagnostic)
-                        else:
-                            self.assertNotIn('error', evidence, diagnostic)
-                            self.assertTrue(evidence.get('malformed_rejected'), diagnostic)
-                            self.assertEqual(evidence.get('client_alert'), 47, diagnostic)
-                            self.assertNotIn('http_request_received', evidence, diagnostic)
-                        results.append(dict(evidence, passed=True))
-                    finally:
-                        if proc:
-                            proc.terminate(); proc.wait(timeout=5)
-                        if log:
-                            log.close()
-                        if origin.poll() is None:
-                            origin.terminate(); origin.wait(timeout=5)
-                        origin.stdout.close(); origin.stderr.close()
-        self.assertEqual(len(results), 2)
+            for curve in ('p256', 'p384', 'p521'):
+                for mode in ('valid', 'malformed'):
+                    with self.subTest(curve=curve, mode=mode):
+                        self._run_case(peer, path, curve, mode, results)
+        self.assertEqual(len(results), 6)
         output = ROOT / 'test-results/ci-ec-point-lab'
         output.mkdir(parents=True, exist_ok=True)
         (output / 'summary.json').write_text(json.dumps(results, indent=2) + '\n')
         print('EC_POINT_RESULTS=' + json.dumps(results, separators=(',', ':')), flush=True)
+
+    def _run_case(self, peer, path, curve, mode, results):
+        origin = subprocess.Popen([str(peer), '-cert', str(path / 'a.pem'),
+                                   '-key', str(path / 'a.key'), '-mode', mode,
+                                   '-curve', curve],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, text=True)
+        proc = log = None
+        try:
+            startup = json.loads(origin.stdout.readline())
+            proc, port, log = start_bridge(
+                ROOT / 'target/debug/fingerprint-bridge', path,
+                SimpleNamespace(port=startup['port']),
+                path / f'runtime-point-{curve}-{mode}')
+            if mode == 'valid':
+                response = python_client(path / 'ca.pem', port)
+                self.assertIn(b'200 OK', response)
+                self.assertIn(b'EC_POINT_OK', response)
+            else:
+                with self.assertRaises((ssl.SSLError, ConnectionError, OSError)):
+                    python_client(path / 'ca.pem', port)
+            output, errors = origin.communicate(timeout=25)
+            evidence = json.loads(output)
+            log.flush(); log.seek(0)
+            diagnostic = repr(evidence) + errors + log.read()
+            self.assertEqual(evidence.get('outgoing_point_formats'), [0, 1], diagnostic)
+            self.assertTrue(evidence.get('compressed_prime_offered'), diagnostic)
+            self.assertTrue(evidence.get('selected_group_offered'), diagnostic)
+            self.assertTrue(evidence.get('compressed_server_key_sent'), diagnostic)
+            self.assertEqual(evidence.get('curve'), curve, diagnostic)
+            if mode == 'valid':
+                self.assertNotIn('error', evidence, diagnostic)
+                for field in ('client_finished_verified', 'http_request_received',
+                              'cookie_preserved', 'authority_rewritten'):
+                    self.assertTrue(evidence.get(field), diagnostic)
+            else:
+                self.assertNotIn('error', evidence, diagnostic)
+                self.assertTrue(evidence.get('malformed_rejected'), diagnostic)
+                self.assertEqual(evidence.get('client_alert'), 47, diagnostic)
+                self.assertNotIn('http_request_received', evidence, diagnostic)
+            results.append(dict(evidence, passed=True))
+        finally:
+            if proc:
+                proc.terminate(); proc.wait(timeout=5)
+            if log:
+                log.close()
+            if origin.poll() is None:
+                origin.terminate(); origin.wait(timeout=5)
+            origin.stdout.close(); origin.stderr.close()
 
 
 if __name__ == '__main__':
