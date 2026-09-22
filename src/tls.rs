@@ -155,6 +155,10 @@ pub fn mirror(
     const SIGNATURES: &[u16] = &[
         0x0201,
         0x0203,
+        #[cfg(feature = "patched-tls")]
+        0x0301,
+        #[cfg(feature = "patched-tls")]
+        0x0303,
         0x0401,
         0x0501,
         0x0601,
