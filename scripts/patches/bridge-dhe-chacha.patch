@@ -1,7 +1,7 @@
 diff --git a/include/openssl/tls1.h b/include/openssl/tls1.h
 --- a/include/openssl/tls1.h
 +++ b/include/openssl/tls1.h
-@@ -201,6 +201,7 @@ extern "C" {
+@@ -201,8 +201,9 @@ extern "C" {
  #define TLS1_CK_DHE_RSA_WITH_AES_128_SHA256 0x03000067
  #define TLS1_CK_DHE_RSA_WITH_AES_256_SHA256 0x0300006B
  #define TLS1_CK_DHE_RSA_WITH_AES_128_GCM_SHA256 0x0300009E
