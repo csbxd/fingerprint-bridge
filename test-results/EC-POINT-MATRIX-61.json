@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "source_commit": "9d6f2c44f339a36f7ce28d1efe7f0cf8d1d56fc7",
+  "workflow_run": 35797236075,
+  "workflow_run_number": 61,
+  "matrix_cells": 72,
+  "verdicts": {
+    "match": 24,
+    "mismatch": 24,
+    "inconclusive_baseline": 24
+  },
+  "layers": {
+    "tls_match": 32,
+    "http_match": 64,
+    "tcp_match": 72,
+    "same_connection_tls_match": 48,
+    "same_connection_http_match": 72
+  },
+  "ordered_capability_vectors": {
+    "ciphers": "72/72",
+    "groups": "72/72",
+    "signature_algorithms": "72/72",
+    "signature_algorithms_cert": "72/72",
+    "extensions": "72/72",
+    "point_formats": "48/72"
+  },
+  "ec_point_formats": {
+    "compressed_prime_inbound_and_outbound": "24/24 applicable Python/Node cells",
+    "applicable_inbound": [0, 1, 2],
+    "applicable_outbound": [0, 1],
+    "remaining_limitation": "unsupported EC point format 2",
+    "remaining_limitation_cells": 24
+  },
+  "regression": {
+    "amd64": {
+      "rust_tests": 64,
+      "python_test_methods": 36,
+      "hybrid_cases": 18,
+      "ec_point_cases": 2,
+      "passed": true
+    },
+    "arm64": {
+      "rust_tests": 64,
+      "python_test_methods": 36,
+      "hybrid_cases": 18,
+      "ec_point_cases": 2,
+      "passed": true
+    },
+    "ec_point_positive": {
+      "wire_formats": [0, 1],
+      "compressed_server_point": true,
+      "client_finished_verified": true,
+      "encrypted_http_received": true,
+      "cookie_preserved": true,
+      "authority_rewritten": true
+    },
+    "ec_point_negative": {
+      "wire_formats": [0, 1],
+      "malformed_compressed_point_rejected": true,
+      "tls_alert": 47,
+      "http_received": false
+    }
+  },
+  "strict_gate": "failed as required while any stable fingerprint mismatch remains",
+  "artifacts": [
+    {"id": 10725090475, "name": "fingerprint-evidence-amd64", "sha256": "fa0ceda106fead14401fd5606ece1644838d23da4a23f764b66eac4f08e34354"},
+    {"id": 10724493165, "name": "fingerprint-evidence-arm64", "sha256": "8a8d14c47e34f7181f5a130b8c938fe0e8f9c6cd48a8fcbf6722e887ea2b004d"},
+    {"id": 10724577619, "name": "matrix-evidence-amd64-ubuntu-24.04", "sha256": "59be03a3ed0269c55f2ac82382455e2c8577f129c1e3aea71bfc9e8ce08937e1"},
+    {"id": 10724662577, "name": "matrix-evidence-amd64-debian-13", "sha256": "256b1c20e902ea4ce335ca80f814fb84084cf6cefd1a55e73d0faca81ef2ee98"},
+    {"id": 10724935796, "name": "matrix-evidence-amd64-fedora-43", "sha256": "15fdb3c6da1f7f7398cc3d07a2030d1855fa04e2c703045e129feb3b536e1a6a"},
+    {"id": 10724936008, "name": "matrix-evidence-amd64-alpine-3.23", "sha256": "3e53233559d3fa45476921938648b978c6bde418937216a1e253e31e86bf3f13"},
+    {"id": 10724397050, "name": "matrix-evidence-arm64-ubuntu-24.04", "sha256": "fbe99c2fed95f7ffaa83e7f20124f20a81f3c2f704fe51cdb2d6f9d39d7fb84d"},
+    {"id": 10724406987, "name": "matrix-evidence-arm64-debian-13", "sha256": "a72b9c6d724bce99d7e3e08690b9ffc4f22f35644bc1748a1e1c0745b404b052"},
+    {"id": 10724157392, "name": "matrix-evidence-arm64-fedora-43", "sha256": "69100fef11e3abe91d1f87326ec904243de6f4a11742fdcb80cc83a5b5b4ebd0"},
+    {"id": 10724057921, "name": "matrix-evidence-arm64-alpine-3.23", "sha256": "8ef2e983dfeba4fdde11f121984a3f7315a7046257db37fe3272db3a708e3958"},
+    {"id": 10724763402, "name": "fingerprint-matrix-report", "sha256": "6cdf576441b09e5a8c0bba3eb8bf0a363e080f93ab68adc85c5d3414013ae8d0"}
+  ]
+}
