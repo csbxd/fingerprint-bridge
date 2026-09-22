@@ -28,6 +28,8 @@ def python_client(ca, port):
                 if not block:
                     break
                 response.extend(block)
+                if b'EC_POINT_OK' in response:
+                    break
             return bytes(response)
 
 

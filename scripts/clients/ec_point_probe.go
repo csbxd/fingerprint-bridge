@@ -100,7 +100,7 @@ func parseHello(data []byte, evidence map[string]any) ([]byte, bool, error) {
 		if id == 11 {
 			body := data[pos:pos+size]
 			found = len(body) == 3 && body[0] == 2 && body[1] == 0 && body[2] == 1
-			evidence["outgoing_point_formats"] = append([]byte{}, body[1:]...)
+			evidence["outgoing_point_formats"] = []int{int(body[1]), int(body[2])}
 		}
 		if id == 65281 { reneg = true }
 		pos += size
