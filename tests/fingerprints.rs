@@ -620,6 +620,48 @@ async fn tls_catalog_includes_explicit_supported_ciphers_excluded_by_all_alias()
     assert_eq!(incoming.ciphers, outgoing.ciphers);
 }
 
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_ccm_suite_order_without_adding_unoffered_suites() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    // Intentionally interleave TLS 1.3, TLS 1.2, full/short tags and key sizes.
+    incoming.ciphers = vec![
+        0xc0ad, 0x1305, 0xc09e, 0xc0a1, 0xc0ae, 0xc09c, 0x1304, 0xc0af, 0xc09f, 0xc0a0, 0xc0ac,
+        0xc09d, 0xc0a3, 0xc0a2, 0x00ff,
+    ];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item.starts_with("unsupported cipher")));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.ciphers, outgoing.ciphers);
+
+    incoming.ciphers = vec![0x1301, 0xc02f];
+    let (ssl, _) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert_eq!(emitted_hello(ssl).await.ciphers, incoming.ciphers);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_supports_ccm_only_tls13_profile() {
+    use btls::ssl::{SslConnector, SslMethod, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_min_proto_version(Some(SslVersion::TLS1_3)).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    incoming.ciphers = vec![0x1305, 0x1304];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item.starts_with("unsupported cipher")));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.ciphers, incoming.ciphers);
+    assert_eq!(outgoing.supported_versions, incoming.supported_versions);
+}
+
 #[tokio::test]
 async fn native_tls_mirror_preserves_supported_client_profile() {
     use btls::ssl::{SslConnector, SslMethod, SslSignatureAlgorithm, SslVersion};

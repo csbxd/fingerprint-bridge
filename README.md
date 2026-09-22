@@ -97,6 +97,8 @@ ML-DSA 另用 Go 1.27.1 `crypto/mldsa` 独立对端生成 ML-DSA-44 CA、服务�
 
 DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套件与 SHA-1/224/256/384/512 五种握手签名的 30 个组合；另验证未提供签名算法和篡改证书必须失败。仅受控测试显式选择算法，矩阵客户端默认行为不变。SHA-384/512 的 DSA **证书签名**另由 OpenSSL 签发证书、独立 Go 服务端完成 TLS 1.2/1.3 握手验证；篡改签名和替换摘要 OID 均须在 HTTP 到达 A 前被拒绝。只有补丁后端声明这两项证书能力，未实现的 Ed448 仍被过滤。原握手能力结果见 [DSA 验证记录](test-results/DSA-VALIDATION.md)；新增证书能力见 [DSA 证书验证记录](test-results/DSA-CERTIFICATES-VALIDATION.md)。
 
+AES-CCM 专项验证覆盖 12 个 TLS 1.2 RSA / DHE-RSA / ECDHE-ECDSA 套件，以及 TLS 1.3 `TLS_AES_128_CCM_SHA256` / `TLS_AES_128_CCM_8_SHA256`。B 上游只按入站提供列表启用这些能力，使用真实 CCM 加解密及 16/8 字节标签；TLS 1.3 的内容类型和填充也参与认证。独立 OpenSSL 测试验证大于 16 KiB 的双向 HTTP、Cookie 和域名改写、密文/标签篡改，以及拒绝未提供的套件。CCM 每个 traffic key 限制为 `2^23` 条记录，达到限额前须轮换密钥或重新连接；CCM8 首次认证失败即终止。该能力不包含 DTLS，也不继承客户端的会话恢复或 0-RTT。
+
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
 
 工作流 `.github/workflows/ci.yml` 在 push、pull request 和手动运行时执行。原有 Rust、HTTP/1.1、HTTP/2、证书拒绝测试保留；增加 **8 个原生环境、72 个客户端/协议组合**：

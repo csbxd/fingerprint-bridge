@@ -1,0 +1,662 @@
+diff --git a/crypto/fipsmodule/cipher/e_aesccm.cc.inc b/crypto/fipsmodule/cipher/e_aesccm.cc.inc
+index af5077e..3fe790d 100644
+--- a/crypto/fipsmodule/cipher/e_aesccm.cc.inc
++++ b/crypto/fipsmodule/cipher/e_aesccm.cc.inc
+@@ -408,3 +408,117 @@ DEFINE_METHOD_FUNCTION(EVP_AEAD, EVP_aead_aes_128_ccm_matter) {
+   out->seal_scatter = aead_aes_ccm_seal_scatter;
+   out->open_gather = aead_aes_ccm_open_gather;
+ }
++
++
++// RFC 6655 / RFC 8446 use 12-byte nonces (L=3).  TLS 1.3 passes the
++// encrypted content type separately from the body to seal_scatter.  Join the
++// two inputs before authenticating: padding each fragment independently would
++// produce a different CBC-MAC, and restarting CTR would reuse its first block.
++static int aead_aes_ccm_tls_seal_scatter(
++    const EVP_AEAD_CTX *ctx, uint8_t *out, uint8_t *out_tag,
++    size_t *out_tag_len, size_t max_out_tag_len, const uint8_t *nonce,
++    size_t nonce_len, const uint8_t *in, size_t in_len, const uint8_t *extra_in,
++    size_t extra_in_len, const uint8_t *ad, size_t ad_len) {
++  if (extra_in_len == 0) {
++    return aead_aes_ccm_seal_scatter(ctx, out, out_tag, out_tag_len,
++                                   max_out_tag_len, nonce, nonce_len, in, in_len,
++                                   nullptr, 0, ad, ad_len);
++  }
++  const auto *ccm_ctx =
++      reinterpret_cast<const aead_aes_ccm_ctx *>(&ctx->state);
++  if (extra_in_len > SIZE_MAX - in_len ||
++      in_len + extra_in_len > CRYPTO_ccm128_max_input(&ccm_ctx->ccm)) {
++    OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_TOO_LARGE);
++    return 0;
++  }
++  if (extra_in_len > max_out_tag_len ||
++      ctx->tag_len > max_out_tag_len - extra_in_len) {
++    OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_BUFFER_TOO_SMALL);
++    return 0;
++  }
++  if (nonce_len != EVP_AEAD_nonce_length(ctx->aead)) {
++    OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_INVALID_NONCE_SIZE);
++    return 0;
++  }
++  const size_t len = in_len + extra_in_len;
++  uint8_t *joined = static_cast<uint8_t *>(OPENSSL_malloc(len));
++  if (joined == nullptr) {
++    return 0;
++  }
++  OPENSSL_memcpy(joined, in, in_len);
++  OPENSSL_memcpy(joined + in_len, extra_in, extra_in_len);
++  const int ok = CRYPTO_ccm128_encrypt(
++      &ccm_ctx->ccm, &ccm_ctx->ks.ks, joined, out_tag + extra_in_len,
++      ctx->tag_len, nonce, nonce_len, joined, len, ad, ad_len);
++  if (ok) {
++    OPENSSL_memcpy(out, joined, in_len);
++    OPENSSL_memcpy(out_tag, joined + in_len, extra_in_len);
++    *out_tag_len = extra_in_len + ctx->tag_len;
++  } else {
++    OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_TOO_LARGE);
++  }
++  OPENSSL_clear_free(joined, len);
++  return ok;
++}
++
++static int aead_aes_ccm_tls_init(EVP_AEAD_CTX *ctx, const uint8_t *key,
++                               size_t key_len, size_t tag_len) {
++  return aead_aes_ccm_init(ctx, key, key_len, tag_len, 16, 3);
++}
++
++static int aead_aes_ccm_8_tls_init(EVP_AEAD_CTX *ctx, const uint8_t *key,
++                                 size_t key_len, size_t tag_len) {
++  return aead_aes_ccm_init(ctx, key, key_len, tag_len, 8, 3);
++}
++
++DEFINE_METHOD_FUNCTION(EVP_AEAD, EVP_aead_aes_128_ccm) {
++  memset(out, 0, sizeof(EVP_AEAD));
++  out->key_len = 16;
++  out->nonce_len = 12;
++  out->overhead = 16;
++  out->max_tag_len = 16;
++  out->init = aead_aes_ccm_tls_init;
++  out->cleanup = aead_aes_ccm_cleanup;
++  out->seal_scatter = aead_aes_ccm_tls_seal_scatter;
++  out->open_gather = aead_aes_ccm_open_gather;
++  out->seal_scatter_supports_extra_in = 1;
++}
++
++DEFINE_METHOD_FUNCTION(EVP_AEAD, EVP_aead_aes_128_ccm_8) {
++  memset(out, 0, sizeof(EVP_AEAD));
++  out->key_len = 16;
++  out->nonce_len = 12;
++  out->overhead = 8;
++  out->max_tag_len = 8;
++  out->init = aead_aes_ccm_8_tls_init;
++  out->cleanup = aead_aes_ccm_cleanup;
++  out->seal_scatter = aead_aes_ccm_tls_seal_scatter;
++  out->open_gather = aead_aes_ccm_open_gather;
++  out->seal_scatter_supports_extra_in = 1;
++}
++
++DEFINE_METHOD_FUNCTION(EVP_AEAD, EVP_aead_aes_256_ccm) {
++  memset(out, 0, sizeof(EVP_AEAD));
++  out->key_len = 32;
++  out->nonce_len = 12;
++  out->overhead = 16;
++  out->max_tag_len = 16;
++  out->init = aead_aes_ccm_tls_init;
++  out->cleanup = aead_aes_ccm_cleanup;
++  out->seal_scatter = aead_aes_ccm_tls_seal_scatter;
++  out->open_gather = aead_aes_ccm_open_gather;
++  out->seal_scatter_supports_extra_in = 1;
++}
++
++DEFINE_METHOD_FUNCTION(EVP_AEAD, EVP_aead_aes_256_ccm_8) {
++  memset(out, 0, sizeof(EVP_AEAD));
++  out->key_len = 32;
++  out->nonce_len = 12;
++  out->overhead = 8;
++  out->max_tag_len = 8;
++  out->init = aead_aes_ccm_8_tls_init;
++  out->cleanup = aead_aes_ccm_cleanup;
++  out->seal_scatter = aead_aes_ccm_tls_seal_scatter;
++  out->open_gather = aead_aes_ccm_open_gather;
++  out->seal_scatter_supports_extra_in = 1;
++}
+diff --git a/include/openssl/aead.h b/include/openssl/aead.h
+index c0a6500..a1ec36b 100644
+--- a/include/openssl/aead.h
++++ b/include/openssl/aead.h
+@@ -182,6 +182,13 @@ OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_128_ccm_bluetooth_8(void);
+ // and 13-byte nonces), as used in the Matter specification.
+ OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_128_ccm_matter(void);
+ 
++// AES-CCM for TLS: 12-byte nonces, 16-byte tags, or 8-byte tags for *_ccm_8.
++// These are different from the 13-byte Bluetooth/Matter constructions above.
++OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_128_ccm(void);
++OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_256_ccm(void);
++OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_128_ccm_8(void);
++OPENSSL_EXPORT const EVP_AEAD *EVP_aead_aes_256_ccm_8(void);
++
+ // EVP_has_aes_hardware returns one if we enable hardware support for fast and
+ // constant-time AES-GCM.
+ OPENSSL_EXPORT int EVP_has_aes_hardware(void);
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index 23d22d9..9054131 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -1483,6 +1483,20 @@ DEFINE_CONST_STACK_OF(SSL_CIPHER)
+ #define SSL_CIPHER_AES_128_GCM_SHA256 0x1301
+ #define SSL_CIPHER_AES_256_GCM_SHA384 0x1302
+ #define SSL_CIPHER_CHACHA20_POLY1305_SHA256 0x1303
++#define SSL_CIPHER_AES_128_CCM_SHA256 0x1304
++#define SSL_CIPHER_AES_128_CCM_8_SHA256 0x1305
++#define SSL_CIPHER_RSA_WITH_AES_128_CCM 0xc09c
++#define SSL_CIPHER_RSA_WITH_AES_256_CCM 0xc09d
++#define SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM 0xc09e
++#define SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM 0xc09f
++#define SSL_CIPHER_RSA_WITH_AES_128_CCM_8 0xc0a0
++#define SSL_CIPHER_RSA_WITH_AES_256_CCM_8 0xc0a1
++#define SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM_8 0xc0a2
++#define SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM_8 0xc0a3
++#define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM 0xc0ac
++#define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM 0xc0ad
++#define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM_8 0xc0ae
++#define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM_8 0xc0af
+ #define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 0xc02b
+ #define SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 0xc02c
+ #define SSL_CIPHER_ECDHE_RSA_WITH_AES_128_GCM_SHA256 0xc02f
+diff --git a/include/openssl/tls1.h b/include/openssl/tls1.h
+index 9b017b7..4496911 100644
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -209,6 +209,8 @@ extern "C" {
+ #define TLS1_3_CK_AES_128_GCM_SHA256 0x03001301
+ #define TLS1_3_CK_AES_256_GCM_SHA384 0x03001302
+ #define TLS1_3_CK_CHACHA20_POLY1305_SHA256 0x03001303
++#define TLS1_3_CK_AES_128_CCM_SHA256 0x03001304
++#define TLS1_3_CK_AES_128_CCM_8_SHA256 0x03001305
+ 
+ // The following constants are legacy aliases of |TLS1_3_CK_*|.
+ // TODO(davidben): Migrate callers to the new name and remove these.
+@@ -254,6 +256,20 @@ extern "C" {
+ #define TLS1_3_RFC_AES_128_GCM_SHA256 "TLS_AES_128_GCM_SHA256"
+ #define TLS1_3_RFC_AES_256_GCM_SHA384 "TLS_AES_256_GCM_SHA384"
+ #define TLS1_3_RFC_CHACHA20_POLY1305_SHA256 "TLS_CHACHA20_POLY1305_SHA256"
++#define TLS1_3_RFC_AES_128_CCM_SHA256 "TLS_AES_128_CCM_SHA256"
++#define TLS1_3_RFC_AES_128_CCM_8_SHA256 "TLS_AES_128_CCM_8_SHA256"
++#define TLS1_TXT_RSA_WITH_AES_128_CCM "AES128-CCM"
++#define TLS1_TXT_RSA_WITH_AES_256_CCM "AES256-CCM"
++#define TLS1_TXT_DHE_RSA_WITH_AES_128_CCM "DHE-RSA-AES128-CCM"
++#define TLS1_TXT_DHE_RSA_WITH_AES_256_CCM "DHE-RSA-AES256-CCM"
++#define TLS1_TXT_RSA_WITH_AES_128_CCM_8 "AES128-CCM8"
++#define TLS1_TXT_RSA_WITH_AES_256_CCM_8 "AES256-CCM8"
++#define TLS1_TXT_DHE_RSA_WITH_AES_128_CCM_8 "DHE-RSA-AES128-CCM8"
++#define TLS1_TXT_DHE_RSA_WITH_AES_256_CCM_8 "DHE-RSA-AES256-CCM8"
++#define TLS1_TXT_ECDHE_ECDSA_WITH_AES_128_CCM "ECDHE-ECDSA-AES128-CCM"
++#define TLS1_TXT_ECDHE_ECDSA_WITH_AES_256_CCM "ECDHE-ECDSA-AES256-CCM"
++#define TLS1_TXT_ECDHE_ECDSA_WITH_AES_128_CCM_8 "ECDHE-ECDSA-AES128-CCM8"
++#define TLS1_TXT_ECDHE_ECDSA_WITH_AES_256_CCM_8 "ECDHE-ECDSA-AES256-CCM8"
+ 
+ #define TLS_CT_RSA_SIGN 1
+ #define TLS_CT_DSS_SIGN 2
+diff --git a/ssl/internal.h b/ssl/internal.h
+index 41c913e..7b803be 100644
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -282,7 +282,13 @@ BSSL_NAMESPACE_BEGIN
+ #define SSL_AES256GCM 0x00000010u
+ #define SSL_CHACHA20POLY1305 0x00000020u
+ 
+-#define SSL_AES (SSL_AES128 | SSL_AES256 | SSL_AES128GCM | SSL_AES256GCM)
++#define SSL_AES128CCM 0x00000040u
++#define SSL_AES256CCM 0x00000080u
++#define SSL_AES128CCM8 0x00000100u
++#define SSL_AES256CCM8 0x00000200u
++#define SSL_AESCCM (SSL_AES128CCM | SSL_AES256CCM | SSL_AES128CCM8 | SSL_AES256CCM8)
++
++#define SSL_AES (SSL_AES128 | SSL_AES256 | SSL_AES128GCM | SSL_AES256GCM | SSL_AESCCM)
+ 
+ // Bits for |algorithm_mac| (symmetric authentication).
+ #define SSL_SHA1 0x00000001u
+diff --git a/ssl/s3_both.cc b/ssl/s3_both.cc
+index 898b549..c758305 100644
+--- a/ssl/s3_both.cc
++++ b/ssl/s3_both.cc
+@@ -611,6 +611,8 @@ bool ssl_tls13_cipher_meets_policy(uint16_t cipher_id,
+         case SSL_CIPHER_AES_256_GCM_SHA384:
+           return true;
+         case SSL_CIPHER_CHACHA20_POLY1305_SHA256:
++        case SSL_CIPHER_AES_128_CCM_SHA256:
++        case SSL_CIPHER_AES_128_CCM_8_SHA256:
+           return false;
+         default:
+           assert(false);
+@@ -623,6 +625,8 @@ bool ssl_tls13_cipher_meets_policy(uint16_t cipher_id,
+           return true;
+         case SSL_CIPHER_AES_128_GCM_SHA256:
+         case SSL_CIPHER_CHACHA20_POLY1305_SHA256:
++        case SSL_CIPHER_AES_128_CCM_SHA256:
++        case SSL_CIPHER_AES_128_CCM_8_SHA256:
+           return false;
+         default:
+           assert(false);
+diff --git a/ssl/ssl_aead_ctx.cc b/ssl/ssl_aead_ctx.cc
+index e44d09a..2e6abe2 100644
+--- a/ssl/ssl_aead_ctx.cc
++++ b/ssl/ssl_aead_ctx.cc
+@@ -59,6 +59,15 @@ UniquePtr<SSLAEADContext> SSLAEADContext::Create(
+     return nullptr;
+   }
+ 
++  // CCM is implemented and usage-limited for stream TLS only. DTLS has a
++  // different forgery budget and cannot reuse the stream fail-on-first-error
++  // policy, particularly for CCM8 (RFC 9147, Appendix B.3).
++  if ((cipher->algorithm_enc & SSL_AESCCM) &&
++      version != TLS1_2_VERSION && version != TLS1_3_VERSION) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_UNSUPPORTED_PROTOCOL);
++    return nullptr;
++  }
++
+   UniquePtr<SSLAEADContext> aead_ctx = MakeUnique<SSLAEADContext>(cipher);
+   if (!aead_ctx) {
+     return nullptr;
+@@ -81,9 +90,9 @@ UniquePtr<SSLAEADContext> SSLAEADContext::Create(
+       aead_ctx->variable_nonce_len_ = 8;
+       assert(fixed_iv.size() >= aead_ctx->variable_nonce_len_);
+     } else {
+-      // TLS 1.2 AES-GCM prepends the fixed IV to an explicit nonce.
++      // TLS 1.2 AES-GCM and AES-CCM prepend the fixed IV to an explicit nonce.
+       assert(fixed_iv.size() <= aead_ctx->variable_nonce_len_);
+-      assert(cipher->algorithm_enc & (SSL_AES128GCM | SSL_AES256GCM));
++      assert(cipher->algorithm_enc & (SSL_AES128GCM | SSL_AES256GCM | SSL_AESCCM));
+       aead_ctx->variable_nonce_len_ -= fixed_iv.size();
+       aead_ctx->variable_nonce_included_in_record_ = true;
+     }
+diff --git a/ssl/ssl_cipher.cc b/ssl/ssl_cipher.cc
+index 599e1d5..f913157 100644
+--- a/ssl/ssl_cipher.cc
++++ b/ssl/ssl_cipher.cc
+@@ -341,6 +341,30 @@ static constexpr SSL_CIPHER kCiphers[] = {
+         SSL_HANDSHAKE_MAC_SHA256,
+     },
+ 
++    // Cipher 1304
++    {
++        TLS1_3_RFC_AES_128_CCM_SHA256,
++        "TLS_AES_128_CCM_SHA256",
++        SSL_CIPHER_AES_128_CCM_SHA256,
++        SSL_kGENERIC,
++        SSL_aGENERIC,
++        SSL_AES128CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher 1305
++    {
++        TLS1_3_RFC_AES_128_CCM_8_SHA256,
++        "TLS_AES_128_CCM_8_SHA256",
++        SSL_CIPHER_AES_128_CCM_8_SHA256,
++        SSL_kGENERIC,
++        SSL_aGENERIC,
++        SSL_AES128CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
+       // Cipher C008
+       {
+         TLS1_TXT_ECDHE_ECDSA_WITH_DES_192_CBC3_SHA,
+@@ -539,6 +563,150 @@ static constexpr SSL_CIPHER kCiphers[] = {
+         SSL_HANDSHAKE_MAC_DEFAULT,
+     },
+ 
++    // Cipher C09C (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_RSA_WITH_AES_128_CCM,
++        "TLS_RSA_WITH_AES_128_CCM",
++        SSL_CIPHER_RSA_WITH_AES_128_CCM,
++        SSL_kRSA,
++        SSL_aRSA_DECRYPT,
++        SSL_AES128CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C09D (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_RSA_WITH_AES_256_CCM,
++        "TLS_RSA_WITH_AES_256_CCM",
++        SSL_CIPHER_RSA_WITH_AES_256_CCM,
++        SSL_kRSA,
++        SSL_aRSA_DECRYPT,
++        SSL_AES256CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C09E (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_DHE_RSA_WITH_AES_128_CCM,
++        "TLS_DHE_RSA_WITH_AES_128_CCM",
++        SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM,
++        SSL_kDHE,
++        SSL_aRSA_SIGN,
++        SSL_AES128CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C09F (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_DHE_RSA_WITH_AES_256_CCM,
++        "TLS_DHE_RSA_WITH_AES_256_CCM",
++        SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM,
++        SSL_kDHE,
++        SSL_aRSA_SIGN,
++        SSL_AES256CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0A0 (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_RSA_WITH_AES_128_CCM_8,
++        "TLS_RSA_WITH_AES_128_CCM_8",
++        SSL_CIPHER_RSA_WITH_AES_128_CCM_8,
++        SSL_kRSA,
++        SSL_aRSA_DECRYPT,
++        SSL_AES128CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0A1 (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_RSA_WITH_AES_256_CCM_8,
++        "TLS_RSA_WITH_AES_256_CCM_8",
++        SSL_CIPHER_RSA_WITH_AES_256_CCM_8,
++        SSL_kRSA,
++        SSL_aRSA_DECRYPT,
++        SSL_AES256CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0A2 (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_DHE_RSA_WITH_AES_128_CCM_8,
++        "TLS_DHE_RSA_WITH_AES_128_CCM_8",
++        SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM_8,
++        SSL_kDHE,
++        SSL_aRSA_SIGN,
++        SSL_AES128CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0A3 (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_DHE_RSA_WITH_AES_256_CCM_8,
++        "TLS_DHE_RSA_WITH_AES_256_CCM_8",
++        SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM_8,
++        SSL_kDHE,
++        SSL_aRSA_SIGN,
++        SSL_AES256CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0AC (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_ECDHE_ECDSA_WITH_AES_128_CCM,
++        "TLS_ECDHE_ECDSA_WITH_AES_128_CCM",
++        SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM,
++        SSL_kECDHE,
++        SSL_aECDSA,
++        SSL_AES128CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0AD (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_ECDHE_ECDSA_WITH_AES_256_CCM,
++        "TLS_ECDHE_ECDSA_WITH_AES_256_CCM",
++        SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM,
++        SSL_kECDHE,
++        SSL_aECDSA,
++        SSL_AES256CCM,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0AE (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_ECDHE_ECDSA_WITH_AES_128_CCM_8,
++        "TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8",
++        SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM_8,
++        SSL_kECDHE,
++        SSL_aECDSA,
++        SSL_AES128CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
++    // Cipher C0AF (RFC 6655 / RFC 7251)
++    {
++        TLS1_TXT_ECDHE_ECDSA_WITH_AES_256_CCM_8,
++        "TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8",
++        SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM_8,
++        SSL_kECDHE,
++        SSL_aECDSA,
++        SSL_AES256CCM8,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
+     // ChaCha20-Poly1305 cipher suites.
+ 
+     // Cipher CCA8
+@@ -638,7 +806,7 @@ typedef struct cipher_alias_st {
+ } CIPHER_ALIAS;
+ 
+ static const CIPHER_ALIAS kCipherAliases[] = {
+-    {"ALL", ~0u, ~0u, ~0u, ~0u, 0},
++    {"ALL", ~0u, ~0u, ~SSL_AESCCM, ~0u, 0},
+ 
+     // The "COMPLEMENTOFDEFAULT" rule is omitted. It matches nothing.
+ 
+@@ -671,7 +839,7 @@ static const CIPHER_ALIAS kCipherAliases[] = {
+      /*include_deprecated=*/false},
+     {"AES256", ~0u, ~0u, SSL_AES256 | SSL_AES256GCM, ~0u, 0,
+      /*include_deprecated=*/false},
+-    {"AES", ~0u, ~0u, SSL_AES, ~0u, 0},
++    {"AES", ~0u, ~0u, SSL_AES & ~SSL_AESCCM, ~0u, 0},
+     {"AESGCM", ~0u, ~0u, SSL_AES128GCM | SSL_AES256GCM, ~0u, 0,
+      /*include_deprecated=*/false},
+     {"CHACHA20", ~0u, ~0u, SSL_CHACHA20POLY1305, ~0u, 0,
+@@ -722,6 +890,18 @@ bool ssl_cipher_get_evp_aead(const EVP_AEAD **out_aead,
+         *out_aead = EVP_aead_aes_256_gcm_tls13();
+       }
+       *out_fixed_iv_len = 4;
++    } else if (cipher->algorithm_enc == SSL_AES128CCM) {
++      *out_aead = EVP_aead_aes_128_ccm();
++      *out_fixed_iv_len = 4;
++    } else if (cipher->algorithm_enc == SSL_AES256CCM) {
++      *out_aead = EVP_aead_aes_256_ccm();
++      *out_fixed_iv_len = 4;
++    } else if (cipher->algorithm_enc == SSL_AES128CCM8) {
++      *out_aead = EVP_aead_aes_128_ccm_8();
++      *out_fixed_iv_len = 4;
++    } else if (cipher->algorithm_enc == SSL_AES256CCM8) {
++      *out_aead = EVP_aead_aes_256_ccm_8();
++      *out_fixed_iv_len = 4;
+     } else if (cipher->algorithm_enc == SSL_CHACHA20POLY1305) {
+       *out_aead = EVP_aead_chacha20_poly1305();
+       *out_fixed_iv_len = 12;
+@@ -1267,6 +1447,8 @@ bool ssl_create_preserve_tls13_cipher_list(UniquePtr<SSLCipherPreferenceList> *o
+       TLS1_3_CK_AES_128_GCM_SHA256 & 0xffff,
+       TLS1_3_CK_AES_256_GCM_SHA384 & 0xffff,
+       TLS1_3_CK_CHACHA20_POLY1305_SHA256 & 0xffff,
++      TLS1_3_CK_AES_128_CCM_SHA256 & 0xffff,
++      TLS1_3_CK_AES_128_CCM_8_SHA256 & 0xffff,
+   };
+   
+   constexpr size_t kNumAESTLS13OnlyCiphers =
+@@ -1350,6 +1532,19 @@ bool ssl_create_cipher_list(UniquePtr<SSLCipherPreferenceList> *out_cipher_list,
+       SSL_CIPHER_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+   };
+   static const uint16_t kLegacyCiphers[] = {
++      SSL_CIPHER_RSA_WITH_AES_128_CCM,
++      SSL_CIPHER_RSA_WITH_AES_256_CCM,
++      SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM,
++      SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM,
++      SSL_CIPHER_RSA_WITH_AES_128_CCM_8,
++      SSL_CIPHER_RSA_WITH_AES_256_CCM_8,
++      SSL_CIPHER_DHE_RSA_WITH_AES_128_CCM_8,
++      SSL_CIPHER_DHE_RSA_WITH_AES_256_CCM_8,
++      SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM,
++      SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM,
++      SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CCM_8,
++      SSL_CIPHER_ECDHE_ECDSA_WITH_AES_256_CCM_8,
++
+       SSL_CIPHER_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
+       SSL_CIPHER_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+       SSL_CIPHER_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+@@ -1598,6 +1793,12 @@ int SSL_CIPHER_get_cipher_nid(const SSL_CIPHER *cipher) {
+       return NID_aes_128_gcm;
+     case SSL_AES256GCM:
+       return NID_aes_256_gcm;
++    case SSL_AES128CCM:
++    case SSL_AES128CCM8:
++      return NID_aes_128_ccm;
++    case SSL_AES256CCM:
++    case SSL_AES256CCM8:
++      return NID_aes_256_ccm;
+     case SSL_CHACHA20POLY1305:
+       return NID_chacha20_poly1305;
+   }
+@@ -1764,12 +1965,16 @@ int SSL_CIPHER_get_bits(const SSL_CIPHER *cipher, int *out_alg_bits) {
+   switch (cipher->algorithm_enc) {
+     case SSL_AES128:
+     case SSL_AES128GCM:
++    case SSL_AES128CCM:
++    case SSL_AES128CCM8:
+       alg_bits = 128;
+       strength_bits = 128;
+       break;
+ 
+     case SSL_AES256:
+     case SSL_AES256GCM:
++    case SSL_AES256CCM:
++    case SSL_AES256CCM8:
+     case SSL_CHACHA20POLY1305:
+       alg_bits = 256;
+       strength_bits = 256;
+@@ -1873,6 +2078,18 @@ const char *SSL_CIPHER_description(const SSL_CIPHER *cipher, char *buf,
+       enc = "AESGCM(256)";
+       break;
+ 
++    case SSL_AES128CCM:
++      enc = "AESCCM(128)";
++      break;
++    case SSL_AES256CCM:
++      enc = "AESCCM(256)";
++      break;
++    case SSL_AES128CCM8:
++      enc = "AESCCM8(128)";
++      break;
++    case SSL_AES256CCM8:
++      enc = "AESCCM8(256)";
++      break;
+     case SSL_CHACHA20POLY1305:
+       enc = "ChaCha20-Poly1305";
+       break;
+diff --git a/ssl/tls13_client.cc b/ssl/tls13_client.cc
+index bc653e9..8b13805 100644
+--- a/ssl/tls13_client.cc
++++ b/ssl/tls13_client.cc
+@@ -204,11 +204,27 @@ static enum ssl_hs_wait_t do_read_hello_retry_request(SSL_HANDSHAKE *hs) {
+     return ssl_hs_error;
+   }
+ 
+-  // The cipher suite must be one we offered. We currently offer all supported
+-  // TLS 1.3 ciphers unless policy controls limited it. So we check the version
+-  // and that it's ok per policy.
++  // Profiles may offer only a subset of supported TLS 1.3 suites. A server
++  // must not select a known-but-unoffered suite (including across HRR).
++  bool offered = false;
++  if (!ssl->config->bridge_cipher_order.empty()) {
++    for (uint16_t id : ssl->config->bridge_cipher_order) {
++      offered |= id == server_hello.cipher_suite;
++    }
++  } else if (ssl->config->preserve_tls13_cipher_list &&
++             ssl->ctx->tls13_cipher_list &&
++             sk_SSL_CIPHER_num(ssl->ctx->tls13_cipher_list->ciphers.get()) > 0) {
++    for (const SSL_CIPHER *configured : ssl->ctx->tls13_cipher_list->ciphers.get()) {
++      offered |= configured->protocol_id == server_hello.cipher_suite;
++    }
++  } else {
++    // Preserve the original default offer: CCM is opt-in, never injected.
++    offered = server_hello.cipher_suite == SSL_CIPHER_AES_128_GCM_SHA256 ||
++              server_hello.cipher_suite == SSL_CIPHER_AES_256_GCM_SHA384 ||
++              server_hello.cipher_suite == SSL_CIPHER_CHACHA20_POLY1305_SHA256;
++  }
+   const SSL_CIPHER *cipher = SSL_get_cipher_by_value(server_hello.cipher_suite);
+-  if (cipher == nullptr ||
++  if (!offered || cipher == nullptr ||
+       SSL_CIPHER_get_min_version(cipher) > ssl_protocol_version(ssl) ||
+       SSL_CIPHER_get_max_version(cipher) < ssl_protocol_version(ssl) ||
+       !ssl_tls13_cipher_meets_policy(SSL_CIPHER_get_protocol_id(cipher),
+diff --git a/ssl/tls_record.cc b/ssl/tls_record.cc
+index ba0c4c1..2a6e440 100644
+--- a/ssl/tls_record.cc
++++ b/ssl/tls_record.cc
+@@ -171,6 +171,17 @@ ssl_open_record_t tls_open_record(SSL *ssl, uint8_t *out_type,
+     return skip_early_data(ssl, out_alert, *out_consumed);
+   }
+ 
++  // CCM's conservative confidentiality budget is 2^23 full-size records per
++  // traffic key (RFC 9147, Appendix B). Fail closed before exceeding it; a
++  // TLS 1.3 peer may KeyUpdate beforehand, which resets the sequence counter.
++  const SSL_CIPHER *read_cipher = ssl->s3->aead_read_ctx->cipher();
++  if (read_cipher != nullptr && (read_cipher->algorithm_enc & SSL_AESCCM) &&
++      ssl->s3->read_sequence >= (UINT64_C(1) << 23)) {
++    OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
++    *out_alert = SSL_AD_INTERNAL_ERROR;
++    return ssl_open_record_error;
++  }
++
+   // Ensure the sequence number update does not overflow.
+   if (ssl->s3->read_sequence + 1 == 0) {
+     OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
+@@ -182,7 +193,13 @@ ssl_open_record_t tls_open_record(SSL *ssl, uint8_t *out_type,
+   if (!ssl->s3->aead_read_ctx->Open(
+           out, type, version, ssl->s3->read_sequence, header,
+           Span(const_cast<uint8_t *>(CBS_data(&body)), CBS_len(&body)))) {
+-    if (ssl->s3->skip_early_data && !ssl->s3->aead_read_ctx->is_null_cipher()) {
++    // CCM8's short tag requires a stream connection to stop on the first
++    // authentication failure. Do not turn rejected 0-RTT trial decryption
++    // into multiple forgery attempts under the handshake key.
++    const bool is_ccm8 = read_cipher != nullptr &&
++        (read_cipher->algorithm_enc & (SSL_AES128CCM8 | SSL_AES256CCM8));
++    if (ssl->s3->skip_early_data && !ssl->s3->aead_read_ctx->is_null_cipher() &&
++        !is_ccm8) {
+       ERR_clear_error();
+       return skip_early_data(ssl, out_alert, *out_consumed);
+     }
+@@ -296,6 +313,15 @@ static bool do_seal_record(SSL *ssl, uint8_t *out_prefix, uint8_t *out,
+   out_prefix[4] = ciphertext_len & 0xff;
+   Span<const uint8_t> header = Span(out_prefix, SSL3_RT_HEADER_LENGTH);
+ 
++  // Same per-key CCM budget as the read path. TLS 1.2 must reconnect before
++  // exhaustion; TLS 1.3 can explicitly rotate keys with KeyUpdate beforehand.
++  const SSL_CIPHER *write_cipher = aead->cipher();
++  if (write_cipher != nullptr && (write_cipher->algorithm_enc & SSL_AESCCM) &&
++      ssl->s3->write_sequence >= (UINT64_C(1) << 23)) {
++    OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
++    return false;
++  }
++
+   // Ensure the sequence number update does not overflow.
+   if (ssl->s3->write_sequence + 1 == 0) {
+     OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);

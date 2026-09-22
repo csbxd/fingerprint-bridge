@@ -207,9 +207,19 @@ def classify(baseline, layers):
     return "match" if all(layer["pass"] for layer in layers.values()) else "mismatch"
 
 
+def tls_capabilities(document):
+    """Non-secret algorithm IDs for log review; never used to decide a verdict."""
+    fields = (document.get("tls") or {}).get("fields", {})
+    return {key: fields[key] for key in (
+        "ciphers", "groups", "signature_algorithms", "signature_algorithms_cert",
+        "extensions", "point_formats", "cert_compression", "supported_versions",
+        "key_share_groups", "key_share_lengths",
+    ) if key in fields}
+
+
 def run_case(binary, path, output, client, protocol, interface):
     output.mkdir(parents=True, exist_ok=True)
-    result = {"client": client, "protocol": protocol, "status": "error", "baseline": {}, "layers": {}}
+    result = {"client": client, "protocol": protocol, "status": "error", "baseline": {}, "layers": {}, "tls_capabilities": {}}
     origin = MatrixOrigin(path, protocol)
     proc = log = capture = None
     try:
@@ -227,7 +237,12 @@ def run_case(binary, path, output, client, protocol, interface):
         paired_path, = (output / "runtime").glob("*.http.json")
         result["paired_http"] = compare_paired_http(json.loads(paired_path.read_text()), f"b.test:{port}", f"a.test:{origin.port}")
         tls_path, = (output / "runtime").glob("*.report.json")
-        result["paired_tls"] = json.loads(tls_path.read_text())["comparison"]
+        tls_report = json.loads(tls_path.read_text())
+        result["paired_tls"] = tls_report["comparison"]
+        result["tls_limitations"] = tls_report["limitations"]
+        for direction in ("inbound", "outbound"):
+            wire_path, = (output / "runtime").glob(f"*.{direction}.json")
+            result["tls_capabilities"][direction] = tls_capabilities(json.loads(wire_path.read_text()))
     except Exception:
         result["error"] = traceback.format_exc()
     finally:
@@ -256,6 +271,7 @@ def run_case(binary, path, output, client, protocol, interface):
                     pcap.write_bytes(capture.pcap(entry["source_port"]))
                     document.update(json.loads(subprocess.check_output([str(binary), "inspect-pcap", str(pcap)], text=True, timeout=10)))
                 write_json(output / f"{sample}.json", document)
+                result["tls_capabilities"][sample] = tls_capabilities(document)
             for layer in LAYERS:
                 result["baseline"][layer] = compare(binary, output / "direct-1.json", output / "direct-2.json", [layer])
                 result["layers"][layer] = compare(binary, output / "direct-1.json", output / "bridged.json", [layer])
@@ -314,6 +330,13 @@ def main():
                                   client, protocol, None if args.no_capture else args.capture_interface)
                 results.append(result)
                 print(f"{client:6} {protocol:8} {result['status']}", flush=True)
+                # Preserve reviewable algorithm evidence when artifact ZIP download
+                # is unavailable. Do not print raw keys, cookies or HTTP content.
+                print("TLS_CAPABILITIES=" + json.dumps({
+                    "client": client, "protocol": protocol,
+                    "samples": result["tls_capabilities"],
+                    "limitations": result.get("tls_limitations", []),
+                }, sort_keys=True), flush=True)
                 for error_key in ("error", "evidence_error"):
                     if result.get(error_key):
                         print(result[error_key], flush=True)
