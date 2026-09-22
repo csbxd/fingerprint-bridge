@@ -91,6 +91,43 @@ fn truncated_and_invalid_tls_rejected() {
     assert!(client_hello(&vec![0; MAX_HELLO + 1]).is_err());
 }
 #[test]
+fn certificate_signature_extension_keeps_raw_evidence_and_rejects_malformed_lists() {
+    let with_extension = |body: &[u8]| {
+        let mut record = hello("b.test", 1, 0x1a1a);
+        // This fixture has an empty session ID and eight bytes of cipher suites.
+        let extensions_length = 56;
+        let extra = ext(50, body);
+        let old_length =
+            u16::from_be_bytes([record[extensions_length], record[extensions_length + 1]]) as usize;
+        record[extensions_length..extensions_length + 2]
+            .copy_from_slice(&((old_length + extra.len()) as u16).to_be_bytes());
+        record.extend(extra);
+        let record_length = record.len() - 5;
+        record[3..5].copy_from_slice(&(record_length as u16).to_be_bytes());
+        let handshake_length = (record.len() - 9) as u32;
+        record[6..9].copy_from_slice(&handshake_length.to_be_bytes()[1..]);
+        record
+    };
+    let first = client_hello(&with_extension(&[0, 4, 4, 3, 8, 4]))
+        .unwrap()
+        .unwrap();
+    let second = client_hello(&with_extension(&[0, 4, 8, 4, 4, 3]))
+        .unwrap()
+        .unwrap();
+    assert_eq!(first.signature_algorithms_cert, [0x0403, 0x0804]);
+    assert_eq!(first.signature_algorithms, second.signature_algorithms);
+    assert_ne!(first.other_extensions, second.other_extensions);
+    assert!(!differences(&first.evidence(), &second.evidence()).is_empty());
+    for malformed in [
+        &[0, 0][..],
+        &[0, 1, 4][..],
+        &[0, 4, 4, 3][..],
+        &[0, 2, 4, 3, 0][..],
+    ] {
+        assert!(client_hello(&with_extension(malformed)).is_err());
+    }
+}
+#[test]
 fn grease_only_reserved_pattern() {
     assert!(grease(0xaaaa));
     assert!(grease(0xfafa));
@@ -635,6 +672,54 @@ async fn patched_tls_preserves_real_sha224_signature_schemes() {
         .any(|s| s.contains("signature algorithm 771")));
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_independent_certificate_signature_algorithms() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    let position = incoming.extensions.iter().position(|id| *id == 13).unwrap() + 1;
+    incoming.extensions.insert(position, 50);
+    // Go sends this certificate-chain list independently of extension 13.
+    incoming.signature_algorithms_cert = vec![
+        0x0804, 0x0403, 0x0807, 0x0805, 0x0806, 0x0401, 0x0501, 0x0601, 0x0503, 0x0603, 0x0201,
+        0x0203,
+    ];
+
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations.is_empty(), "{limitations:?}");
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.extensions, outgoing.extensions);
+    assert_eq!(
+        incoming.signature_algorithms_cert,
+        outgoing.signature_algorithms_cert
+    );
+    assert_ne!(
+        outgoing.signature_algorithms, outgoing.signature_algorithms_cert,
+        "extension 50 must not be synthesized from extension 13"
+    );
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_does_not_claim_unsupported_certificate_signature_algorithm() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    let position = incoming.extensions.iter().position(|id| *id == 13).unwrap() + 1;
+    incoming.extensions.insert(position, 50);
+    incoming.signature_algorithms_cert = vec![0x0403, 0x0402];
+
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations
+        .iter()
+        .any(|item| item == "unsupported certificate signature algorithm 1026"));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.signature_algorithms_cert, [0x0403]);
 }
 
 #[cfg(feature = "patched-tls")]
