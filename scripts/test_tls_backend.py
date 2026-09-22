@@ -7,6 +7,7 @@ import ssl
 import subprocess
 import tempfile
 import textwrap
+import threading
 import time
 from types import SimpleNamespace
 import unittest
@@ -16,6 +17,139 @@ from matrix_lab import MatrixOrigin, client_command, ROOT
 
 
 class BackendHandshakeTests(unittest.TestCase):
+    @staticmethod
+    def _corrupt_first_server_application_record(listener, target_port, result):
+        """Forward one TLS connection and corrupt its first server app-data record."""
+        client = origin = None
+        try:
+            client, _ = listener.accept()
+            origin = socket.create_connection(('127.0.0.1', target_port), timeout=10)
+            client.settimeout(10)
+            origin.settimeout(10)
+
+            def upstream():
+                try:
+                    while data := client.recv(65536):
+                        origin.sendall(data)
+                    origin.shutdown(socket.SHUT_WR)
+                except (OSError, TimeoutError):
+                    pass
+
+            sender = threading.Thread(target=upstream, daemon=True)
+            sender.start()
+            corrupted = False
+            while True:
+                header = b''
+                while len(header) < 5:
+                    chunk = origin.recv(5 - len(header))
+                    if not chunk:
+                        break
+                    header += chunk
+                if not header:
+                    break
+                if len(header) != 5:
+                    raise EOFError('truncated TLS record header')
+                size = int.from_bytes(header[3:5], 'big')
+                body = bytearray()
+                while len(body) < size:
+                    chunk = origin.recv(size - len(body))
+                    if not chunk:
+                        raise EOFError('truncated TLS record body')
+                    body.extend(chunk)
+                if header[0] == 23 and body and not corrupted:
+                    body[-1] ^= 1
+                    corrupted = True
+                    result['corrupted'] = True
+                client.sendall(header + body)
+            sender.join(timeout=2)
+            result.setdefault('corrupted', corrupted)
+        except Exception as exc:  # surfaced by the test after cleanup
+            result['error'] = repr(exc)
+        finally:
+            for stream in (client, origin, listener):
+                if stream:
+                    try:
+                        stream.close()
+                    except OSError:
+                        pass
+
+    def test_dhe_rsa_chacha20_real_negotiation_and_bad_tag_rejection(self):
+        binary = ROOT / 'target/debug/fingerprint-bridge'
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            certificates(path)
+            for corrupt in (False, True):
+                with self.subTest(corrupted_server_ciphertext=corrupt):
+                    case = path / ('dhe-chacha-corrupt' if corrupt else 'dhe-chacha-valid')
+                    case.mkdir()
+                    with socket.socket() as reserved:
+                        reserved.bind(('127.0.0.1', 0))
+                        origin_port = reserved.getsockname()[1]
+                    origin = subprocess.Popen([
+                        'openssl', 's_server', '-accept', f'127.0.0.1:{origin_port}',
+                        '-cert', str(path / 'a.pem'), '-key', str(path / 'a.key'),
+                        '-www', '-tls1_2', '-cipher', 'DHE-RSA-CHACHA20-POLY1305',
+                        '-trace', '-naccept', '1'
+                    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    proxy_thread = None
+                    proxy_result = {}
+                    if corrupt:
+                        listener = socket.socket()
+                        listener.bind(('127.0.0.1', 0))
+                        listener.listen(1)
+                        upstream_port = listener.getsockname()[1]
+                        proxy_thread = threading.Thread(
+                            target=self._corrupt_first_server_application_record,
+                            args=(listener, origin_port, proxy_result), daemon=True)
+                        proxy_thread.start()
+                    else:
+                        upstream_port = origin_port
+                    proc = log = None
+                    try:
+                        time.sleep(0.2)
+                        self.assertIsNone(origin.poll(), origin.stdout.read() if origin.poll() else '')
+                        proc, port, log = start_bridge(
+                            binary, path, SimpleNamespace(port=upstream_port), case / 'runtime')
+                        ctx = ssl.create_default_context(cafile=str(path / 'ca.pem'))
+                        response = b''
+                        error = None
+                        try:
+                            with socket.create_connection(('127.0.0.1', port), timeout=10) as raw:
+                                with ctx.wrap_socket(raw, server_hostname='b.test') as conn:
+                                    conn.sendall(f'GET / HTTP/1.1\r\nHost: b.test:{port}\r\n'
+                                                 'Cookie: sid=from_B\r\nConnection: close\r\n\r\n'.encode())
+                                    while chunk := conn.recv(4096):
+                                        response += chunk
+                        except (OSError, ssl.SSLError) as exc:
+                            error = exc
+                        trace = origin.communicate(timeout=15)[0]
+                        if proxy_thread:
+                            proxy_thread.join(timeout=5)
+                        log.flush()
+                        log.seek(0)
+                        diagnostics = (trace + '\nbridge: ' + log.read() +
+                                       f'\nproxy: {proxy_result!r}\nclient error: {error!r}')
+                        self.assertIn('TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256',
+                                      trace, diagnostics)
+                        outgoing, = (case / 'runtime').glob('*.outbound.json')
+                        ciphers = json.loads(outgoing.read_text())['tls']['fields']['ciphers']
+                        self.assertIn(0xccaa, ciphers, diagnostics)
+                        if corrupt:
+                            self.assertTrue(proxy_result.get('corrupted'), diagnostics)
+                            self.assertNotIn(b'HTTP/1.0 200', response, diagnostics)
+                        else:
+                            self.assertIsNone(error, diagnostics)
+                            self.assertTrue(response.startswith(b'HTTP/1.0 200'), diagnostics)
+                    finally:
+                        if proc:
+                            proc.terminate()
+                            proc.wait(timeout=5)
+                        if log:
+                            log.close()
+                        if origin.poll() is None:
+                            origin.terminate()
+                            origin.wait(timeout=5)
+
     @staticmethod
     def _rsapss_certificate(path, tamper):
         root_key = path / 'root.key'
