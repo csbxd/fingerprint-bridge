@@ -86,6 +86,12 @@ fn group(id: u16) -> Option<&'static str> {
         25497 => Some("X25519Kyber768Draft00"),
         256 => Some("ffdhe2048"),
         257 => Some("ffdhe3072"),
+        #[cfg(feature = "patched-tls")]
+        258 => Some("ffdhe4096"),
+        #[cfg(feature = "patched-tls")]
+        259 => Some("ffdhe6144"),
+        #[cfg(feature = "patched-tls")]
+        260 => Some("ffdhe8192"),
         _ => None,
     }
 }
