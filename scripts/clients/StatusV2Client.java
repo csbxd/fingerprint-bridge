@@ -24,7 +24,7 @@ public final class StatusV2Client {
         context.init(null, trust.getTrustManagers(), null);
         SSLParameters parameters = new SSLParameters();
         parameters.setProtocols(new String[] {"TLSv1.2"});
-        parameters.setCipherSuites(new String[] {"TLS_RSA_WITH_AES_128_GCM_SHA256"});
+        parameters.setCipherSuites(new String[] {"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"});
         HttpClient client = HttpClient.newBuilder().sslContext(context).sslParameters(parameters)
             .version(HttpClient.Version.HTTP_1_1).build();
         String base = "https://b.test:" + args[1];

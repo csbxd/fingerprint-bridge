@@ -4,8 +4,10 @@ package main
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ecdh"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
@@ -80,9 +82,9 @@ func parseHello(data []byte) ([]byte, bool, error) {
 	if pos+n > len(data) || n%2 != 0 { return nil, false, errors.New("bad cipher list") }
 	offered, reneg := false, false
 	for i := pos; i < pos+n; i += 2 {
-		id := binary.BigEndian.Uint16(data[i:]); offered = offered || id == 0x009c; reneg = reneg || id == 0x00ff
+		id := binary.BigEndian.Uint16(data[i:]); offered = offered || id == 0xc02f; reneg = reneg || id == 0x00ff
 	}
-	if !offered { return nil, false, errors.New("RSA AES128-GCM not offered") }
+	if !offered { return nil, false, errors.New("ECDHE-RSA AES128-GCM not offered") }
 	pos += n
 	if pos >= len(data) { return nil, false, errors.New("missing compression") }
 	pos += 1 + int(data[pos])
@@ -112,12 +114,20 @@ func serve(c net.Conn, certificate tls.Certificate, response []byte, mode string
 	serverRandom := make([]byte, 32); if _, err = rand.Read(serverRandom); err != nil { return err }
 	extensions := []byte{0, 17, 0, 0}
 	if reneg { extensions = append(extensions, 255, 1, 0, 1, 0) }
-	sh := append([]byte{3, 3}, serverRandom...); sh = append(sh, 0, 0, 0x9c, 0)
+	sh := append([]byte{3, 3}, serverRandom...); sh = append(sh, 0, 0xc0, 0x2f, 0)
 	sh = append(sh, u16(len(extensions))...); sh = append(sh, extensions...)
 	transcript := append([]byte{}, ch...)
 	chain := []byte{}
 	for _, der := range certificate.Certificate { chain = append(chain, u24(len(der))...); chain = append(chain, der...) }
-	messages := [][]byte{handshake(2, sh), handshake(11, append(u24(len(chain)), chain...))}
+	key, ok := certificate.PrivateKey.(*rsa.PrivateKey); if !ok { return errors.New("RSA key required") }
+	ecdhe, err := ecdh.P256().GenerateKey(rand.Reader); if err != nil { return err }
+	params := append([]byte{3, 0, 23, byte(len(ecdhe.PublicKey().Bytes()))}, ecdhe.PublicKey().Bytes()...)
+	signed := append(append(append([]byte{}, clientRandom...), serverRandom...), params...)
+	digest := sha256.Sum256(signed)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:]); if err != nil { return err }
+	ske := append(append(append([]byte{}, params...), 4, 1), u16(len(signature))...)
+	ske = append(ske, signature...)
+	messages := [][]byte{handshake(2, sh), handshake(11, append(u24(len(chain)), chain...)), handshake(12, ske)}
 	if mode != "omitted" {
 		staple := append([]byte{}, response...)
 		if mode == "bad-signature" { staple[len(staple)-1] ^= 1 }
@@ -135,12 +145,10 @@ func serve(c net.Conn, certificate tls.Certificate, response []byte, mode string
 	kind, cke, err := readRecord(c)
 	if err != nil { return err }
 	if kind == 21 { evidence["client_alert"] = int(cke[len(cke)-1]); return errors.New("client rejected status response") }
-	if kind != 22 || len(cke) < 6 || cke[0] != 16 { return errors.New("expected RSA ClientKeyExchange") }
-	n := int(binary.BigEndian.Uint16(cke[4:6])); if n != len(cke)-6 { return errors.New("bad CKE length") }
-	key, ok := certificate.PrivateKey.(*rsa.PrivateKey); if !ok { return errors.New("RSA key required") }
-	premaster := make([]byte, 48); if _, err = rand.Read(premaster); err != nil { return err }
-	if err = rsa.DecryptPKCS1v15SessionKey(rand.Reader, key, cke[6:], premaster); err != nil { return err }
-	if premaster[0] != 3 || premaster[1] != 3 { return errors.New("bad premaster version") }
+	if kind != 22 || len(cke) < 6 || cke[0] != 16 { return errors.New("expected ECDHE ClientKeyExchange") }
+	n := int(cke[4]); if n != len(cke)-5 { return errors.New("bad ECDHE CKE length") }
+	peer, err := ecdh.P256().NewPublicKey(cke[5:]); if err != nil { return err }
+	premaster, err := ecdhe.ECDH(peer); if err != nil { return err }
 	transcript = append(transcript, cke...)
 	master := prf(premaster, "master secret", append(append([]byte{}, clientRandom...), serverRandom...), 48)
 	keys := prf(master, "key expansion", append(append([]byte{}, serverRandom...), clientRandom...), 40)
