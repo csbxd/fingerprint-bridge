@@ -236,6 +236,16 @@ pub fn mirror(
         b.set_curves_list(&groups.join(":"))?;
     }
     const SIGNATURES: &[u16] = &[
+        #[cfg(feature = "patched-tls")]
+        0x0202,
+        #[cfg(feature = "patched-tls")]
+        0x0302,
+        #[cfg(feature = "patched-tls")]
+        0x0402,
+        #[cfg(feature = "patched-tls")]
+        0x0502,
+        #[cfg(feature = "patched-tls")]
+        0x0602,
         0x0201,
         0x0203,
         #[cfg(feature = "patched-tls")]
@@ -286,7 +296,9 @@ pub fn mirror(
         if grease(*id) {
             continue;
         }
-        if SIGNATURES.contains(id) {
+        // EVP verifies DSA SHA-384/512 handshake signatures, but the pinned
+        // X.509 backend has no OID mapping for those certificate signatures.
+        if SIGNATURES.contains(id) && ![0x0502, 0x0602].contains(id) {
             certificate_signatures.push(*id);
         } else {
             limitations.push(format!("unsupported certificate signature algorithm {id}"));

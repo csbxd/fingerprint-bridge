@@ -742,14 +742,57 @@ async fn patched_tls_does_not_claim_unsupported_certificate_signature_algorithm(
         emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
     let position = incoming.extensions.iter().position(|id| *id == 13).unwrap() + 1;
     incoming.extensions.insert(position, 50);
-    incoming.signature_algorithms_cert = vec![0x0403, 0x0402];
+    incoming.signature_algorithms_cert = vec![0x0403, 0x0402, 0x0502, 0x0602, 0x0808];
 
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
     assert!(limitations
         .iter()
-        .any(|item| item == "unsupported certificate signature algorithm 1026"));
+        .any(|item| item == "unsupported certificate signature algorithm 2056"));
+    assert!(limitations
+        .iter()
+        .any(|item| item == "unsupported certificate signature algorithm 1282"));
+    assert!(limitations
+        .iter()
+        .any(|item| item == "unsupported certificate signature algorithm 1538"));
     let outgoing = emitted_hello(ssl).await;
-    assert_eq!(outgoing.signature_algorithms_cert, [0x0403]);
+    assert_eq!(outgoing.signature_algorithms_cert, [0x0403, 0x0402]);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_dhe_dss_ciphers_and_dsa_signature_schemes() {
+    use btls::ssl::{SslConnector, SslMethod, SslSignatureAlgorithm, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_max_proto_version(Some(SslVersion::TLS1_2)).unwrap();
+    c.set_strict_cipher_list(
+        "DHE-DSS-AES128-SHA:DHE-DSS-AES256-SHA:\
+         DHE-DSS-AES128-SHA256:DHE-DSS-AES256-SHA256:\
+         DHE-DSS-AES128-GCM-SHA256:DHE-DSS-AES256-GCM-SHA384",
+    )
+    .unwrap();
+    c.set_verify_algorithm_prefs(&[
+        SslSignatureAlgorithm::from(0x0202),
+        SslSignatureAlgorithm::from(0x0302),
+        SslSignatureAlgorithm::from(0x0402),
+        SslSignatureAlgorithm::from(0x0502),
+        SslSignatureAlgorithm::from(0x0602),
+        SslSignatureAlgorithm::RSA_PSS_RSAE_SHA256,
+    ])
+    .unwrap();
+    let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    assert_eq!(
+        incoming.ciphers,
+        [0x0032, 0x0038, 0x0040, 0x006a, 0x00a2, 0x00a3]
+    );
+    assert_eq!(
+        &incoming.signature_algorithms[..5],
+        &[0x0202, 0x0302, 0x0402, 0x0502, 0x0602]
+    );
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations.is_empty(), "{limitations:?}");
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.ciphers, outgoing.ciphers);
+    assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
 }
 
 #[cfg(feature = "patched-tls")]
