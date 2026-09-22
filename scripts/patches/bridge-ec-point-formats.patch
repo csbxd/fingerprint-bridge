@@ -101,7 +101,7 @@ index d02b3b8..8d91dfa 100644
 -  ECKeyShare(const EC_GROUP *group, uint16_t group_id)
 -      : group_(group), group_id_(group_id) {}
 +  ECKeyShare(const EC_GROUP *group, uint16_t group_id,
-+             bool allow_compressed_prime)
++             bool allow_compressed_prime = false)
 +      : group_(group),
 +        group_id_(group_id),
 +        allow_compressed_prime_(allow_compressed_prime) {}
