@@ -1,0 +1,51 @@
+diff --git a/include/openssl/tls1.h b/include/openssl/tls1.h
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -201,6 +201,7 @@ extern "C" {
+ #define TLS1_CK_DHE_RSA_WITH_AES_128_SHA256 0x03000067
+ #define TLS1_CK_DHE_RSA_WITH_AES_256_SHA256 0x0300006B
+ #define TLS1_CK_DHE_RSA_WITH_AES_128_GCM_SHA256 0x0300009E
+ #define TLS1_CK_DHE_RSA_WITH_AES_256_GCM_SHA384 0x0300009F
++#define TLS1_CK_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 0x0300CCAA
+ #define TLS1_CK_ECDHE_ECDSA_WITH_DES_192_CBC3_SHA 0x0300C008
+ #define TLS1_CK_ECDHE_RSA_WITH_DES_192_CBC3_SHA 0x0300C012
+ #define TLS1_CK_ECDHE_ECDSA_WITH_AES_256_SHA384 0x0300C024
+@@ -251,6 +252,8 @@ extern "C" {
+   "DHE-RSA-AES128-GCM-SHA256"
+ #define TLS1_TXT_DHE_RSA_WITH_AES_256_GCM_SHA384 \
+   "DHE-RSA-AES256-GCM-SHA384"
++#define TLS1_TXT_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 \
++  "DHE-RSA-CHACHA20-POLY1305"
+ #define TLS1_TXT_ECDHE_ECDSA_WITH_DES_192_CBC3_SHA \
+   "ECDHE-ECDSA-DES-CBC3-SHA"
+ #define TLS1_TXT_ECDHE_RSA_WITH_DES_192_CBC3_SHA "ECDHE-RSA-DES-CBC3-SHA"
+diff --git a/ssl/ssl_cipher.cc b/ssl/ssl_cipher.cc
+--- a/ssl/ssl_cipher.cc
++++ b/ssl/ssl_cipher.cc
+@@ -443,6 +443,18 @@ static constexpr SSL_CIPHER kCiphers[] = {
+         SSL_HANDSHAKE_MAC_SHA256,
+     },
+ 
++    // Cipher CCAA
++    {
++        TLS1_TXT_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
++        "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
++        TLS1_CK_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 & 0xffff,
++        SSL_kDHE,
++        SSL_aRSA_SIGN,
++        SSL_CHACHA20POLY1305,
++        SSL_AEAD,
++        SSL_HANDSHAKE_MAC_SHA256,
++    },
++
+     // Cipher CCAB
+     {
+         TLS1_TXT_ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256,
+@@ -840,6 +852,7 @@ bool ssl_create_cipher_list(UniquePtr<SSLCipherPreferenceList> *out_cipher_list,
+       SSL_CIPHER_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+       SSL_CIPHER_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+       SSL_CIPHER_ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256,
++      TLS1_CK_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 & 0xffff,
+   };
+   static const uint16_t kLegacyCiphers[] = {
+       TLS1_CK_RSA_WITH_AES_128_SHA256 & 0xffff,
