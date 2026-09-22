@@ -429,6 +429,11 @@ pub fn mirror(
                 ssl: *mut std::ffi::c_void,
                 enabled: std::ffi::c_int,
             ) -> std::ffi::c_int;
+            fn SSL_set_bridge_ec_point_formats(
+                ssl: *mut std::ffi::c_void,
+                formats: *const u8,
+                count: usize,
+            ) -> std::ffi::c_int;
         }
         let order: Vec<_> = hello
             .ciphers
@@ -464,6 +469,27 @@ pub fn mirror(
             configured == 1,
             "patched status_request_v2 profile rejected"
         );
+        let point_formats: Vec<_> = hello
+            .point_formats
+            .iter()
+            .copied()
+            .filter(|format| *format <= 1)
+            .collect();
+        for format in &hello.point_formats {
+            if *format > 1 {
+                limitations.push(format!("unsupported EC point format {format}"));
+            }
+        }
+        if !point_formats.is_empty() {
+            let configured = unsafe {
+                SSL_set_bridge_ec_point_formats(
+                    ssl.as_ptr().cast(),
+                    point_formats.as_ptr(),
+                    point_formats.len(),
+                )
+            };
+            ensure!(configured == 1, "patched EC point format profile rejected");
+        }
         if !certificate_signatures.is_empty() {
             let configured = unsafe {
                 SSL_set_bridge_cert_verify_algorithm_prefs(

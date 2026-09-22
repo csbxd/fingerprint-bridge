@@ -1,0 +1,202 @@
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index b509385..b4a2aa4 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -5398,6 +5398,14 @@ OPENSSL_EXPORT int SSL_set_bridge_encrypt_then_mac(SSL *ssl, int enabled);
+ // GOOD before the handshake can complete.
+ OPENSSL_EXPORT int SSL_set_bridge_status_request_v2(SSL *ssl, int enabled);
+ 
++// SSL_set_bridge_ec_point_formats configures the TLS 1.2 EC point formats
++// emitted by this connection. Format zero (uncompressed) is mandatory. This
++// backend additionally accepts format one (compressed prime) and performs the
++// real prime-field point decompression before ECDH. Format two is rejected
++// because the backend has no binary-field TLS groups.
++OPENSSL_EXPORT int SSL_set_bridge_ec_point_formats(
++    SSL *ssl, const uint8_t *formats, size_t count);
++
+ // SSL_CTX_set_aes_hw_override sets |override_value| to
+ // override checking for aes hardware support. If |override_value|
+ // is set to true, the library will behave as if aes hardware support is
+diff --git a/ssl/extensions.cc b/ssl/extensions.cc
+index 8caa46e..e4362b6 100644
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -1889,9 +1889,21 @@ static bool ext_ec_point_add_extension(const SSL_HANDSHAKE *hs, CBB *out) {
+   CBB contents, formats;
+   if (!CBB_add_u16(out, TLSEXT_TYPE_ec_point_formats) ||
+       !CBB_add_u16_length_prefixed(out, &contents) ||
+-      !CBB_add_u8_length_prefixed(&contents, &formats) ||
+-      !CBB_add_u8(&formats, TLSEXT_ECPOINTFORMAT_uncompressed) ||
+-      !CBB_flush(out)) {
++      !CBB_add_u8_length_prefixed(&contents, &formats)) {
++    return false;
++  }
++  if (hs->config->bridge_ec_point_formats.empty()) {
++    if (!CBB_add_u8(&formats, TLSEXT_ECPOINTFORMAT_uncompressed)) {
++      return false;
++    }
++  } else {
++    for (uint8_t format : hs->config->bridge_ec_point_formats) {
++      if (!CBB_add_u8(&formats, format)) {
++        return false;
++      }
++    }
++  }
++  if (!CBB_flush(out)) {
+     return false;
+   }
+ 
+diff --git a/ssl/handshake_client.cc b/ssl/handshake_client.cc
+index a739b46..345686b 100644
+--- a/ssl/handshake_client.cc
++++ b/ssl/handshake_client.cc
+@@ -1613,7 +1613,13 @@ static enum ssl_hs_wait_t do_send_client_key_exchange(SSL_HANDSHAKE *hs) {
+ 
+     // Generate a premaster secret and encapsulate it.
+     bssl::UniquePtr<SSLKeyShare> kem =
+-        SSLKeyShare::Create(hs->new_session->group_id);
++        SSLKeyShare::Create(
++            hs->new_session->group_id,
++            !hs->config->bridge_ec_point_formats.empty() &&
++                OPENSSL_memchr(hs->config->bridge_ec_point_formats.data(),
++                           TLSEXT_ECPOINTFORMAT_ansiX962_compressed_prime,
++                           hs->config->bridge_ec_point_formats.size()) !=
++                    nullptr);
+     uint8_t alert = SSL_AD_DECODE_ERROR;
+     if (!kem || !kem->Encap(&child, &pms, &alert, hs->peer_key)) {
+       ssl_send_alert(ssl, SSL3_AL_FATAL, alert);
+diff --git a/ssl/internal.h b/ssl/internal.h
+index 5344117..729e84c 100644
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -946,7 +946,8 @@ class SSLKeyShare {
+ 
+   // Create returns a SSLKeyShare instance for use with group |group_id| or
+   // nullptr on error.
+-  static UniquePtr<SSLKeyShare> Create(uint16_t group_id);
++  static UniquePtr<SSLKeyShare> Create(uint16_t group_id,
++                                       bool allow_compressed_prime = false);
+ 
+   // GroupID returns the group ID.
+   virtual uint16_t GroupID() const = 0;
+@@ -3480,6 +3481,10 @@ struct SSL_CONFIG {
+   bool bridge_scsv_sent = false;
+   bool bridge_encrypt_then_mac = false;
+ 
++  // TLS 1.2 EC point formats copied from the downstream ClientHello after
++  // rejecting formats for which the backend has no real curve implementation.
++  Array<uint8_t> bridge_ec_point_formats;
++
+   // delegated_credentials, if not empty, is the set of signature algorithms
+   // supported by the client.
+   Array<uint16_t> delegated_credentials;
+diff --git a/ssl/ssl_key_share.cc b/ssl/ssl_key_share.cc
+index d02b3b8..8d91dfa 100644
+--- a/ssl/ssl_key_share.cc
++++ b/ssl/ssl_key_share.cc
+@@ -233,8 +233,11 @@ class FFDHEKeyShare : public SSLKeyShare {
+ 
+ class ECKeyShare : public SSLKeyShare {
+  public:
+-  ECKeyShare(const EC_GROUP *group, uint16_t group_id)
+-      : group_(group), group_id_(group_id) {}
++  ECKeyShare(const EC_GROUP *group, uint16_t group_id,
++             bool allow_compressed_prime)
++      : group_(group),
++        group_id_(group_id),
++        allow_compressed_prime_(allow_compressed_prime) {}
+ 
+   uint16_t GroupID() const override { return group_id_; }
+ 
+@@ -281,7 +284,12 @@ class ECKeyShare : public SSLKeyShare {
+       return false;
+     }
+ 
+-    if (ciphertext.empty() || ciphertext[0] != POINT_CONVERSION_UNCOMPRESSED ||
++    const bool uncompressed = !ciphertext.empty() &&
++                              ciphertext[0] == POINT_CONVERSION_UNCOMPRESSED;
++    const bool compressed = !ciphertext.empty() && allow_compressed_prime_ &&
++                            (ciphertext[0] == POINT_CONVERSION_COMPRESSED ||
++                             ciphertext[0] == POINT_CONVERSION_COMPRESSED + 1);
++    if ((!uncompressed && !compressed) ||
+         !EC_POINT_oct2point(group_, peer_point.get(), ciphertext.data(),
+                             ciphertext.size(), /*ctx=*/nullptr)) {
+       OPENSSL_PUT_ERROR(SSL, SSL_R_BAD_ECPOINT);
+@@ -326,6 +334,7 @@ class ECKeyShare : public SSLKeyShare {
+   UniquePtr<BIGNUM> private_key_;
+   const EC_GROUP *const group_ = nullptr;
+   uint16_t group_id_;
++  const bool allow_compressed_prime_;
+ };
+ 
+ // RFC 7748/RFC 8446 X448 uses exactly 56-byte inputs and outputs. The
+@@ -968,14 +977,18 @@ Span<const uint16_t> DefaultSupportedGroupIds() {
+   return Span(kDefaultSupportedGroupIds);
+ }
+ 
+-UniquePtr<SSLKeyShare> SSLKeyShare::Create(uint16_t group_id) {
++UniquePtr<SSLKeyShare> SSLKeyShare::Create(uint16_t group_id,
++                                           bool allow_compressed_prime) {
+   switch (group_id) {
+     case SSL_GROUP_SECP256R1:
+-      return MakeUnique<ECKeyShare>(EC_group_p256(), SSL_GROUP_SECP256R1);
++      return MakeUnique<ECKeyShare>(EC_group_p256(), SSL_GROUP_SECP256R1,
++                                    allow_compressed_prime);
+     case SSL_GROUP_SECP384R1:
+-      return MakeUnique<ECKeyShare>(EC_group_p384(), SSL_GROUP_SECP384R1);
++      return MakeUnique<ECKeyShare>(EC_group_p384(), SSL_GROUP_SECP384R1,
++                                    allow_compressed_prime);
+     case SSL_GROUP_SECP521R1:
+-      return MakeUnique<ECKeyShare>(EC_group_p521(), SSL_GROUP_SECP521R1);
++      return MakeUnique<ECKeyShare>(EC_group_p521(), SSL_GROUP_SECP521R1,
++                                    allow_compressed_prime);
+     case SSL_GROUP_X25519:
+       return MakeUnique<X25519KeyShare>();
+     case SSL_GROUP_X448:
+diff --git a/ssl/ssl_lib.cc b/ssl/ssl_lib.cc
+index 3536a96..105ded2 100644
+--- a/ssl/ssl_lib.cc
++++ b/ssl/ssl_lib.cc
+@@ -584,6 +584,7 @@ SSL_CONFIG::SSL_CONFIG(SSL *ssl_arg)
+       ech_grease_enabled(false),
+       signed_cert_timestamps_enabled(false),
+       ocsp_stapling_enabled(false),
++      bridge_status_request_v2_enabled(false),
+       channel_id_enabled(false),
+       enforce_rsa_key_usage(true),
+       retain_only_sha256_of_client_certs(false),
+@@ -2242,6 +2243,34 @@ int SSL_set_bridge_status_request_v2(SSL *ssl, int enabled) {
+   return 1;
+ }
+ 
++int SSL_set_bridge_ec_point_formats(SSL *ssl, const uint8_t *formats,
++                                    size_t count) {
++  if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||
++      SSL_is_dtls(ssl) || formats == nullptr || count == 0 || count > 2) {
++    return 0;
++  }
++  bool seen_uncompressed = false;
++  bool seen_compressed_prime = false;
++  for (size_t i = 0; i < count; i++) {
++    if (formats[i] == TLSEXT_ECPOINTFORMAT_uncompressed) {
++      if (seen_uncompressed) {
++        return 0;
++      }
++      seen_uncompressed = true;
++    } else if (formats[i] ==
++               TLSEXT_ECPOINTFORMAT_ansiX962_compressed_prime) {
++      if (seen_compressed_prime) {
++        return 0;
++      }
++      seen_compressed_prime = true;
++    } else {
++      return 0;
++    }
++  }
++  return seen_uncompressed &&
++         ssl->config->bridge_ec_point_formats.CopyFrom(Span(formats, count));
++}
++
+ int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
+                            size_t count, int padding) {
+   if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||

@@ -701,6 +701,31 @@ async fn patched_tls_preserves_java_status_request_v2_wire_body_and_order() {
 
 #[cfg(feature = "patched-tls")]
 #[tokio::test]
+async fn patched_tls_preserves_only_real_ec_point_formats() {
+    use btls::ssl::{SslConnector, SslMethod, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_max_proto_version(Some(SslVersion::TLS1_2)).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    incoming.point_formats = vec![0, 1, 2];
+
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.point_formats, vec![0, 1]);
+    assert!(limitations
+        .iter()
+        .any(|item| item == "unsupported EC point format 2"));
+
+    incoming.point_formats = vec![0];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item.starts_with("unsupported EC point format")));
+    assert_eq!(emitted_hello(ssl).await.point_formats, vec![0]);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
 async fn patched_tls_supports_ccm_only_tls13_profile() {
     use btls::ssl::{SslConnector, SslMethod, SslVersion};
     let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
