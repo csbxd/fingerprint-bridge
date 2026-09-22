@@ -192,15 +192,16 @@ class BackendHandshakeTests(unittest.TestCase):
                         log.seek(0)
                         diagnostics = (client.stdout + client.stderr + '\norigin: ' + trace +
                                        '\nbridge: ' + log.read())
-                        outgoing, = (case / 'runtime').glob('*.outbound.json')
-                        signatures = json.loads(outgoing.read_text())['tls']['fields'][
-                            'signature_algorithms']
                         if offer_sha224:
+                            outgoing, = (case / 'runtime').glob('*.outbound.json')
+                            signatures = json.loads(outgoing.read_text())['tls']['fields'][
+                                'signature_algorithms']
                             self.assertIn(0x0301, signatures, diagnostics)
                             self.assertIn('sha224', trace.lower(), diagnostics)
                             self.assertIn('HTTP/1.0 200', client.stdout, diagnostics)
                         else:
-                            self.assertNotIn(0x0301, signatures, diagnostics)
+                            self.assertFalse(list((case / 'runtime').glob('*.outbound.json')),
+                                             diagnostics)
                             self.assertNotIn('HTTP/1.0 200', client.stdout, diagnostics)
                             self.assertTrue(client.returncode or 'fatal' in diagnostics.lower(),
                                             diagnostics)
