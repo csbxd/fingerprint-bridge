@@ -155,7 +155,7 @@ func serve(c net.Conn, certificate tls.Certificate, mode string, evidence map[st
 	}
 	if mode == "malformed" { return errors.New("malformed point was accepted") }
 	if kind != 22 || len(cke) < 6 || cke[0] != 16 { return errors.New("expected ECDHE ClientKeyExchange") }
-	n = int(cke[4]); if n != len(cke)-5 { return errors.New("bad ECDHE CKE length") }
+	n := int(cke[4]); if n != len(cke)-5 { return errors.New("bad ECDHE CKE length") }
 	peer, err := ecdh.P256().NewPublicKey(cke[5:]); if err != nil { return err }
 	premaster, err := ecdhe.ECDH(peer); if err != nil { return err }
 	transcript = append(transcript, cke...)
