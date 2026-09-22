@@ -21,6 +21,8 @@ const BACKEND_EXTENSIONS: &[u16] = &[
     35,
     16,
     5,
+    #[cfg(feature = "patched-tls")]
+    17,
     13,
     #[cfg(feature = "patched-tls")]
     50,
@@ -368,6 +370,8 @@ pub fn mirror(
         11,
         13,
         16,
+        #[cfg(feature = "patched-tls")]
+        17,
         18,
         21,
         #[cfg(feature = "patched-tls")]
@@ -421,6 +425,10 @@ pub fn mirror(
                 ssl: *mut std::ffi::c_void,
                 enabled: std::ffi::c_int,
             ) -> std::ffi::c_int;
+            fn SSL_set_bridge_status_request_v2(
+                ssl: *mut std::ffi::c_void,
+                enabled: std::ffi::c_int,
+            ) -> std::ffi::c_int;
         }
         let order: Vec<_> = hello
             .ciphers
@@ -446,6 +454,16 @@ pub fn mirror(
             )
         };
         ensure!(configured == 1, "patched encrypt-then-MAC profile rejected");
+        let configured = unsafe {
+            SSL_set_bridge_status_request_v2(
+                ssl.as_ptr().cast(),
+                i32::from(hello.extensions.contains(&17)),
+            )
+        };
+        ensure!(
+            configured == 1,
+            "patched status_request_v2 profile rejected"
+        );
         if !certificate_signatures.is_empty() {
             let configured = unsafe {
                 SSL_set_bridge_cert_verify_algorithm_prefs(

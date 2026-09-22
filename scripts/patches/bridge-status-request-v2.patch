@@ -1,0 +1,310 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -642,7 +642,7 @@
+   target_link_libraries(crypto libcxx)
+ endif()
+ 
+-add_library(ssl ${SSL_SOURCES})
++add_library(ssl ${SSL_SOURCES} ${PKI_SOURCES})
+ # Although libssl also provides headers that require an include directory, the
+ # flag is already specified by libcrypto, so we omit target_include_directories
+ # here.
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -5392,6 +5392,12 @@
+ // Bridge-only, pre-handshake opt-in to real TLS 1.2 CBC encrypt-then-MAC.
+ OPENSSL_EXPORT int SSL_set_bridge_encrypt_then_mac(SSL *ssl, int enabled);
+ 
++// Bridge-only, pre-handshake opt-in to RFC 6961 OCSP multi-stapling. When a
++// server negotiates this extension, every supplied OCSP response is parsed,
++// signature-checked, matched to its certificate and required to be current and
++// GOOD before the handshake can complete.
++OPENSSL_EXPORT int SSL_set_bridge_status_request_v2(SSL *ssl, int enabled);
++
+ // SSL_CTX_set_aes_hw_override sets |override_value| to
+ // override checking for aes hardware support. If |override_value|
+ // is set to true, the library will behave as if aes hardware support is
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -54,6 +54,7 @@
+ // ExtensionType values from RFC 6066
+ #define TLSEXT_TYPE_server_name 0
+ #define TLSEXT_TYPE_status_request 5
++#define TLSEXT_TYPE_status_request_v2 17
+ 
+ // ExtensionType values from RFC 4492
+ #define TLSEXT_TYPE_ec_point_formats 11
+@@ -146,6 +147,7 @@
+ // status request value from RFC 3546
+ #define TLSEXT_STATUSTYPE_nothing (-1)
+ #define TLSEXT_STATUSTYPE_ocsp 1
++#define TLSEXT_STATUSTYPE_ocsp_multi 2
+ 
+ // ECPointFormat values from RFC 4492
+ #define TLSEXT_ECPOINTFORMAT_uncompressed 0
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -31,6 +31,7 @@
+ #include <string_view>
+ #include <type_traits>
+ #include <utility>
++#include <vector>
+ 
+ #include <openssl/aead.h>
+ #include <openssl/curve25519.h>
+@@ -1978,6 +1979,14 @@
+   // both the client and server sides.)
+   bool certificate_status_expected : 1;
+ 
++  // certificate_status_v2_expected distinguishes an RFC 6961 ocsp_multi
++  // response from the original single-certificate OCSP response.
++  bool certificate_status_v2_expected : 1;
++
++  // bridge_status_v2_responses contains the non-empty OCSP responses parsed
++  // from the TLS 1.2 CertificateStatus message, in certificate-chain order.
++  std::vector<UniquePtr<CRYPTO_BUFFER>> bridge_status_v2_responses;
++
+   // ocsp_stapling_requested is true if a client requested OCSP stapling.
+   bool ocsp_stapling_requested : 1;
+ 
+@@ -3404,6 +3413,10 @@
+   // whether OCSP stapling will be requested.
+   bool ocsp_stapling_enabled : 1;
+ 
++  // bridge_status_request_v2_enabled sends and validates RFC 6961
++  // status_request_v2 with the ocsp_multi status type.
++  bool bridge_status_request_v2_enabled : 1;
++
+   // channel_id_enabled is copied from the |SSL_CTX|. For a server, it means
+   // that we'll accept Channel IDs from clients. It is ignored on the client.
+   bool channel_id_enabled : 1;
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -1132,7 +1132,8 @@
+ 
+   // OCSP stapling is forbidden on non-certificate ciphers.
+   if (CBS_len(contents) != 0 ||
+-      !ssl_cipher_uses_certificate_auth(hs->new_cipher)) {
++      !ssl_cipher_uses_certificate_auth(hs->new_cipher) ||
++      hs->certificate_status_expected) {
+     return false;
+   }
+ 
+@@ -1177,6 +1178,43 @@
+          CBB_add_u16(out, 0 /* length */);
+ }
+ 
++// RFC 6961 multiple-certificate OCSP stapling. The bridge requests only
++// ocsp_multi with empty responder and request-extension lists. This is the
++// exact capability it validates after normal certificate-chain verification.
++static bool ext_ocsp_v2_add_clienthello(const SSL_HANDSHAKE *hs, CBB *out,
++                                        CBB *out_compressible,
++                                        ssl_client_hello_type_t type) {
++  if (!hs->config->bridge_status_request_v2_enabled) {
++    return true;
++  }
++  CBB contents, requests, request;
++  return CBB_add_u16(out_compressible, TLSEXT_TYPE_status_request_v2) &&
++         CBB_add_u16_length_prefixed(out_compressible, &contents) &&
++         CBB_add_u16_length_prefixed(&contents, &requests) &&
++         CBB_add_u8(&requests, TLSEXT_STATUSTYPE_ocsp_multi) &&
++         CBB_add_u16_length_prefixed(&requests, &request) &&
++         CBB_add_u16(&request, 0 /* empty responder ID list */) &&
++         CBB_add_u16(&request, 0 /* empty request extensions */) &&
++         CBB_flush(out_compressible);
++}
++
++static bool ext_ocsp_v2_parse_serverhello(SSL_HANDSHAKE *hs,
++                                          uint8_t *out_alert,
++                                          CBS *contents) {
++  if (contents == nullptr) {
++    return true;
++  }
++  if (ssl_protocol_version(hs->ssl) >= TLS1_3_VERSION ||
++      CBS_len(contents) != 0 ||
++      !ssl_cipher_uses_certificate_auth(hs->new_cipher) ||
++      hs->certificate_status_expected) {
++    return false;
++  }
++  hs->certificate_status_expected = true;
++  hs->certificate_status_v2_expected = true;
++  return true;
++}
++
+ 
+ // Next protocol negotiation.
+ //
+@@ -3733,6 +3771,13 @@
+         ext_ocsp_add_serverhello,
+     },
+     {
++        TLSEXT_TYPE_status_request_v2,
++        ext_ocsp_v2_add_clienthello,
++        ext_ocsp_v2_parse_serverhello,
++        ignore_parse_clienthello,
++        dont_add_serverhello,
++    },
++    {
+         TLSEXT_TYPE_signature_algorithms,
+         ext_sigalgs_add_clienthello,
+         forbid_parse_serverhello,
+--- a/ssl/handshake.cc
++++ b/ssl/handshake.cc
+@@ -16,12 +16,14 @@
+ #include <openssl/ssl.h>
+ 
+ #include <assert.h>
++#include <time.h>
+ 
+ #include <algorithm>
+ #include <utility>
+ 
+ #include <openssl/err.h>
+ #include <openssl/rand.h>
++#include <openssl/pki/ocsp.h>
+ 
+ #include "../crypto/internal.h"
+ #include "internal.h"
+@@ -40,6 +42,7 @@
+       accept_psk_mode(false),
+       cert_request(false),
+       certificate_status_expected(false),
++      certificate_status_v2_expected(false),
+       ocsp_stapling_requested(false),
+       should_ack_sni(false),
+       in_false_start(false),
+@@ -299,6 +302,40 @@
+     ssl_send_alert(ssl, SSL3_AL_FATAL, alert);
+   }
+ 
++  if (ret == ssl_verify_ok && !ssl->server &&
++      hs->certificate_status_v2_expected) {
++    const size_t cert_count = sk_CRYPTO_BUFFER_num(hs->new_session->certs.get());
++    bool valid = hs->bridge_status_v2_responses.size() < cert_count;
++    const int64_t now = static_cast<int64_t>(time(nullptr));
++    for (size_t i = 0; valid && i < hs->bridge_status_v2_responses.size(); i++) {
++      const CRYPTO_BUFFER *response = hs->bridge_status_v2_responses[i].get();
++      const CRYPTO_BUFFER *certificate =
++          sk_CRYPTO_BUFFER_value(hs->new_session->certs.get(), i);
++      const CRYPTO_BUFFER *issuer =
++          sk_CRYPTO_BUFFER_value(hs->new_session->certs.get(), i + 1);
++      OCSPVerifyResult::ResponseStatus details;
++      const OCSPRevocationStatus status = CheckOCSP(
++          std::string_view(
++              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(response)),
++              CRYPTO_BUFFER_len(response)),
++          std::string_view(
++              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(certificate)),
++              CRYPTO_BUFFER_len(certificate)),
++          std::string_view(
++              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(issuer)),
++              CRYPTO_BUFFER_len(issuer)),
++          now, std::nullopt, &details);
++      valid = status == OCSPRevocationStatus::GOOD &&
++              details == OCSPVerifyResult::PROVIDED;
++    }
++    if (!valid) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_CERTIFICATE_VERIFY_FAILED);
++      ssl_send_alert(ssl, SSL3_AL_FATAL,
++                     SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE);
++      ret = ssl_verify_invalid;
++    }
++  }
++
+   // Emulate OpenSSL's client OCSP callback. OpenSSL verifies certificates
+   // before it receives the OCSP, so it needs a second callback for OCSP.
+   if (ret == ssl_verify_ok && !ssl->server &&
+--- a/ssl/handshake_client.cc
++++ b/ssl/handshake_client.cc
+@@ -938,6 +938,12 @@
+   }
+ 
+   if (msg.type != SSL3_MT_CERTIFICATE_STATUS) {
++    if (hs->certificate_status_v2_expected) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_CERTIFICATE_VERIFY_FAILED);
++      ssl_send_alert(ssl, SSL3_AL_FATAL,
++                     SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE);
++      return ssl_hs_error;
++    }
+     // A server may send status_request in ServerHello and then change its mind
+     // about sending CertificateStatus.
+     hs->state = state_verify_server_certificate;
+@@ -950,21 +956,49 @@
+ 
+   CBS certificate_status = msg.body, ocsp_response;
+   uint8_t status_type;
+-  if (!CBS_get_u8(&certificate_status, &status_type) ||                     //
+-      status_type != TLSEXT_STATUSTYPE_ocsp ||                              //
+-      !CBS_get_u24_length_prefixed(&certificate_status, &ocsp_response) ||  //
+-      CBS_len(&ocsp_response) == 0 ||                                       //
+-      CBS_len(&certificate_status) != 0) {
++  if (!CBS_get_u8(&certificate_status, &status_type)) {
+     OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
+     ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
+     return ssl_hs_error;
+   }
+-
+-  hs->new_session->ocsp_response.reset(
+-      CRYPTO_BUFFER_new_from_CBS(&ocsp_response, ssl->ctx->pool));
+-  if (hs->new_session->ocsp_response == nullptr) {
+-    ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_INTERNAL_ERROR);
+-    return ssl_hs_error;
++  if (hs->certificate_status_v2_expected) {
++    CBS responses;
++    if (status_type != TLSEXT_STATUSTYPE_ocsp_multi ||
++        !CBS_get_u24_length_prefixed(&certificate_status, &responses) ||
++        CBS_len(&responses) == 0 || CBS_len(&certificate_status) != 0) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
++      ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
++      return ssl_hs_error;
++    }
++    while (CBS_len(&responses) != 0) {
++      if (!CBS_get_u24_length_prefixed(&responses, &ocsp_response) ||
++          CBS_len(&ocsp_response) == 0) {
++        OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
++        ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
++        return ssl_hs_error;
++      }
++      UniquePtr<CRYPTO_BUFFER> response(
++          CRYPTO_BUFFER_new_from_CBS(&ocsp_response, ssl->ctx->pool));
++      if (response == nullptr) {
++        ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_INTERNAL_ERROR);
++        return ssl_hs_error;
++      }
++      hs->bridge_status_v2_responses.push_back(std::move(response));
++    }
++  } else {
++    if (status_type != TLSEXT_STATUSTYPE_ocsp ||
++        !CBS_get_u24_length_prefixed(&certificate_status, &ocsp_response) ||
++        CBS_len(&ocsp_response) == 0 || CBS_len(&certificate_status) != 0) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
++      ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
++      return ssl_hs_error;
++    }
++    hs->new_session->ocsp_response.reset(
++        CRYPTO_BUFFER_new_from_CBS(&ocsp_response, ssl->ctx->pool));
++    if (hs->new_session->ocsp_response == nullptr) {
++      ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_INTERNAL_ERROR);
++      return ssl_hs_error;
++    }
+   }
+ 
+   ssl->method->next_message(ssl);
+--- a/ssl/ssl_lib.cc
++++ b/ssl/ssl_lib.cc
+@@ -2233,6 +2233,15 @@
+   return 1;
+ }
+ 
++int SSL_set_bridge_status_request_v2(SSL *ssl, int enabled) {
++  if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||
++      SSL_is_dtls(ssl) || (enabled != 0 && enabled != 1)) {
++    return 0;
++  }
++  ssl->config->bridge_status_request_v2_enabled = enabled != 0;
++  return 1;
++}
++
+ int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
+                            size_t count, int padding) {
+   if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||

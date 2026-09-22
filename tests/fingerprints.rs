@@ -671,6 +671,36 @@ async fn patched_tls_preserves_all_aria_gcm_suites_in_client_order() {
 
 #[cfg(feature = "patched-tls")]
 #[tokio::test]
+async fn patched_tls_preserves_java_status_request_v2_wire_body_and_order() {
+    use btls::ssl::{SslConnector, SslMethod, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_max_proto_version(Some(SslVersion::TLS1_2)).unwrap();
+    c.enable_ocsp_stapling();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    let position = incoming.extensions.iter().position(|id| *id == 5).unwrap();
+    incoming.extensions.insert(position, 17);
+
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item == "unsupported extension 17"));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.extensions, incoming.extensions);
+    // RFC 6961 CertificateStatusRequestItem: ocsp_multi plus empty responder-ID
+    // and request-extension lists, exactly as emitted by the matrix Java client.
+    assert!(outgoing.other_extensions.contains(&(
+        17,
+        "d6383a4e2f0474790b70b1ab1a68557a941710add45ace11fa2fee49d135103d".into()
+    )));
+
+    incoming.extensions.retain(|id| *id != 17);
+    let (ssl, _) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!emitted_hello(ssl).await.extensions.contains(&17));
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
 async fn patched_tls_supports_ccm_only_tls13_profile() {
     use btls::ssl::{SslConnector, SslMethod, SslVersion};
     let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
