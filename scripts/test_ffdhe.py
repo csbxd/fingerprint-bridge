@@ -42,10 +42,14 @@ class FFDHEHandshakeTests(unittest.TestCase):
 
             sender = threading.Thread(target=upstream, daemon=True)
             sender.start()
+            encrypted = False
+            tls13 = False
             while True:
                 header = exact(origin, 5)
                 body = bytearray(exact(origin, int.from_bytes(header[3:5], 'big')))
-                if header[0] == 22:
+                if header[0] == 20 and not tls13:
+                    encrypted = True
+                if header[0] == 22 and not encrypted:
                     pos = 0
                     while pos + 4 <= len(body):
                         kind = body[pos]
@@ -60,6 +64,8 @@ class FFDHEHandshakeTests(unittest.TestCase):
                                 while p + 4 <= end:
                                     typ = int.from_bytes(body[p:p + 2], 'big')
                                     n = int.from_bytes(body[p + 2:p + 4], 'big')
+                                    if typ == 43 and body[p + 4:p + 4 + n] == b"\x03\x04":
+                                        tls13 = True
                                     if typ == 51 and n > 2:
                                         group = int.from_bytes(body[p + 4:p + 6], 'big')
                                         size = int.from_bytes(body[p + 6:p + 8], 'big')
