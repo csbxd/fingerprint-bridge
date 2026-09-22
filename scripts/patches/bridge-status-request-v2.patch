@@ -150,22 +150,7 @@
          forbid_parse_serverhello,
 --- a/ssl/handshake.cc
 +++ b/ssl/handshake.cc
-@@ -16,12 +16,14 @@
- #include <openssl/ssl.h>
- 
- #include <assert.h>
-+#include <time.h>
- 
- #include <algorithm>
- #include <utility>
- 
- #include <openssl/err.h>
- #include <openssl/rand.h>
-+#include <openssl/pki/ocsp.h>
- 
- #include "../crypto/internal.h"
- #include "internal.h"
-@@ -40,6 +42,7 @@
+@@ -40,6 +40,7 @@
        accept_psk_mode(false),
        cert_request(false),
        certificate_status_expected(false),
@@ -173,47 +158,72 @@
        ocsp_stapling_requested(false),
        should_ack_sni(false),
        in_false_start(false),
-@@ -299,6 +302,40 @@
-     ssl_send_alert(ssl, SSL3_AL_FATAL, alert);
+--- a/ssl/ssl_x509.cc
++++ b/ssl/ssl_x509.cc
+@@ -16,11 +16,13 @@
+ #include <openssl/ssl.h>
+ 
+ #include <assert.h>
++#include <time.h>
+ 
+ #include <openssl/asn1.h>
+ #include <openssl/bytestring.h>
+ #include <openssl/err.h>
+ #include <openssl/pem.h>
++#include <openssl/pki/ocsp.h>
+ #include <openssl/stack.h>
+ #include <openssl/x509.h>
+ 
+@@ -256,6 +258,49 @@
+     return false;
    }
  
-+  if (ret == ssl_verify_ok && !ssl->server &&
-+      hs->certificate_status_v2_expected) {
-+    const size_t cert_count = sk_CRYPTO_BUFFER_num(hs->new_session->certs.get());
-+    bool valid = hs->bridge_status_v2_responses.size() < cert_count;
++  // Validate RFC 6961 ocsp_multi only after the normal X.509 path builder has
++  // succeeded. The peer-supplied chain may omit the trust anchor, while the
++  // verified chain contains the issuer relationship that CheckOCSP needs.
++  if (!ssl->server && hs->certificate_status_v2_expected) {
++    STACK_OF(X509) *verified_chain = X509_STORE_CTX_get0_chain(ctx.get());
++    const size_t response_count = hs->bridge_status_v2_responses.size();
++    bool valid = verify_ret > 0 && verified_chain != nullptr &&
++                 response_count > 0 &&
++                 response_count < static_cast<size_t>(sk_X509_num(verified_chain));
 +    const int64_t now = static_cast<int64_t>(time(nullptr));
-+    for (size_t i = 0; valid && i < hs->bridge_status_v2_responses.size(); i++) {
++    for (size_t i = 0; valid && i < response_count; i++) {
++      UniquePtr<CRYPTO_BUFFER> certificate(
++          x509_to_buffer(sk_X509_value(verified_chain, i)));
++      UniquePtr<CRYPTO_BUFFER> issuer(
++          x509_to_buffer(sk_X509_value(verified_chain, i + 1)));
 +      const CRYPTO_BUFFER *response = hs->bridge_status_v2_responses[i].get();
-+      const CRYPTO_BUFFER *certificate =
-+          sk_CRYPTO_BUFFER_value(hs->new_session->certs.get(), i);
-+      const CRYPTO_BUFFER *issuer =
-+          sk_CRYPTO_BUFFER_value(hs->new_session->certs.get(), i + 1);
++      if (certificate == nullptr || issuer == nullptr || response == nullptr) {
++        valid = false;
++        break;
++      }
 +      OCSPVerifyResult::ResponseStatus details;
 +      const OCSPRevocationStatus status = CheckOCSP(
 +          std::string_view(
 +              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(response)),
 +              CRYPTO_BUFFER_len(response)),
 +          std::string_view(
-+              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(certificate)),
-+              CRYPTO_BUFFER_len(certificate)),
++              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(certificate.get())),
++              CRYPTO_BUFFER_len(certificate.get())),
 +          std::string_view(
-+              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(issuer)),
-+              CRYPTO_BUFFER_len(issuer)),
++              reinterpret_cast<const char *>(CRYPTO_BUFFER_data(issuer.get())),
++              CRYPTO_BUFFER_len(issuer.get())),
 +          now, std::nullopt, &details);
 +      valid = status == OCSPRevocationStatus::GOOD &&
 +              details == OCSPVerifyResult::PROVIDED;
 +    }
 +    if (!valid) {
++      session->verify_result = X509_V_ERR_APPLICATION_VERIFICATION;
++      *out_alert = SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE;
 +      OPENSSL_PUT_ERROR(SSL, SSL_R_CERTIFICATE_VERIFY_FAILED);
-+      ssl_send_alert(ssl, SSL3_AL_FATAL,
-+                     SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE);
-+      ret = ssl_verify_invalid;
++      return false;
 +    }
 +  }
 +
-   // Emulate OpenSSL's client OCSP callback. OpenSSL verifies certificates
-   // before it receives the OCSP, so it needs a second callback for OCSP.
-   if (ret == ssl_verify_ok && !ssl->server &&
+   ERR_clear_error();
+   return true;
+ }
 --- a/ssl/handshake_client.cc
 +++ b/ssl/handshake_client.cc
 @@ -938,6 +938,12 @@
