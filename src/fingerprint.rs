@@ -54,7 +54,7 @@ impl<'a> Reader<'a> {
     }
 }
 fn words(b: &[u8]) -> Result<Vec<u16>> {
-    ensure!(b.len() % 2 == 0, "odd u16 vector");
+    ensure!(b.len().is_multiple_of(2), "odd u16 vector");
     Ok(b.chunks_exact(2)
         .map(|c| normalize(u16::from_be_bytes([c[0], c[1]])))
         .collect())
