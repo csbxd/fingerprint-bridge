@@ -168,10 +168,12 @@ class BackendHandshakeTests(unittest.TestCase):
                 '-out', str(path / 'a-ec.pem')
             ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             schemes = (
-                ('rsa_pkcs1_sha224', 0x0301, path / 'a.pem', path / 'a.key'),
-                ('ecdsa_sha224', 0x0303, path / 'a-ec.pem', path / 'a-ec.key'),
+                ('rsa_pkcs1_sha224', 'rsa_pkcs1_sha224', 0x0301,
+                 path / 'a.pem', path / 'a.key'),
+                ('ecdsa_sha224', 'ECDSA+SHA224', 0x0303,
+                 path / 'a-ec.pem', path / 'a-ec.key'),
             )
-            for scheme, scheme_id, certificate, key in schemes:
+            for scheme, openssl_scheme, scheme_id, certificate, key in schemes:
                 for offer_sha224 in (True, False):
                     with self.subTest(signature_scheme=scheme,
                                       client_offers_sha224=offer_sha224):
@@ -186,7 +188,7 @@ class BackendHandshakeTests(unittest.TestCase):
                             '-www', '-tls1_2', '-cipher',
                             'ECDHE-RSA-AES128-GCM-SHA256:'
                             'ECDHE-ECDSA-AES128-GCM-SHA256:@SECLEVEL=0',
-                            '-sigalgs', scheme, '-trace', '-naccept', '1'
+                            '-sigalgs', openssl_scheme, '-trace', '-naccept', '1'
                         ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                         proc = log = None
                         try:
@@ -198,7 +200,7 @@ class BackendHandshakeTests(unittest.TestCase):
                                 case / 'runtime')
                             sigalgs = 'rsa_pss_rsae_sha256'
                             if offer_sha224:
-                                sigalgs += f':{scheme}'
+                                sigalgs += f':{openssl_scheme}'
                             request = (f'GET /sha224 HTTP/1.1\r\nHost: b.test:{port}\r\n'
                                        'Cookie: sid=from_B\r\nConnection: close\r\n\r\n')
                             client = subprocess.run([
