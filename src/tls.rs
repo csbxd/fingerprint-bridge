@@ -72,6 +72,54 @@ impl CertificateCompressor for Zlib {
         Ok(())
     }
 }
+
+struct Zstd;
+impl CertificateCompressor for Zstd {
+    const ALGORITHM: CertificateCompressionAlgorithm = CertificateCompressionAlgorithm::ZSTD;
+    const CAN_COMPRESS: bool = false;
+    const CAN_DECOMPRESS: bool = true;
+    fn decompress<W: std::io::Write>(&self, input: &[u8], output: &mut W) -> std::io::Result<()> {
+        use std::io::{Error, ErrorKind, Read};
+        // A TLS Certificate handshake message has a 24-bit length. Bound both
+        // the decoder window and total output, including concatenated frames.
+        const MAX_CERTIFICATE: u64 = (1 << 24) - 1;
+        let mut remaining = input;
+        let mut total = 0;
+        if remaining.is_empty() {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "empty Zstandard certificate",
+            ));
+        }
+        while !remaining.is_empty() {
+            let mut decoder = ruzstd::decoding::StreamingDecoder::new_with_max_window_size(
+                &mut remaining,
+                MAX_CERTIFICATE,
+            )
+            .map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+            total += std::io::copy(
+                &mut decoder.by_ref().take(MAX_CERTIFICATE - total + 1),
+                output,
+            )?;
+            if total > MAX_CERTIFICATE {
+                return Err(Error::new(
+                    ErrorKind::InvalidData,
+                    "oversized Zstandard certificate",
+                ));
+            }
+            // ruzstd exposes the frame checksum but does not compare it for us.
+            if let Some(expected) = decoder.decoder.get_checksum_from_data() {
+                if decoder.decoder.get_calculated_checksum() != Some(expected) {
+                    return Err(Error::new(
+                        ErrorKind::InvalidData,
+                        "Zstandard checksum mismatch",
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+}
 fn group(id: u16) -> Option<&'static str> {
     match id {
         23 => Some("P-256"),
@@ -276,6 +324,7 @@ pub fn mirror(
         match id {
             1 => b.add_certificate_compression_algorithm(Zlib)?,
             2 => b.add_certificate_compression_algorithm(Brotli)?,
+            3 => b.add_certificate_compression_algorithm(Zstd)?,
             _ => limitations.push(format!("unsupported certificate compression {id}")),
         }
     }
@@ -412,4 +461,33 @@ pub fn mirror(
         limitations.push("session resumption / 0-RTT not inherited".into());
     }
     Ok((ssl, limitations))
+}
+
+#[cfg(test)]
+mod compression_tests {
+    use super::*;
+    use std::io::Write;
+
+    #[test]
+    fn zstd_rejects_truncation_checksum_and_trailing_garbage() {
+        // Independent libzstd encoder, checksum explicitly enabled.
+        let mut encoder = zstd::stream::write::Encoder::new(Vec::new(), 3).unwrap();
+        encoder.include_checksum(true).unwrap();
+        encoder
+            .write_all(b"synthetic TLS certificate bytes")
+            .unwrap();
+        let frame = encoder.finish().unwrap();
+        let mut decoded = Vec::new();
+        Zstd.decompress(&frame, &mut decoded).unwrap();
+        assert_eq!(decoded, b"synthetic TLS certificate bytes");
+        for end in 0..frame.len() {
+            assert!(Zstd.decompress(&frame[..end], &mut Vec::new()).is_err());
+        }
+        let mut checksum = frame.clone();
+        *checksum.last_mut().unwrap() ^= 1;
+        assert!(Zstd.decompress(&checksum, &mut Vec::new()).is_err());
+        let mut trailing = frame;
+        trailing.extend_from_slice(b"garbage");
+        assert!(Zstd.decompress(&trailing, &mut Vec::new()).is_err());
+    }
 }
