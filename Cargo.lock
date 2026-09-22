@@ -350,6 +350,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crrl"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca032663238726938d4ca23189575167143599eb219b591270c0d268ca9259b0"
+dependencies = [
+ "rand_core 0.6.4",
+ "sha2",
+ "sha3",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -422,6 +433,7 @@ dependencies = [
  "brotli",
  "btls",
  "clap",
+ "crrl",
  "flate2",
  "foreign-types",
  "hex",
@@ -439,6 +451,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
+ "zeroize",
  "zstd",
 ]
 
@@ -923,6 +936,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "keccak"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb26cec98cce3a3d96cbb7bced3c4b16e3d13f27ec56dbd62cbc8f39cfb9d653"
+dependencies = [
+ "cpufeatures 0.2.17",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1288,6 +1310,12 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+
+[[package]]
+name = "rand_core"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
@@ -1569,6 +1597,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
  "digest",
+]
+
+[[package]]
+name = "sha3"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77fd7028345d415a4034cf8777cd4f8ab1851274233b45f84e3d955502d93874"
+dependencies = [
+ "digest",
+ "keccak",
 ]
 
 [[package]]

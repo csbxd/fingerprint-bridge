@@ -95,11 +95,17 @@ go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
 
 ML-DSA 另用 Go 1.27.1 `crypto/mldsa` 独立对端生成 ML-DSA-44 CA、服务器证书和密钥：有效证书必须完成 TLS 1.3 与 HTTP，篡改证书签名必须在 HTTP 到达 A 前失败；A 同时验证 B Cookie 和改写后的 authority。它验证真实协商和签名，不只是 ClientHello 中出现算法编号。
 
-DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套件与 SHA-1/224/256/384/512 五种握手签名的 30 个组合；另验证未提供签名算法和篡改证书必须失败。仅受控测试显式选择算法，矩阵客户端默认行为不变。SHA-384/512 的 DSA **证书签名**另由 OpenSSL 签发证书、独立 Go 服务端完成 TLS 1.2/1.3 握手验证；篡改签名和替换摘要 OID 均须在 HTTP 到达 A 前被拒绝。只有补丁后端声明这两项证书能力，未实现的 Ed448 仍被过滤。原握手能力结果见 [DSA 验证记录](test-results/DSA-VALIDATION.md)；新增证书能力见 [DSA 证书验证记录](test-results/DSA-CERTIFICATES-VALIDATION.md)。
+DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套件与 SHA-1/224/256/384/512 五种握手签名的 30 个组合；另验证未提供签名算法和篡改证书必须失败。仅受控测试显式选择算法，矩阵客户端默认行为不变。SHA-384/512 的 DSA **证书签名**另由 OpenSSL 签发证书、独立 Go 服务端完成 TLS 1.2/1.3 握手验证；篡改签名和替换摘要 OID 均须在 HTTP 到达 A 前被拒绝。只有补丁后端声明这两项证书能力。原握手能力结果见 [DSA 验证记录](test-results/DSA-VALIDATION.md)；新增证书能力见 [DSA 证书验证记录](test-results/DSA-CERTIFICATES-VALIDATION.md)。
 
 AES-CCM 专项验证覆盖 12 个 TLS 1.2 RSA / DHE-RSA / ECDHE-ECDSA 套件，以及 TLS 1.3 `TLS_AES_128_CCM_SHA256` / `TLS_AES_128_CCM_8_SHA256`。B 上游只按入站提供列表启用这些能力，使用真实 CCM 加解密及 16/8 字节标签；TLS 1.3 的内容类型和填充也参与认证。独立 OpenSSL 测试验证大于 16 KiB 的双向 HTTP、Cookie 和域名改写、密文/标签篡改，以及拒绝未提供的套件。CCM 每个 traffic key 限制为 `2^23` 条记录，达到限额前须轮换密钥或重新连接；CCM8 首次认证失败即终止。该能力不包含 DTLS，也不继承客户端的会话恢复或 0-RTT。
 
 实现范围、58 个真实握手案例、内部用量边界测试及双架构矩阵结果见 [CCM 验证记录](test-results/CCM-VALIDATION.md)。矩阵日志中的 `TLS_CAPABILITIES` 提供五组实测算法/扩展编号，不改变比较和严格门禁，也不替代原始报文复核。
+
+补丁后端还支持真实 X448 密钥交换、PureEd448 握手/证书签名验证，以及 TLS 1.3 的 Brainpool P256r1/P384r1/P512r1 签名方案。X448/Ed448 使用固定版本 CRRL；Ed448 只提供公钥验证，不提供签名或私钥导入。CRRL 不是已独立审计的密码库，项目仍属实验性实现。Brainpool 复用后端既有 EC 运算，严格绑定曲线和摘要；此项不包含 Brainpool TLS 密钥交换组。对应算法只在入站提供时映射，不改变默认客户端或 B 的入站证书策略。
+
+TLS 1.2 CBC 的 `encrypt_then_mac` 扩展按入站实际提供情况启用，真实执行先验 MAC、后解密，覆盖 AES/3DES 与已有 SHA-1/256/384 HMAC 组合。独立 OpenSSL/Go 对端验证真实 Finished、加密 HTTP 和篡改拒绝；未提供扩展、服务端拒绝扩展和 AEAD 套件保留原有行为。这不意味着两侧会话恢复状态或重协商指纹相同。
+
+Brainpool 专项握手需要识别 RFC 8734 的独立对端：`scripts/prepare_test_openssl.py` 下载并校验固定版本 OpenSSL 源码，在 `target/test-tools` 构建专用 CLI。测试只通过绝对路径使用该 CLI，不替换系统 OpenSSL、PATH 或 72 项矩阵的默认客户端。X448/Ed448、CBC EtM 的其他 OpenSSL 测试继续使用系统版本。
 
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
 

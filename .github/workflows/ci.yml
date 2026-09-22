@@ -52,6 +52,8 @@ jobs:
           mkdir -p target/matrix-clients
           go build -o target/matrix-clients/mldsa-probe scripts/clients/mldsa_probe.go
           go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
+      - name: Prepare isolated Brainpool TLS test peer
+        run: .venv/bin/python scripts/prepare_test_openssl.py
       - name: Matrix harness regression tests
         run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Hybrid group handshakes and malformed key shares

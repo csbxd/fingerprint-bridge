@@ -803,20 +803,21 @@ async fn patched_tls_does_not_claim_unsupported_certificate_signature_algorithm(
         emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
     let position = incoming.extensions.iter().position(|id| *id == 13).unwrap() + 1;
     incoming.extensions.insert(position, 50);
-    incoming.signature_algorithms_cert = vec![0x0403, 0x0402, 0x0502, 0x0602, 0x0808];
+    incoming.signature_algorithms_cert = vec![0x0403, 0x0402, 0x0502, 0x0602, 0x0808, 0xffff];
 
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
     assert!(limitations
         .iter()
-        .any(|item| item == "unsupported certificate signature algorithm 2056"));
+        .any(|item| item == "unsupported certificate signature algorithm 65535"));
     assert!(!limitations.iter().any(|item| {
         item == "unsupported certificate signature algorithm 1282"
             || item == "unsupported certificate signature algorithm 1538"
+            || item == "unsupported certificate signature algorithm 2056"
     }));
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(
         outgoing.signature_algorithms_cert,
-        [0x0403, 0x0402, 0x0502, 0x0602]
+        [0x0403, 0x0402, 0x0502, 0x0602, 0x0808]
     );
 }
 
@@ -855,6 +856,55 @@ async fn patched_tls_preserves_dhe_dss_ciphers_and_dsa_signature_schemes() {
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(incoming.ciphers, outgoing.ciphers);
     assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_curve448_brainpool_and_independent_certificate_order() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    incoming.groups = vec![30, 29, 23];
+    incoming.key_share_groups = vec![30, 29];
+    incoming.key_share_lengths = vec![56, 32];
+    incoming.signature_algorithms = vec![0x081c, 0x0807, 0x0808, 0x081a, 0x0403, 0x081b];
+    let position = incoming.extensions.iter().position(|id| *id == 13).unwrap() + 1;
+    incoming.extensions.insert(position, 50);
+    incoming.signature_algorithms_cert = vec![0x081b, 0x0403, 0x0808, 0x081c, 0x081a];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(limitations.is_empty(), "{limitations:?}");
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.groups, outgoing.groups);
+    assert_eq!(incoming.key_share_groups, outgoing.key_share_groups);
+    assert_eq!(incoming.key_share_lengths, outgoing.key_share_lengths);
+    assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
+    assert_eq!(
+        incoming.signature_algorithms_cert,
+        outgoing.signature_algorithms_cert
+    );
+    assert_eq!(incoming.extensions, outgoing.extensions);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
+async fn patched_tls_preserves_encrypt_then_mac_presence_and_extension_order() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    for offered in [false, true] {
+        if offered {
+            let position = incoming.extensions.iter().position(|id| *id == 23).unwrap();
+            incoming.extensions.insert(position, 22);
+        }
+        let (ssl, limitations) =
+            fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+        assert!(!limitations.iter().any(|s| s == "unsupported extension 22"));
+        let outgoing = emitted_hello(ssl).await;
+        assert_eq!(incoming.extensions, outgoing.extensions);
+        assert_eq!(outgoing.extensions.contains(&22), offered);
+    }
 }
 
 #[cfg(feature = "patched-tls")]

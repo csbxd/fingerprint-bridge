@@ -13,6 +13,8 @@ const BACKEND_EXTENSIONS: &[u16] = &[
     0,
     65037,
     23,
+    #[cfg(feature = "patched-tls")]
+    22,
     65281,
     10,
     11,
@@ -126,6 +128,8 @@ fn group(id: u16) -> Option<&'static str> {
         24 => Some("P-384"),
         25 => Some("P-521"),
         29 => Some("X25519"),
+        #[cfg(feature = "patched-tls")]
+        30 => Some("X448"),
         4588 => Some("X25519MLKEM768"),
         #[cfg(feature = "patched-tls")]
         4587 => Some("SecP256r1MLKEM768"),
@@ -180,6 +184,16 @@ pub fn mirror(
     host: &str,
     ca: Option<&Path>,
 ) -> Result<(btls::ssl::Ssl, Vec<String>)> {
+    #[cfg(feature = "patched-tls")]
+    ensure!(
+        crate::crypto_x448::register(),
+        "X448 provider registration failed"
+    );
+    #[cfg(feature = "patched-tls")]
+    ensure!(
+        crate::crypto_ed448::register(),
+        "Ed448 provider registration failed"
+    );
     let mut b = SslConnector::builder(SslMethod::tls())?;
     let mut limitations = vec![];
     if let Some(ca) = ca {
@@ -263,11 +277,19 @@ pub fn mirror(
         0x0806,
         0x0807,
         #[cfg(feature = "patched-tls")]
+        0x0808,
+        #[cfg(feature = "patched-tls")]
         0x0809,
         #[cfg(feature = "patched-tls")]
         0x080a,
         #[cfg(feature = "patched-tls")]
         0x080b,
+        #[cfg(feature = "patched-tls")]
+        0x081a,
+        #[cfg(feature = "patched-tls")]
+        0x081b,
+        #[cfg(feature = "patched-tls")]
+        0x081c,
         #[cfg(feature = "patched-tls")]
         0x0904,
         #[cfg(feature = "patched-tls")]
@@ -348,6 +370,8 @@ pub fn mirror(
         16,
         18,
         21,
+        #[cfg(feature = "patched-tls")]
+        22,
         23,
         27,
         28,
@@ -393,6 +417,10 @@ pub fn mirror(
                 prefs: *const u16,
                 count: usize,
             ) -> std::ffi::c_int;
+            fn SSL_set_bridge_encrypt_then_mac(
+                ssl: *mut std::ffi::c_void,
+                enabled: std::ffi::c_int,
+            ) -> std::ffi::c_int;
         }
         let order: Vec<_> = hello
             .ciphers
@@ -411,6 +439,13 @@ pub fn mirror(
             )
         };
         ensure!(configured == 1, "patched TLS profile rejected");
+        let configured = unsafe {
+            SSL_set_bridge_encrypt_then_mac(
+                ssl.as_ptr().cast(),
+                i32::from(hello.extensions.contains(&22)),
+            )
+        };
+        ensure!(configured == 1, "patched encrypt-then-MAC profile rejected");
         if !certificate_signatures.is_empty() {
             let configured = unsafe {
                 SSL_set_bridge_cert_verify_algorithm_prefs(

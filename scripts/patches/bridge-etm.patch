@@ -1,0 +1,399 @@
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index 9054131..999cbed 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -5365,6 +5365,9 @@ OPENSSL_EXPORT int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
+                                          size_t count, int padding);
+ 
+ 
++// Bridge-only, pre-handshake opt-in to real TLS 1.2 CBC encrypt-then-MAC.
++OPENSSL_EXPORT int SSL_set_bridge_encrypt_then_mac(SSL *ssl, int enabled);
++
+ // SSL_CTX_set_aes_hw_override sets |override_value| to
+ // override checking for aes hardware support. If |override_value|
+ // is set to true, the library will behave as if aes hardware support is
+diff --git a/ssl/extensions.cc b/ssl/extensions.cc
+index 37d95ff..559aaf2 100644
+--- a/ssl/extensions.cc
++++ b/ssl/extensions.cc
+@@ -834,6 +834,35 @@ static bool ext_ri_add_serverhello(SSL_HANDSHAKE *hs, CBB *out) {
+ }
+ 
+ 
++// RFC 7366 encrypt-then-MAC. This bridge API implements the upstream TLS
++// client only; a B-side server never advertises an unimplemented capability.
++static bool ext_etm_add_clienthello(const SSL_HANDSHAKE *hs, CBB *out,
++                                    CBB *out_compressible,
++                                    ssl_client_hello_type_t type) {
++  if (!hs->config->bridge_encrypt_then_mac || hs->min_version > TLS1_2_VERSION ||
++      SSL_is_dtls(hs->ssl) || type == ssl_client_hello_inner) {
++    return true;
++  }
++  return CBB_add_u16(out, 22) && CBB_add_u16(out, 0);
++}
++
++static bool ext_etm_parse_serverhello(SSL_HANDSHAKE *hs, uint8_t *out_alert,
++                                     CBS *contents) {
++  SSL *ssl = hs->ssl;
++  const bool negotiated = contents != nullptr;
++  if ((negotiated && (CBS_len(contents) != 0 ||
++                     !hs->config->bridge_encrypt_then_mac ||
++                     ssl->s3->version != TLS1_2_VERSION ||
++                     !SSL_CIPHER_is_block_cipher(hs->new_cipher))) ||
++      (ssl->s3->encrypt_then_mac && !negotiated)) {
++    *out_alert = SSL_AD_ILLEGAL_PARAMETER;
++    OPENSSL_PUT_ERROR(SSL, SSL_R_UNEXPECTED_EXTENSION);
++    return false;
++  }
++  ssl->s3->encrypt_then_mac = negotiated;
++  return true;
++}
++
+ // Extended Master Secret.
+ //
+ // https://tools.ietf.org/html/rfc7627
+@@ -3631,6 +3660,13 @@ static bool record_size_limit_add_serverhello(SSL_HANDSHAKE* hs, CBB* out) {
+ 
+ // kExtensions contains all the supported extensions.
+ static const struct tls_extension kExtensions[] = {
++    {
++        22,
++        ext_etm_add_clienthello,
++        ext_etm_parse_serverhello,
++        ignore_parse_clienthello,
++        dont_add_serverhello,
++    },
+     {
+         TLSEXT_TYPE_server_name,
+         ext_sni_add_clienthello,
+diff --git a/ssl/internal.h b/ssl/internal.h
+index 7b803be..c033fa3 100644
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -34,6 +34,8 @@
+ 
+ #include <openssl/aead.h>
+ #include <openssl/curve25519.h>
++#include <openssl/cipher.h>
++#include <openssl/hmac.h>
+ #include <openssl/err.h>
+ #include <openssl/hpke.h>
+ #include <openssl/mem.h>
+@@ -543,7 +545,8 @@ class SSLAEADContext {
+                                           const SSL_CIPHER *cipher,
+                                           Span<const uint8_t> enc_key,
+                                           Span<const uint8_t> mac_key,
+-                                          Span<const uint8_t> fixed_iv);
++                                          Span<const uint8_t> fixed_iv,
++                                          bool encrypt_then_mac = false);
+ 
+   // CreatePlaceholderForQUIC creates a placeholder |SSLAEADContext| for the
+   // given cipher. The resulting object can be queried for various properties
+@@ -623,6 +626,17 @@ class SSLAEADContext {
+                                         uint64_t seqnum, size_t plaintext_len,
+                                         Span<const uint8_t> header);
+ 
++  bool EtmMAC(uint8_t *out, uint8_t type, uint16_t version, uint64_t seqnum,
++              Span<const uint8_t> fragment);
++  bool OpenEtm(Span<uint8_t> *out, uint8_t type, uint16_t version,
++               uint64_t seqnum, Span<uint8_t> in);
++  bool SealEtm(uint8_t *prefix, uint8_t *out, uint8_t *suffix, uint8_t type,
++               uint16_t version, uint64_t seqnum, Span<const uint8_t> in,
++               Span<const uint8_t> extra);
++  ScopedEVP_CIPHER_CTX etm_cipher_;
++  ScopedHMAC_CTX etm_hmac_;
++  uint8_t etm_mac_len_ = 0;
++
+   const SSL_CIPHER *cipher_;
+   ScopedEVP_AEAD_CTX ctx_;
+   // fixed_nonce_ contains any bytes of the nonce that are fixed for all
+@@ -2798,6 +2812,9 @@ struct SSL3_STATE {
+   // at least once by |get_message| and false otherwise.
+   bool has_message : 1;
+ 
++  // RFC 7366 applies only after an authenticated TLS 1.2 CBC negotiation.
++  bool encrypt_then_mac = false;
++
+   // initial_handshake_complete is true if the initial handshake has
+   // completed.
+   bool initial_handshake_complete : 1;
+@@ -3446,6 +3463,7 @@ struct SSL_CONFIG {
+   // -1 retains backend heuristics; 0 omits padding; 1 includes padding.
+   int bridge_padding = -1;
+   bool bridge_scsv_sent = false;
++  bool bridge_encrypt_then_mac = false;
+ 
+   // delegated_credentials, if not empty, is the set of signature algorithms
+   // supported by the client.
+diff --git a/ssl/ssl_aead_ctx.cc b/ssl/ssl_aead_ctx.cc
+index 2e6abe2..0878eac 100644
+--- a/ssl/ssl_aead_ctx.cc
++++ b/ssl/ssl_aead_ctx.cc
+@@ -44,7 +44,8 @@ UniquePtr<SSLAEADContext> SSLAEADContext::CreateNullCipher() {
+ UniquePtr<SSLAEADContext> SSLAEADContext::Create(
+     enum evp_aead_direction_t direction, uint16_t version,
+     const SSL_CIPHER *cipher, Span<const uint8_t> enc_key,
+-    Span<const uint8_t> mac_key, Span<const uint8_t> fixed_iv) {
++    Span<const uint8_t> mac_key, Span<const uint8_t> fixed_iv,
++    bool encrypt_then_mac) {
+   const EVP_AEAD *aead;
+   uint16_t protocol_version;
+   size_t expected_mac_key_len, expected_fixed_iv_len;
+@@ -73,6 +74,41 @@ UniquePtr<SSLAEADContext> SSLAEADContext::Create(
+     return nullptr;
+   }
+ 
++  if (encrypt_then_mac) {
++    // Limit this implementation to stream TLS 1.2, which has explicit IVs.
++    const EVP_CIPHER *cbc = nullptr;
++    const EVP_MD *digest = nullptr;
++    if (version != TLS1_2_VERSION || !fixed_iv.empty() || mac_key.empty()) {
++      OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
++      return nullptr;
++    }
++    switch (cipher->algorithm_enc) {
++      case SSL_AES128: cbc = EVP_aes_128_cbc(); break;
++      case SSL_AES256: cbc = EVP_aes_256_cbc(); break;
++      case SSL_3DES: cbc = EVP_des_ede3_cbc(); break;
++      default: return nullptr;
++    }
++    switch (cipher->algorithm_mac) {
++      case SSL_SHA1: digest = EVP_sha1(); break;
++      case SSL_SHA256: digest = EVP_sha256(); break;
++      case SSL_SHA384: digest = EVP_sha384(); break;
++      default: return nullptr;
++    }
++    if (EVP_CIPHER_key_length(cbc) != enc_key.size() ||
++        EVP_MD_size(digest) != mac_key.size() ||
++        !EVP_CipherInit_ex(aead_ctx->etm_cipher_.get(), cbc, nullptr,
++                           enc_key.data(), nullptr, direction == evp_aead_seal) ||
++        !EVP_CIPHER_CTX_set_padding(aead_ctx->etm_cipher_.get(), 0) ||
++        !HMAC_Init_ex(aead_ctx->etm_hmac_.get(), mac_key.data(), mac_key.size(),
++                       digest, nullptr)) {
++      return nullptr;
++    }
++    aead_ctx->etm_mac_len_ = mac_key.size();
++    aead_ctx->variable_nonce_len_ = EVP_CIPHER_block_size(cbc);
++    aead_ctx->variable_nonce_included_in_record_ = true;
++    return aead_ctx;
++  }
++
+   uint8_t merged_key[EVP_AEAD_MAX_KEY_LENGTH];
+   assert(EVP_AEAD_nonce_length(aead) <= EVP_AEAD_MAX_NONCE_LENGTH);
+   static_assert(EVP_AEAD_MAX_NONCE_LENGTH < 256,
+@@ -149,6 +185,14 @@ bool SSLAEADContext::SuffixLen(size_t *out_suffix_len, const size_t in_len,
+     *out_suffix_len = extra_in_len;
+     return true;
+   }
++  if (etm_mac_len_ != 0) {
++    if (in_len > 0xffff || extra_in_len > 0xffff - in_len) {
++      return false;
++    }
++    *out_suffix_len = extra_in_len + etm_mac_len_ + variable_nonce_len_ -
++                      ((in_len + extra_in_len) % variable_nonce_len_);
++    return true;
++  }
+   return !!EVP_AEAD_CTX_tag_len(ctx_.get(), out_suffix_len, in_len,
+                                 extra_in_len);
+ }
+@@ -170,6 +214,9 @@ bool SSLAEADContext::CiphertextLen(size_t *out_len, const size_t in_len,
+ }
+ 
+ size_t SSLAEADContext::MaxOverhead() const {
++  if (etm_mac_len_ != 0) {
++    return 2 * variable_nonce_len_ + etm_mac_len_;
++  }
+   return ExplicitNonceLen() +
+          (is_null_cipher() || CRYPTO_fuzzer_mode_enabled()
+               ? 0
+@@ -185,6 +232,13 @@ size_t SSLAEADContext::MaxSealInputLen(size_t max_out) const {
+   if (is_null_cipher() || CRYPTO_fuzzer_mode_enabled()) {
+     return max_out;
+   }
++  if (etm_mac_len_ != 0) {
++    if (max_out <= etm_mac_len_) {
++      return 0;
++    }
++    max_out = (max_out - etm_mac_len_) & ~(size_t{variable_nonce_len_} - 1);
++    return max_out == 0 ? 0 : max_out - 1;
++  }
+   // TODO(crbug.com/42290602): This should be part of |EVP_AEAD_CTX|.
+   size_t overhead = EVP_AEAD_max_overhead(EVP_AEAD_CTX_aead(ctx_.get()));
+   if (SSL_CIPHER_is_block_cipher(cipher())) {
+@@ -241,6 +295,10 @@ bool SSLAEADContext::Open(Span<uint8_t> *out, uint8_t type,
+     return true;
+   }
+ 
++  if (etm_mac_len_ != 0) {
++    return OpenEtm(out, type, record_version, seqnum, in);
++  }
++
+   // TLS 1.2 AEADs include the length in the AD and are assumed to have fixed
+   // overhead. Otherwise the parameter is unused.
+   size_t plaintext_len = 0;
+@@ -331,6 +389,11 @@ bool SSLAEADContext::SealScatter(uint8_t *out_prefix, uint8_t *out,
+     return true;
+   }
+ 
++  if (etm_mac_len_ != 0) {
++    return SealEtm(out_prefix, out, out_suffix, type, record_version, seqnum,
++                   Span(in, in_len), Span(extra_in, extra_in_len));
++  }
++
+   uint8_t ad_storage[13];
+   Span<const uint8_t> ad = GetAdditionalData(ad_storage, type, record_version,
+                                              seqnum, in_len, header);
+@@ -418,8 +481,118 @@ bool SSLAEADContext::Seal(uint8_t *out, size_t *out_len, size_t max_out_len,
+ }
+ 
+ bool SSLAEADContext::GetIV(const uint8_t **out_iv, size_t *out_iv_len) const {
+-  return !is_null_cipher() &&
++  return !is_null_cipher() && etm_mac_len_ == 0 &&
+          EVP_AEAD_CTX_get_iv(ctx_.get(), out_iv, out_iv_len);
+ }
+ 
++bool SSLAEADContext::EtmMAC(uint8_t *out, uint8_t type, uint16_t version,
++                            uint64_t seqnum, Span<const uint8_t> fragment) {
++  // RFC 7366 authenticates the length of IV+ciphertext, excluding the MAC.
++  if (fragment.size() > 0xffff) {
++    return false;
++  }
++  uint8_t ad[13];
++  CRYPTO_store_u64_be(ad, seqnum);
++  ad[8] = type;
++  ad[9] = version >> 8;
++  ad[10] = version;
++  ad[11] = fragment.size() >> 8;
++  ad[12] = fragment.size();
++  unsigned len;
++  return HMAC_Init_ex(etm_hmac_.get(), nullptr, 0, nullptr, nullptr) &&
++         HMAC_Update(etm_hmac_.get(), ad, sizeof(ad)) &&
++         HMAC_Update(etm_hmac_.get(), fragment.data(), fragment.size()) &&
++         HMAC_Final(etm_hmac_.get(), out, &len) && len == etm_mac_len_;
++}
++
++bool SSLAEADContext::OpenEtm(Span<uint8_t> *out, uint8_t type,
++                             uint16_t version, uint64_t seqnum,
++                             Span<uint8_t> in) {
++  const size_t block = variable_nonce_len_;
++  if (in.size() < etm_mac_len_ + 2 * block) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_BAD_PACKET_LENGTH);
++    return false;
++  }
++  auto fragment = in.first(in.size() - etm_mac_len_);
++  uint8_t mac[EVP_MAX_MD_SIZE];
++  // Authenticate BEFORE checking ciphertext alignment, decrypting, or examining
++  // padding. No unauthenticated plaintext or padding reaches a parser.
++  if (!EtmMAC(mac, type, version, seqnum, fragment) ||
++      CRYPTO_memcmp(mac, in.data() + fragment.size(), etm_mac_len_) != 0) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_DECRYPTION_FAILED_OR_BAD_RECORD_MAC);
++    return false;
++  }
++  auto encrypted = fragment.subspan(block);
++  if (encrypted.size() % block != 0) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_BAD_PACKET_LENGTH);
++    return false;
++  }
++  int written = 0, final = 0;
++  if (!EVP_CipherInit_ex(etm_cipher_.get(), nullptr, nullptr, nullptr,
++                         fragment.data(), -1) ||
++      !EVP_CipherUpdate(etm_cipher_.get(), encrypted.data(), &written,
++                        encrypted.data(), encrypted.size()) ||
++      !EVP_CipherFinal_ex(etm_cipher_.get(), encrypted.data() + written, &final) ||
++      static_cast<size_t>(written + final) != encrypted.size()) {
++    return false;
++  }
++  const size_t padding = static_cast<size_t>(encrypted.back()) + 1;
++  if (padding > encrypted.size()) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_DECRYPTION_FAILED_OR_BAD_RECORD_MAC);
++    return false;
++  }
++  uint8_t mismatch = 0;
++  for (size_t i = 0; i < padding; i++) {
++    mismatch |= encrypted[encrypted.size() - 1 - i] ^ (padding - 1);
++  }
++  if (mismatch != 0) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_DECRYPTION_FAILED_OR_BAD_RECORD_MAC);
++    return false;
++  }
++  *out = encrypted.first(encrypted.size() - padding);
++  return true;
++}
++
++bool SSLAEADContext::SealEtm(uint8_t *prefix, uint8_t *out, uint8_t *suffix,
++                             uint8_t type, uint16_t version, uint64_t seqnum,
++                             Span<const uint8_t> in, Span<const uint8_t> extra) {
++  size_t suffix_len;
++  if (!SuffixLen(&suffix_len, in.size(), extra.size())) {
++    return false;
++  }
++  const size_t block = variable_nonce_len_;
++  const size_t encrypted_len = in.size() + suffix_len - etm_mac_len_;
++  Array<uint8_t> fragment;
++  if (!fragment.InitForOverwrite(block + encrypted_len) ||
++      !RAND_bytes(fragment.data(), block)) {
++    return false;
++  }
++  auto body = Span(fragment).subspan(block);
++  OPENSSL_memcpy(body.data(), in.data(), in.size());
++  OPENSSL_memcpy(body.data() + in.size(), extra.data(), extra.size());
++  const size_t padding = encrypted_len - in.size() - extra.size();
++  OPENSSL_memset(body.data() + in.size() + extra.size(), padding - 1, padding);
++  int written = 0, final = 0;
++  const bool encrypted =
++      EVP_CipherInit_ex(etm_cipher_.get(), nullptr, nullptr, nullptr,
++                        fragment.data(), -1) &&
++      EVP_CipherUpdate(etm_cipher_.get(), body.data(), &written, body.data(),
++                       body.size()) &&
++      EVP_CipherFinal_ex(etm_cipher_.get(), body.data() + written, &final) &&
++      static_cast<size_t>(written + final) == encrypted_len;
++  if (!encrypted) {
++    OPENSSL_cleanse(body.data(), body.size());
++    return false;
++  }
++  uint8_t mac[EVP_MAX_MD_SIZE];
++  if (!EtmMAC(mac, type, version, seqnum, fragment)) {
++    return false;
++  }
++  OPENSSL_memcpy(prefix, fragment.data(), block);
++  OPENSSL_memcpy(out, body.data(), in.size());
++  OPENSSL_memcpy(suffix, body.data() + in.size(), encrypted_len - in.size());
++  OPENSSL_memcpy(suffix + encrypted_len - in.size(), mac, etm_mac_len_);
++  return true;
++}
++
+ BSSL_NAMESPACE_END
+diff --git a/ssl/ssl_lib.cc b/ssl/ssl_lib.cc
+index 2cf4bbc..7209d25 100644
+--- a/ssl/ssl_lib.cc
++++ b/ssl/ssl_lib.cc
+@@ -2224,6 +2224,15 @@ void SSL_CTX_set_preserve_tls13_cipher_list(SSL_CTX *ctx, int preserve_tls13_cip
+   ctx->preserve_tls13_cipher_list = !!preserve_tls13_cipher_list;
+ }
+ 
++int SSL_set_bridge_encrypt_then_mac(SSL *ssl, int enabled) {
++  if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||
++      SSL_is_dtls(ssl) || (enabled != 0 && enabled != 1)) {
++    return 0;
++  }
++  ssl->config->bridge_encrypt_then_mac = enabled != 0;
++  return 1;
++}
++
+ int SSL_set_bridge_profile(SSL *ssl, const uint16_t *ciphers,
+                            size_t count, int padding) {
+   if (ssl->config == nullptr || ssl->s3->initial_handshake_complete ||
+diff --git a/ssl/t1_enc.cc b/ssl/t1_enc.cc
+index 20a2158..808743a 100644
+--- a/ssl/t1_enc.cc
++++ b/ssl/t1_enc.cc
+@@ -121,7 +121,8 @@ bool tls1_configure_aead(SSL *ssl, evp_aead_direction_t direction,
+   }
+ 
+   UniquePtr<SSLAEADContext> aead_ctx = SSLAEADContext::Create(
+-      direction, ssl->s3->version, session->cipher, key, mac_secret, iv);
++      direction, ssl->s3->version, session->cipher, key, mac_secret, iv,
++      ssl->s3->encrypt_then_mac);
+   if (!aead_ctx) {
+     return false;
+   }

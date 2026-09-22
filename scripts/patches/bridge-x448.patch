@@ -1,0 +1,178 @@
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -2619,6 +2619,7 @@
+ #define SSL_GROUP_SECP384R1 24
+ #define SSL_GROUP_SECP521R1 25
+ #define SSL_GROUP_X25519 29
++#define SSL_GROUP_X448 30
+ #define SSL_GROUP_X25519_MLKEM768 0x11ec
+ #define SSL_GROUP_SECP256R1_MLKEM768 0x11eb
+ #define SSL_GROUP_SECP384R1_MLKEM1024 0x11ed
+@@ -2631,6 +2632,15 @@
+ #define SSL_GROUP_FFDHE4096 258
+ #define SSL_GROUP_FFDHE6144 259
+ #define SSL_GROUP_FFDHE8192 260
++
++// The X448 callback accepts three fixed-size 56-byte buffers. It must use a
++// constant-time X448 implementation, return zero for an all-zero shared secret,
++// and have process lifetime. Registration is immutable once successful. No
++// default group list is changed; an absent callback makes X448 fail closed.
++typedef int (*SSL_BRIDGE_X448_CALLBACK)(uint8_t out[56],
++                                        const uint8_t private_key[56],
++                                        const uint8_t peer_key[56]);
++OPENSSL_EXPORT int SSL_set_bridge_x448_callback(SSL_BRIDGE_X448_CALLBACK callback);
+ 
+ // SSL_CTX_set1_group_ids sets the preferred groups for |ctx| to |group_ids|.
+ // Each element of |group_ids| should be a unique one of the |SSL_GROUP_*|
+--- a/ssl/internal.h
++++ b/ssl/internal.h
+@@ -973,7 +973,7 @@
+ bool ssl_ffdhe_params_match(uint16_t group_id, const DH *dh);
+ 
+ // kNumNamedGroups is the number of supported groups.
+-constexpr size_t kNumNamedGroups = 15u;
++constexpr size_t kNumNamedGroups = 16u;
+ 
+ // DefaultSupportedGroupIds returns the list of IDs for the default groups that
+ // are supported when the caller hasn't explicitly configured supported groups.
+--- a/ssl/ssl_key_share.cc
++++ b/ssl/ssl_key_share.cc
+@@ -17,6 +17,7 @@
+ #include <assert.h>
+ #include <string.h>
+ 
++#include <atomic>
+ #include <iterator>
+ #include <type_traits>
+ #include <utility>
+@@ -41,6 +42,10 @@
+ BSSL_NAMESPACE_BEGIN
+ 
+ namespace {
++
++// A process-lifetime callback installed by the bridge before TLS contexts are
++// created. The native library has no unresolved dependency on Rust symbols.
++std::atomic<SSL_BRIDGE_X448_CALLBACK> g_bridge_x448_callback{nullptr};
+ 
+ // RFC 7919 Appendix A fixed public parameters, cross-checked with OpenSSL.
+ static const char kFFDHE2048Prime[] =
+@@ -323,6 +328,83 @@
+   uint16_t group_id_;
+ };
+ 
++// RFC 7748/RFC 8446 X448 uses exactly 56-byte inputs and outputs. The
++// callback uses the pinned constant-time provider; BoringSSL owns fresh
++// entropy, private-key lifetime, TLS transcript and key-schedule processing.
++class X448KeyShare : public SSLKeyShare {
++ public:
++  ~X448KeyShare() override {
++    OPENSSL_cleanse(private_key_, sizeof(private_key_));
++  }
++
++  uint16_t GroupID() const override { return SSL_GROUP_X448; }
++
++  bool Generate(CBB *out) override {
++    auto callback = g_bridge_x448_callback.load(std::memory_order_acquire);
++    static const uint8_t kBasePoint[56] = {5};
++    uint8_t public_key[56];
++    if (callback == nullptr ||
++        !RAND_bytes(private_key_, sizeof(private_key_)) ||
++        !callback(public_key, private_key_, kBasePoint)) {
++      OPENSSL_cleanse(private_key_, sizeof(private_key_));
++      has_private_key_ = false;
++      OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
++      return false;
++    }
++    has_private_key_ = true;
++    return CBB_add_bytes(out, public_key, sizeof(public_key));
++  }
++
++  bool Encap(CBB *out, Array<uint8_t> *out_secret, uint8_t *out_alert,
++             Span<const uint8_t> peer_key) override {
++    *out_alert = SSL_AD_INTERNAL_ERROR;
++    return Generate(out) && Decap(out_secret, out_alert, peer_key);
++  }
++
++  bool Decap(Array<uint8_t> *out_secret, uint8_t *out_alert,
++             Span<const uint8_t> peer_key) override {
++    *out_alert = SSL_AD_INTERNAL_ERROR;
++    auto callback = g_bridge_x448_callback.load(std::memory_order_acquire);
++    if (!has_private_key_ || callback == nullptr) {
++      OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
++      return false;
++    }
++    Array<uint8_t> secret;
++    if (!secret.InitForOverwrite(56)) {
++      return false;
++    }
++    static const uint8_t kZero[56] = {};
++    if (peer_key.size() != 56 ||
++        !callback(secret.data(), private_key_, peer_key.data()) ||
++        CRYPTO_memcmp(secret.data(), kZero, sizeof(kZero)) == 0) {
++      OPENSSL_cleanse(secret.data(), secret.size());
++      *out_alert = SSL_AD_ILLEGAL_PARAMETER;
++      OPENSSL_PUT_ERROR(SSL, SSL_R_BAD_ECPOINT);
++      return false;
++    }
++    *out_secret = std::move(secret);
++    return true;
++  }
++
++  bool SerializePrivateKey(CBB *out) override {
++    return has_private_key_ &&
++           CBB_add_bytes(out, private_key_, sizeof(private_key_));
++  }
++
++  bool DeserializePrivateKey(CBS *in) override {
++    if (CBS_len(in) != sizeof(private_key_) ||
++        !CBS_copy_bytes(in, private_key_, sizeof(private_key_))) {
++      return false;
++    }
++    has_private_key_ = true;
++    return true;
++  }
++
++ private:
++  uint8_t private_key_[56] = {};
++  bool has_private_key_ = false;
++};
++
+ class X25519KeyShare : public SSLKeyShare {
+  public:
+   X25519KeyShare() {}
+@@ -842,6 +924,7 @@
+     {NID_secp384r1, SSL_GROUP_SECP384R1, "P-384", "secp384r1"},
+     {NID_secp521r1, SSL_GROUP_SECP521R1, "P-521", "secp521r1"},
+     {NID_X25519, SSL_GROUP_X25519, "X25519", "x25519"},
++    {NID_X448, SSL_GROUP_X448, "X448", "x448"},
+     {NID_X25519Kyber768Draft00, SSL_GROUP_X25519_KYBER768_DRAFT00,
+      "X25519Kyber768Draft00", "Xyber768D00"},
+     {NID_X25519MLKEM768, SSL_GROUP_X25519_MLKEM768, "X25519MLKEM768", ""},
+@@ -895,6 +978,11 @@
+       return MakeUnique<ECKeyShare>(EC_group_p521(), SSL_GROUP_SECP521R1);
+     case SSL_GROUP_X25519:
+       return MakeUnique<X25519KeyShare>();
++    case SSL_GROUP_X448:
++      if (g_bridge_x448_callback.load(std::memory_order_acquire) == nullptr) {
++        return nullptr;
++      }
++      return MakeUnique<X448KeyShare>();
+     case SSL_GROUP_FFDHE2048:
+     case SSL_GROUP_FFDHE3072:
+     case SSL_GROUP_FFDHE4096:
+@@ -974,3 +1062,15 @@
+   return GetAllNames(out, max_out, Span<const char *const>(), &NamedGroup::name,
+                      Span(kNamedGroups));
+ }
++
++int SSL_set_bridge_x448_callback(SSL_BRIDGE_X448_CALLBACK callback) {
++  if (callback == nullptr) {
++    return 0;
++  }
++  SSL_BRIDGE_X448_CALLBACK expected = nullptr;
++  // Allow repeated registration of the same process-lifetime provider, but
++  // never let another thread swap its implementation during a handshake.
++  return g_bridge_x448_callback.compare_exchange_strong(
++             expected, callback, std::memory_order_acq_rel,
++             std::memory_order_acquire) || expected == callback;
++}

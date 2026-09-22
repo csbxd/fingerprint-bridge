@@ -1,0 +1,366 @@
+diff --git a/crypto/evp/evp.cc b/crypto/evp/evp.cc
+index f08aff0..47740ae 100644
+--- a/crypto/evp/evp.cc
++++ b/crypto/evp/evp.cc
+@@ -279,6 +279,8 @@ EVP_PKEY *EVP_PKEY_new_raw_public_key(int type, ENGINE *unused,
+       return EVP_PKEY_from_raw_public_key(EVP_pkey_x25519(), in, len);
+     case EVP_PKEY_ED25519:
+       return EVP_PKEY_from_raw_public_key(EVP_pkey_ed25519(), in, len);
++    case EVP_PKEY_ED448:
++      return EVP_PKEY_from_raw_public_key(EVP_pkey_ed448(), in, len);
+     default:
+       OPENSSL_PUT_ERROR(EVP, EVP_R_UNSUPPORTED_ALGORITHM);
+       return nullptr;
+diff --git a/crypto/evp/internal.h b/crypto/evp/internal.h
+index 645aa98..ef173e8 100644
+--- a/crypto/evp/internal.h
++++ b/crypto/evp/internal.h
+@@ -284,6 +284,7 @@ inline auto GetDefaultEVPAlgorithms() {
+       EVP_pkey_ec_p384(),
+       EVP_pkey_ec_p521(),
+       EVP_pkey_ed25519(),
++      EVP_pkey_ed448(),
+       EVP_pkey_rsa(),
+       EVP_pkey_x25519(),
+       EVP_pkey_ml_dsa_44(),
+diff --git a/crypto/evp/p_ed25519.cc b/crypto/evp/p_ed25519.cc
+index fc2d979..57eed7b 100644
+--- a/crypto/evp/p_ed25519.cc
++++ b/crypto/evp/p_ed25519.cc
+@@ -14,6 +14,8 @@
+ 
+ #include <openssl/evp.h>
+ 
++#include <atomic>
++
+ #include <openssl/bytestring.h>
+ #include <openssl/curve25519.h>
+ #include <openssl/err.h>
+@@ -328,3 +330,176 @@ const EVP_PKEY_ALG *EVP_pkey_ed25519(void) {
+   static const EVP_PKEY_ALG kAlg = {&ed25519_asn1_meth};
+   return &kAlg;
+ }
++
++namespace {
++
++// This bridge only needs peer signature verification. Keeping the public-key
++// method here reuses the EVP/SPKI/X.509 validation path without implementing or
++// claiming Ed448 private-key operations.
++struct ED448_PUBLIC_KEY {
++  uint8_t key[57];
++};
++
++std::atomic<EVP_BRIDGE_ED448_VERIFY_CALLBACK> bridge_ed448_verify{nullptr};
++extern const EVP_PKEY_ASN1_METHOD ed448_asn1_meth;
++
++static void ed448_free(EVP_PKEY *pkey) {
++  OPENSSL_free(pkey->pkey);
++  pkey->pkey = nullptr;
++}
++
++static int ed448_set_pub_raw(EVP_PKEY *pkey, const uint8_t *in, size_t len) {
++  if (len != 57 || in == nullptr) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_DECODE_ERROR);
++    return 0;
++  }
++  ED448_PUBLIC_KEY *key = reinterpret_cast<ED448_PUBLIC_KEY *>(
++      OPENSSL_malloc(sizeof(ED448_PUBLIC_KEY)));
++  if (key == nullptr) {
++    return 0;
++  }
++  OPENSSL_memcpy(key->key, in, 57);
++  evp_pkey_set0(pkey, &ed448_asn1_meth, key);
++  return 1;
++}
++
++static int ed448_get_pub_raw(const EVP_PKEY *pkey, uint8_t *out,
++                             size_t *out_len) {
++  if (out == nullptr) {
++    *out_len = 57;
++    return 1;
++  }
++  if (*out_len < 57) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_BUFFER_TOO_SMALL);
++    return 0;
++  }
++  const auto *key = reinterpret_cast<const ED448_PUBLIC_KEY *>(pkey->pkey);
++  OPENSSL_memcpy(out, key->key, 57);
++  *out_len = 57;
++  return 1;
++}
++
++static evp_decode_result_t ed448_pub_decode(const EVP_PKEY_ALG *alg,
++                                           EVP_PKEY *out, CBS *params,
++                                           CBS *key) {
++  // RFC 8410, section 3: parameters MUST be absent, including ASN.1 NULL.
++  if (CBS_len(params) != 0) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_DECODE_ERROR);
++    return evp_decode_error;
++  }
++  return ed448_set_pub_raw(out, CBS_data(key), CBS_len(key))
++             ? evp_decode_ok
++             : evp_decode_error;
++}
++
++static int ed448_pub_encode(CBB *out, const EVP_PKEY *pkey) {
++  const auto *key = reinterpret_cast<const ED448_PUBLIC_KEY *>(pkey->pkey);
++  CBB spki, algorithm, key_bitstring;
++  if (!CBB_add_asn1(out, &spki, CBS_ASN1_SEQUENCE) ||
++      !CBB_add_asn1(&spki, &algorithm, CBS_ASN1_SEQUENCE) ||
++      !CBB_add_asn1_element(&algorithm, CBS_ASN1_OBJECT, ed448_asn1_meth.oid,
++                            ed448_asn1_meth.oid_len) ||
++      !CBB_add_asn1(&spki, &key_bitstring, CBS_ASN1_BITSTRING) ||
++      !CBB_add_u8(&key_bitstring, 0) ||
++      !CBB_add_bytes(&key_bitstring, key->key, 57) || !CBB_flush(out)) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_ENCODE_ERROR);
++    return 0;
++  }
++  return 1;
++}
++
++static int ed448_pub_cmp(const EVP_PKEY *a, const EVP_PKEY *b) {
++  const auto *a_key = reinterpret_cast<const ED448_PUBLIC_KEY *>(a->pkey);
++  const auto *b_key = reinterpret_cast<const ED448_PUBLIC_KEY *>(b->pkey);
++  return OPENSSL_memcmp(a_key->key, b_key->key, 57) == 0;
++}
++
++static int ed448_size(const EVP_PKEY *pkey) { return 114; }
++// EVP_PKEY_bits reports the bit length of the EC group order (RFC 8032, 5.2).
++static int ed448_bits(const EVP_PKEY *pkey) { return 446; }
++static int pkey_ed448_copy(EVP_PKEY_CTX *dst, EVP_PKEY_CTX *src) { return 1; }
++
++static int pkey_ed448_verify_message(EVP_PKEY_CTX *ctx, const uint8_t *sig,
++                                     size_t siglen, const uint8_t *tbs,
++                                     size_t tbslen) {
++  auto callback = bridge_ed448_verify.load(std::memory_order_acquire);
++  if (callback == nullptr) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_UNSUPPORTED_ALGORITHM);
++    return 0;
++  }
++  const auto *key =
++      reinterpret_cast<const ED448_PUBLIC_KEY *>(ctx->pkey->pkey);
++  if (siglen != 114 || sig == nullptr ||
++      callback(key->key, tbs, tbslen, sig) != 1) {
++    OPENSSL_PUT_ERROR(EVP, EVP_R_INVALID_SIGNATURE);
++    return 0;
++  }
++  return 1;
++}
++
++const EVP_PKEY_CTX_METHOD ed448_pkey_meth = {
++    /*pkey_id=*/EVP_PKEY_ED448,
++    /*init=*/nullptr,
++    /*copy=*/pkey_ed448_copy,
++    /*cleanup=*/nullptr,
++    /*keygen=*/nullptr,
++    /*sign=*/nullptr,
++    /*sign_message=*/nullptr,
++    /*verify=*/nullptr,
++    /*verify_message=*/pkey_ed448_verify_message,
++    /*verify_recover=*/nullptr,
++    /*encrypt=*/nullptr,
++    /*decrypt=*/nullptr,
++    /*derive=*/nullptr,
++    /*paramgen=*/nullptr,
++    /*ctrl=*/nullptr,
++};
++
++const EVP_PKEY_ASN1_METHOD ed448_asn1_meth = {
++    EVP_PKEY_ED448,
++    {0x2b, 0x65, 0x71},
++    3,
++    &ed448_pkey_meth,
++    ed448_pub_decode,
++    ed448_pub_encode,
++    ed448_pub_cmp,
++    /*priv_decode=*/nullptr,
++    /*priv_encode=*/nullptr,
++    /*set_priv_raw=*/nullptr,
++    /*set_priv_seed=*/nullptr,
++    ed448_set_pub_raw,
++    /*get_priv_raw=*/nullptr,
++    /*get_priv_seed=*/nullptr,
++    ed448_get_pub_raw,
++    /*set1_tls_encodedpoint=*/nullptr,
++    /*get1_tls_encodedpoint=*/nullptr,
++    /*pkey_opaque=*/nullptr,
++    ed448_size,
++    ed448_bits,
++    /*param_missing=*/nullptr,
++    /*param_copy=*/nullptr,
++    /*param_cmp=*/nullptr,
++    ed448_free,
++};
++
++}  // namespace
++
++const EVP_PKEY_ALG *EVP_pkey_ed448(void) {
++  static const EVP_PKEY_ALG kAlg = {&ed448_asn1_meth};
++  return &kAlg;
++}
++
++int EVP_set_bridge_ed448_verify_callback(
++    EVP_BRIDGE_ED448_VERIFY_CALLBACK callback) {
++  if (callback == nullptr) {
++    return 0;
++  }
++  EVP_BRIDGE_ED448_VERIFY_CALLBACK expected = nullptr;
++  return bridge_ed448_verify.compare_exchange_strong(
++             expected, callback, std::memory_order_acq_rel,
++             std::memory_order_acquire) || expected == callback;
++}
++
++int EVP_bridge_ed448_verify_available(void) {
++  return bridge_ed448_verify.load(std::memory_order_acquire) != nullptr;
++}
+diff --git a/crypto/obj/obj_xref.cc b/crypto/obj/obj_xref.cc
+index 2ef8da2..008728c 100644
+--- a/crypto/obj/obj_xref.cc
++++ b/crypto/obj/obj_xref.cc
+@@ -49,6 +49,7 @@ static const nid_triple kTriples[] = {
+     // digest "undef" indicates the caller should handle this explicitly.
+     {NID_rsassaPss, NID_undef, NID_rsaEncryption},
+     {NID_ED25519, NID_undef, NID_ED25519},
++    {NID_ED448, NID_undef, NID_ED448},
+     {NID_ML_DSA_44, NID_undef, NID_ML_DSA_44},
+     {NID_ML_DSA_65, NID_undef, NID_ML_DSA_65},
+     {NID_ML_DSA_87, NID_undef, NID_ML_DSA_87},
+diff --git a/crypto/x509/algorithm.cc b/crypto/x509/algorithm.cc
+index b73297a..ab9ee8c 100644
+--- a/crypto/x509/algorithm.cc
++++ b/crypto/x509/algorithm.cc
+@@ -129,7 +129,8 @@ int x509_digest_verify_init(EVP_MD_CTX *ctx, const X509_ALGOR *sigalg,
+     if (sigalg_nid == NID_rsassaPss) {
+       return x509_rsa_pss_to_ctx(ctx, sigalg, pkey);
+     }
+-    if (sigalg_nid == NID_ED25519 || sigalg_nid == NID_ML_DSA_44 ||
++    if (sigalg_nid == NID_ED25519 || sigalg_nid == NID_ED448 ||
++        sigalg_nid == NID_ML_DSA_44 ||
+         sigalg_nid == NID_ML_DSA_65 || sigalg_nid == NID_ML_DSA_87) {
+       if (sigalg->parameter != nullptr) {
+         OPENSSL_PUT_ERROR(X509, X509_R_INVALID_PARAMETER);
+diff --git a/include/openssl/evp.h b/include/openssl/evp.h
+index 135781d..3ffc1d2 100644
+--- a/include/openssl/evp.h
++++ b/include/openssl/evp.h
+@@ -102,6 +102,7 @@ OPENSSL_EXPORT int EVP_PKEY_bits(const EVP_PKEY *pkey);
+ #define EVP_PKEY_DSA NID_dsa
+ #define EVP_PKEY_EC NID_X9_62_id_ecPublicKey
+ #define EVP_PKEY_ED25519 NID_ED25519
++#define EVP_PKEY_ED448 NID_ED448
+ #define EVP_PKEY_X25519 NID_X25519
+ #define EVP_PKEY_HKDF NID_hkdf
+ #define EVP_PKEY_DH NID_dhKeyAgreement
+@@ -162,6 +163,23 @@ OPENSSL_EXPORT const EVP_PKEY_ALG *EVP_pkey_x25519(void);
+ // The |EVP_PKEY_id| value is |EVP_PKEY_ED25519|.
+ OPENSSL_EXPORT const EVP_PKEY_ALG *EVP_pkey_ed25519(void);
+ 
++// EVP_pkey_ed448 implements verification-only Ed448 public keys (RFC 8032),
++// encoded as in RFC 8410. Signing and private key import are not supported.
++// Verification fails closed until the application installs a real provider.
++OPENSSL_EXPORT const EVP_PKEY_ALG *EVP_pkey_ed448(void);
++
++// The provider verifies PureEd448 with an empty context, using a 57-byte public
++// key and 114-byte signature. Return exactly one on success, zero otherwise.
++// The provider must validate the encoded key and signature, and remain alive
++// for the process lifetime. Null message is permitted only for an empty message.
++typedef int (*EVP_BRIDGE_ED448_VERIFY_CALLBACK)(
++    const uint8_t public_key[57], const uint8_t *message, size_t message_len,
++    const uint8_t signature[114]);
++// Installation is atomic and cannot replace or remove an installed provider.
++OPENSSL_EXPORT int EVP_set_bridge_ed448_verify_callback(
++    EVP_BRIDGE_ED448_VERIFY_CALLBACK callback);
++OPENSSL_EXPORT int EVP_bridge_ed448_verify_available(void);
++
+ // EVP_pkey_ml_dsa_* implement ML-DSA keys, encoded as in
+ // draft-ietf-lamps-dilithium-certificates. The |EVP_PKEY_id| values are
+ // |EVP_PKEY_ML_DSA_*|. In the private key representation, only the "seed" form
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index 9054131..953767d 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -1150,6 +1150,7 @@ OPENSSL_EXPORT int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response,
+ #define SSL_SIGN_RSA_PSS_RSAE_SHA384 0x0805
+ #define SSL_SIGN_RSA_PSS_RSAE_SHA512 0x0806
+ #define SSL_SIGN_ED25519 0x0807
++#define SSL_SIGN_ED448 0x0808
+ #define SSL_SIGN_RSA_PKCS1_SHA224 0x0301
+ #define SSL_SIGN_ECDSA_SHA224 0x0303
+ #define SSL_SIGN_RSA_PSS_PSS_SHA256 0x0809
+diff --git a/ssl/ssl_cipher.cc b/ssl/ssl_cipher.cc
+index f913157..5993e54 100644
+--- a/ssl/ssl_cipher.cc
++++ b/ssl/ssl_cipher.cc
+@@ -1688,7 +1688,8 @@ uint32_t ssl_cipher_auth_mask_for_key(const EVP_PKEY *key, bool sign_ok) {
+       return sign_ok ? SSL_aDSS : 0;
+     case EVP_PKEY_EC:
+     case EVP_PKEY_ED25519:
+-      // Ed25519 keys in TLS 1.2 repurpose the ECDSA ciphers.
++    case EVP_PKEY_ED448:
++      // EdDSA keys in TLS 1.2 repurpose the ECDSA ciphers.
+       return sign_ok ? SSL_aECDSA : 0;
+     default:
+       return 0;
+diff --git a/ssl/ssl_privkey.cc b/ssl/ssl_privkey.cc
+index d181dab..a00a83e 100644
+--- a/ssl/ssl_privkey.cc
++++ b/ssl/ssl_privkey.cc
+@@ -35,7 +35,8 @@ BSSL_NAMESPACE_BEGIN
+ bool ssl_is_key_type_supported(int key_type) {
+   return key_type == EVP_PKEY_RSA || key_type == EVP_PKEY_DSA ||
+          key_type == EVP_PKEY_EC ||
+-         key_type == EVP_PKEY_ED25519 || key_type == EVP_PKEY_ML_DSA_44 ||
++         key_type == EVP_PKEY_ED25519 || key_type == EVP_PKEY_ED448 ||
++         key_type == EVP_PKEY_ML_DSA_44 ||
+          key_type == EVP_PKEY_ML_DSA_65 || key_type == EVP_PKEY_ML_DSA_87 ||
+          key_type == EVP_PKEY_RSA_PSS;
+ }
+@@ -134,6 +135,10 @@ static const SSL_SIGNATURE_ALGORITHM kSignatureAlgorithms[] = {
+      /*is_rsa_pss=*/false, /*tls12_ok=*/true, /*tls13_ok=*/true,
+      /*client_only=*/false},
+ 
++    {SSL_SIGN_ED448, EVP_PKEY_ED448, NID_undef, nullptr,
++     /*is_rsa_pss=*/false, /*tls12_ok=*/true, /*tls13_ok=*/true,
++     /*client_only=*/false},
++
+     {SSL_SIGN_ML_DSA_44, EVP_PKEY_ML_DSA_44, NID_undef, nullptr,
+      /*is_rsa_pss=*/false, /*tls12_ok=*/false, /*tls13_ok=*/true,
+      /*client_only=*/false},
+@@ -165,6 +170,7 @@ bssl::UniquePtr<EVP_PKEY> ssl_parse_peer_subject_public_key_info(
+       EVP_pkey_rsa_pss_sha384(),     EVP_pkey_rsa_pss_sha512(),
+       EVP_pkey_ec_p256(),            EVP_pkey_ec_p384(),
+       EVP_pkey_ec_p521(),            EVP_pkey_ed25519(),
++      EVP_pkey_ed448(),
+       EVP_pkey_ml_dsa_44(),          EVP_pkey_ml_dsa_65(),
+       EVP_pkey_ml_dsa_87(),
+   };
+@@ -179,6 +185,13 @@ bool ssl_pkey_supports_algorithm(const SSL *ssl, EVP_PKEY *pkey,
+     return false;
+   }
+ 
++  // This provider is verification-only. Do not claim signing capability or
++  // accept Ed448 when no real implementation is installed.
++  if (alg->pkey_type == EVP_PKEY_ED448 &&
++      (!is_verify || !EVP_bridge_ed448_verify_available())) {
++    return false;
++  }
++
+   // Ensure the RSA key is large enough for the hash. RSASSA-PSS requires that
+   // emLen be at least hLen + sLen + 2. Both hLen and sLen are the size of the
+   // hash in TLS. Reasonable RSA key sizes are large enough for the largest
+@@ -535,6 +548,7 @@ static const SignatureAlgorithmName kSignatureAlgorithmNames[] = {
+     {SSL_SIGN_RSA_PSS_PSS_SHA384, "rsa_pss_pss_sha384"},
+     {SSL_SIGN_RSA_PSS_PSS_SHA512, "rsa_pss_pss_sha512"},
+     {SSL_SIGN_ED25519, "ed25519"},
++    {SSL_SIGN_ED448, "ed448"},
+ };
+ 
+ const char *SSL_get_signature_algorithm_name(uint16_t sigalg,
+@@ -709,6 +723,7 @@ static constexpr struct {
+     {EVP_PKEY_EC, NID_sha384, SSL_SIGN_ECDSA_SECP384R1_SHA384},
+     {EVP_PKEY_EC, NID_sha512, SSL_SIGN_ECDSA_SECP521R1_SHA512},
+     {EVP_PKEY_ED25519, NID_undef, SSL_SIGN_ED25519},
++    {EVP_PKEY_ED448, NID_undef, SSL_SIGN_ED448},
+ };
+ 
+ static bool parse_sigalg_pairs(Array<uint16_t> *out, const int *values,
