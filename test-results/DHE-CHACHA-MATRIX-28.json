@@ -1,0 +1,93 @@
+{
+  "run_started_at": "2026-09-22T01:29:50Z",
+  "run_completed_at": "2026-09-22T01:37:36Z",
+  "code_sha": "da987de1003254c9d2f753b70cbb41ba7adc6259",
+  "run_id": 35675965073,
+  "run_url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35675965073",
+  "conclusion": "failure",
+  "expected_failure": "unchanged strict fingerprint consistency gate",
+  "source": "GitHub Actions 72-row report, both regression logs, artifact metadata, and all eight per-environment evidence archives",
+  "counts": {
+    "Direct baseline": {
+      "stable": 48,
+      "unstable/missing": 24
+    },
+    "TLS": {
+      "MATCH": 8,
+      "DIFF": 64
+    },
+    "HTTP": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "TCP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "B-paired TLS": {
+      "MATCH": 24,
+      "DIFF": 48
+    },
+    "B-paired HTTP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "Verdict": {
+      "match": 4,
+      "mismatch": 44,
+      "inconclusive-baseline": 24
+    }
+  },
+  "dhe_rsa_chacha20_matrix_assertion": {
+    "cipher_suite": 52394,
+    "direct_cells_offering": 38,
+    "bridge_outbound_cells_preserving": 38,
+    "missing": [],
+    "by_client": {
+      "python": {"offering": 6, "preserved": 6},
+      "node": {"offering": 16, "preserved": 16},
+      "java": {"offering": 16, "preserved": 16}
+    }
+  },
+  "regressions": [
+    {
+      "architecture": "amd64",
+      "job_id": 106582458798,
+      "conclusion": "success",
+      "rust_tests": 34,
+      "python_tests": 21,
+      "hybrid_cases": 18,
+      "dhe_rsa_chacha20": {
+        "real_tls12_http": "pass",
+        "negotiated_cipher": "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xccaa)",
+        "corrupted_application_data": "rejected without HTTP 200"
+      }
+    },
+    {
+      "architecture": "arm64",
+      "job_id": 106582458769,
+      "conclusion": "success",
+      "rust_tests": 34,
+      "python_tests": 21,
+      "hybrid_cases": 18,
+      "dhe_rsa_chacha20": {
+        "real_tls12_http": "pass",
+        "negotiated_cipher": "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xccaa)",
+        "corrupted_application_data": "rejected without HTTP 200"
+      }
+    }
+  ],
+  "artifacts": [
+    {"id": 10673765209, "name": "matrix-evidence-arm64-fedora-43", "digest": "sha256:e1512607bd35f98a5e2225b69079a127ff9030c6e750b38bebe2bf4e258988e7", "size_in_bytes": 188588},
+    {"id": 10673560446, "name": "fingerprint-matrix-report", "digest": "sha256:55e517f5d219cf254c3af5d5a702e0fc2729ae1ff0a0e15fff7f6422365b903d", "size_in_bytes": 1097},
+    {"id": 10673166269, "name": "fingerprint-evidence-arm64", "digest": "sha256:78ae50d285a09b06b3c4324e1a0a0ac6af62987c63b7579e09246b7d994f1958", "size_in_bytes": 169543},
+    {"id": 10673051372, "name": "matrix-evidence-amd64-ubuntu-24.04", "digest": "sha256:cc0a8d2298390207c2bcd85fbf226f1dd8dbde469b29c7cea610eaae5ec04468", "size_in_bytes": 135727},
+    {"id": 10673021520, "name": "matrix-evidence-amd64-fedora-43", "digest": "sha256:8dc56d1690eeb9447fa2992afad3ae0311969cbcb18b6359b3cb12b35ce32389", "size_in_bytes": 188621},
+    {"id": 10673011893, "name": "matrix-evidence-arm64-alpine-3.23", "digest": "sha256:a5e2bbb91519958bb07f8eec1946ff4ba2fffb335ef480129795d396edb95711", "size_in_bytes": 147133},
+    {"id": 10672744955, "name": "matrix-evidence-arm64-debian-13", "digest": "sha256:c34cc3b4c51180704afaf2159e4482873d0c61f90450562b56e0b2456bad6861", "size_in_bytes": 156218},
+    {"id": 10672744621, "name": "fingerprint-evidence-amd64", "digest": "sha256:3649fdd4adec4b54838becfe371dded11e2dba2b8dae7949bd48327b76b21ad4", "size_in_bytes": 169545},
+    {"id": 10672634687, "name": "matrix-evidence-amd64-alpine-3.23", "digest": "sha256:29b50e2b8cbd655a427c037a261655cd3c6483dbd8b88e543ccca0ff1761cec4", "size_in_bytes": 147167},
+    {"id": 10672499944, "name": "matrix-evidence-arm64-ubuntu-24.04", "digest": "sha256:dedbe17e1b5078427262e9a5810a1d4d35cd26d087a27f179c171f46f7fe5ad7", "size_in_bytes": 135720},
+    {"id": 10672444917, "name": "matrix-evidence-amd64-debian-13", "digest": "sha256:a945cffb1ad89bfc558ddb39a67c9b4f0214fa8658a363eeb3012d314c84f87e", "size_in_bytes": 156344}
+  ]
+}
