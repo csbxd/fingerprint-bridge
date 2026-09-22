@@ -67,7 +67,7 @@ pub fn settings(frame: &Frame) -> Result<Vec<(u16, u32)>> {
         ensure!(frame.payload.is_empty(), "SETTINGS ACK payload");
         return Ok(vec![]);
     }
-    ensure!(frame.payload.len() % 6 == 0, "malformed SETTINGS");
+    ensure!(frame.payload.len().is_multiple_of(6), "malformed SETTINGS");
     Ok(frame
         .payload
         .chunks_exact(6)
