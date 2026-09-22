@@ -1,0 +1,131 @@
+{
+  "run": {
+    "id": 35772685051,
+    "number": 50,
+    "sha": "55137c95641f57102a12013167ff88f7adcded91",
+    "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35772685051"
+  },
+  "source": {
+    "kind": "GitHub Actions job logs plus independently downloaded artifacts",
+    "matrix_cells": 72,
+    "samples_per_cell": ["direct-1", "direct-2", "bridged", "B-inbound", "B-outbound"],
+    "artifact_reaudit_completed": true,
+    "artifact_sha256_verified": true
+  },
+  "regression": {
+    "architectures": {
+      "amd64": {
+        "job_id": 106897990518,
+        "rust_tests": 62,
+        "python_test_methods": 34,
+        "hybrid_cases": 18,
+        "aria_wire_cases": 40,
+        "passed": true
+      },
+      "arm64": {
+        "job_id": 106897990929,
+        "rust_tests": 62,
+        "python_test_methods": 34,
+        "hybrid_cases": 18,
+        "aria_wire_cases": 40,
+        "passed": true
+      }
+    },
+    "aria_cases_per_architecture": {
+      "valid": 10,
+      "bad_ciphertext": 10,
+      "bad_tag": 10,
+      "unoffered": 10,
+      "primitive_vectors": 2,
+      "tampered_tags_rejected": 2,
+      "repeated_nonces_rejected": 2
+    }
+  },
+  "counts": {
+    "baseline": {
+      "stable": 48,
+      "unstable_or_missing": 24
+    },
+    "tls": {
+      "MATCH": 16,
+      "DIFF": 56
+    },
+    "http": {
+      "MATCH": 66,
+      "DIFF": 6
+    },
+    "tcp": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "paired_tls": {
+      "MATCH": 32,
+      "DIFF": 40
+    },
+    "paired_http": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "status": {
+      "match": 8,
+      "mismatch": 40,
+      "inconclusive_baseline": 24
+    }
+  },
+  "ordered_vector_matches": {
+    "ciphers": 72,
+    "groups": 72,
+    "signature_algorithms": 72,
+    "certificate_signature_algorithms": 72,
+    "extensions": 56,
+    "point_formats": 48
+  },
+  "aria_retention": [
+    {"id": "0xc050", "decimal": 49232, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc051", "decimal": 49233, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc052", "decimal": 49234, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc053", "decimal": 49235, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc056", "decimal": 49238, "offering_cells": 12, "retained_cells": 12},
+    {"id": "0xc057", "decimal": 49239, "offering_cells": 12, "retained_cells": 12},
+    {"id": "0xc05c", "decimal": 49244, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc05d", "decimal": 49245, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc060", "decimal": 49248, "offering_cells": 16, "retained_cells": 16},
+    {"id": "0xc061", "decimal": 49249, "offering_cells": 16, "retained_cells": 16}
+  ],
+  "remaining_capability_differences": [
+    {
+      "field": "point_formats",
+      "ids": [1, 2],
+      "affected_cells": 24,
+      "clients": {"python": 8, "node": 16}
+    },
+    {
+      "field": "extensions",
+      "id": 17,
+      "name": "status_request_v2",
+      "affected_cells": 16,
+      "clients": {"java": 16}
+    }
+  ],
+  "artifact_sha256": {
+    "matrix-evidence-amd64-ubuntu-24.04": "64c365f9602ed595cd1c86029569d00e41ae610ab2021b0d3aca1e6cf65ea371",
+    "matrix-evidence-amd64-debian-13": "9bfe302a915d453f1206541686559622a268c3647209ff017a4369631bf6ffc2",
+    "matrix-evidence-amd64-fedora-43": "67975845391fc37a4abc9f38ce81091a67b47d065f9e4dc5028922d9735fa1ee",
+    "matrix-evidence-amd64-alpine-3.23": "d7e1ac310c470f75e3a5b650da3d429aef13d7def017296cccdf6af5927b61fd",
+    "matrix-evidence-arm64-ubuntu-24.04": "2c77e49e54dfadb77fab6a22b45bf3cdc8e4fb0149afc1cb580d3969de8d91a3",
+    "matrix-evidence-arm64-debian-13": "4e06db6be797c90a321b23d8757e98ed668d84c7b1b7e558af956ad338f68b45",
+    "matrix-evidence-arm64-fedora-43": "d1b54a1e1aa64e0eb6130b375515389190b0005111779e6cbc3281004a18e132",
+    "matrix-evidence-arm64-alpine-3.23": "4a84c168b278760cb0e73a83dada747430245d90d913c37a320809e27a4a2f5e",
+    "fingerprint-evidence-amd64": "12b39ed6708cf8c21462d44d68a04a6579bc9b657250ae2b536478e628cfd896",
+    "fingerprint-evidence-arm64": "a8bdda325155564512921436a01c32f3c6bd4212623d865c896ca5f3c4f6f7c8",
+    "fingerprint-matrix-report": "27f531c4b9c043ca63950216629a9b256ecdfc4706c295ad99f8b48efc4623b1"
+  },
+  "acceptance": {
+    "strict_gate_enabled": true,
+    "strict_gate_passed": false,
+    "ignore_list_changed": false,
+    "client_defaults_changed": false,
+    "certificate_verification_disabled": false,
+    "all_fingerprints_equal": false
+  }
+}
