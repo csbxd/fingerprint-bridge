@@ -1,0 +1,3650 @@
+{
+  "run": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608",
+  "commit": "9944db7791e7f1c2897744a5805d093c2a2c4ad0",
+  "source": {
+    "kind": "GitHub Actions job logs",
+    "summary_job_id": 106850477619,
+    "capability_evidence": "CCM-CAPABILITIES-48.jsonl",
+    "capability_cases": 72,
+    "capability_samples_per_case": 5,
+    "local_artifact_reaudit_completed": false,
+    "artifact_access_note": "Raw ZIP re-audit remains pending after earlier connector downloads returned HTTP 403 / error code 1010. Run #48 ZIPs were not downloaded locally; metadata digests are unverified. This result uses actual run #48 strict-gate and measured-capability logs."
+  },
+  "counts": {
+    "baseline": {
+      "stable": 48,
+      "unstable/missing": 24
+    },
+    "tls": {
+      "DIFF": 56,
+      "MATCH": 16
+    },
+    "http": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "tcp": {
+      "MATCH": 72
+    },
+    "paired_tls": {
+      "DIFF": 40,
+      "MATCH": 32
+    },
+    "paired_http": {
+      "MATCH": 72
+    },
+    "status": {
+      "mismatch": 40,
+      "match": 8,
+      "inconclusive-baseline": 24
+    }
+  },
+  "baseline_comparison": {
+    "run": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35753503175",
+    "changes": [
+      {
+        "case": "amd64/debian-13/go/h2",
+        "changes": {
+          "baseline": {
+            "before": "stable",
+            "after": "unstable/missing"
+          },
+          "status": {
+            "before": "mismatch",
+            "after": "inconclusive-baseline"
+          }
+        }
+      }
+    ]
+  },
+  "ccm_retention": {
+    "suites": [
+      {
+        "id": 49308,
+        "id_hex": "0xc09c",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49309,
+        "id_hex": "0xc09d",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49310,
+        "id_hex": "0xc09e",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49311,
+        "id_hex": "0xc09f",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49312,
+        "id_hex": "0xc0a0",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49313,
+        "id_hex": "0xc0a1",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49314,
+        "id_hex": "0xc0a2",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49315,
+        "id_hex": "0xc0a3",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49324,
+        "id_hex": "0xc0ac",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49325,
+        "id_hex": "0xc0ad",
+        "offered": 18,
+        "retained": 18,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49326,
+        "id_hex": "0xc0ae",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 49327,
+        "id_hex": "0xc0af",
+        "offered": 4,
+        "retained": 4,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 4868,
+        "id_hex": "0x1304",
+        "offered": 2,
+        "retained": 2,
+        "unexpected_injections": 0
+      },
+      {
+        "id": 4869,
+        "id_hex": "0x1305",
+        "offered": 0,
+        "retained": 0,
+        "unexpected_injections": 0
+      }
+    ],
+    "offering_cells": 18,
+    "ordered_subsequence_mismatches": 0,
+    "offering_clients": {
+      "python": 2,
+      "node": 16
+    }
+  },
+  "ccm_retention_definitions": {
+    "offered": "Presence in the observed ClientHello entering B.",
+    "retained": "Offered ID also present in B's observed outbound ClientHello.",
+    "ordered_subsequence_mismatches": "Compare the ordered list restricted to the 14 new CCM suite IDs; does not assert equality of the entire cipher vector.",
+    "zero_offers": "A 0/0 default-matrix result is unexercised here. The dedicated 58-case wire test separately negotiates all 14 suites."
+  },
+  "remaining_inbound_to_outbound_omissions": {
+    "extensions:22": 24,
+    "groups:30": 40,
+    "point_formats:1": 24,
+    "point_formats:2": 24,
+    "signature_algorithms:2056": 40,
+    "ciphers:49245": 16,
+    "ciphers:49249": 16,
+    "ciphers:49235": 16,
+    "ciphers:49244": 16,
+    "ciphers:49248": 16,
+    "ciphers:49234": 16,
+    "ciphers:49233": 16,
+    "ciphers:49232": 16,
+    "extensions:17": 16,
+    "signature_algorithms_cert:2056": 16,
+    "ciphers:49239": 12,
+    "ciphers:49238": 12,
+    "signature_algorithms:2074": 12,
+    "signature_algorithms:2075": 12,
+    "signature_algorithms:2076": 12
+  },
+  "remaining_omissions_scope": "Counts are per matrix cell where an observed inbound field value is absent outbound. These are not normalized fingerprints or complete field differences.",
+  "rows": [
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    }
+  ],
+  "regression": [
+    {
+      "arch": "arm64",
+      "job_id": 106847151542,
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Native dependencies",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned toolchain",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cargo fmt --check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh clippy --locked --all-targets -- -D warnings",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh test --locked",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh build --locked --bin fingerprint-bridge --example language-client",
+          "conclusion": "success"
+        },
+        {
+          "name": "Independent HTTPS lab",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Matrix harness regression tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "Hybrid group handshakes and malformed key shares",
+          "conclusion": "success"
+        },
+        {
+          "name": "TCP capture lab",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Install independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ],
+      "rust_passed": 46,
+      "python_test_count": 27,
+      "hybrid_cases": [
+        "PASS 4587 normal",
+        "PASS 4587 hrr",
+        "PASS 4587 server-point",
+        "PASS 4587 server-length",
+        "PASS 4587 server-ciphertext",
+        "PASS 4587 client-point",
+        "PASS 4587 client-public",
+        "PASS 4587 client-length",
+        "PASS 4587 wrong-hostname",
+        "PASS 4589 normal",
+        "PASS 4589 hrr",
+        "PASS 4589 server-point",
+        "PASS 4589 server-length",
+        "PASS 4589 server-ciphertext",
+        "PASS 4589 client-point",
+        "PASS 4589 client-public",
+        "PASS 4589 client-length",
+        "PASS 4589 wrong-hostname"
+      ],
+      "ccm_handshakes": [
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53,
+              250,
+              250,
+              16401,
+              16401,
+              8499,
+              19
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "unsolicited-cipher",
+          "passed": true,
+          "wire": {
+            "injected_cipher": 4868,
+            "selected_cipher": 4865,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45,
+              242,
+              242,
+              16393,
+              16393,
+              8491,
+              11
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "unsolicited-cipher",
+          "passed": true,
+          "wire": {
+            "injected_cipher": 4869,
+            "selected_cipher": 4865,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          },
+          "http_requests": 0
+        }
+      ],
+      "ccm_internal_limits": [
+        {
+          "kind": "record-budget",
+          "suite": 49308,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49309,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49310,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49311,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49312,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49313,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49314,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49315,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49324,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49325,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49326,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49327,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 4868,
+          "tls_version": 772,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": true
+        },
+        {
+          "kind": "record-budget",
+          "suite": 4869,
+          "tls_version": 772,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": true
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4869,
+          "first_failure_fatal": true
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4868,
+          "first_failure_fatal": false
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4865,
+          "first_failure_fatal": false
+        }
+      ],
+      "summary_excerpts": [
+        "2026-09-22T17:00:45.1432952Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:00:45.1444231Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:00:45.1461648Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:00:45.9267408Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s",
+        "2026-09-22T17:00:46.6283581Z test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s",
+        "2026-09-22T17:00:46.7574451Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:02:14.7181695Z Ran 27 tests in 66.492s",
+        "2026-09-22T17:02:14.7181905Z OK"
+      ]
+    },
+    {
+      "arch": "amd64",
+      "job_id": 106847152083,
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Native dependencies",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pinned toolchain",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run cargo fmt --check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh clippy --locked --all-targets -- -D warnings",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh test --locked",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run sh scripts/cargo-tls.sh build --locked --bin fingerprint-bridge --example language-client",
+          "conclusion": "success"
+        },
+        {
+          "name": "Independent HTTPS lab",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Matrix harness regression tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "Hybrid group handshakes and malformed key shares",
+          "conclusion": "success"
+        },
+        {
+          "name": "TCP capture lab",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Install independent Go TLS peers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ],
+      "rust_passed": 46,
+      "python_test_count": 27,
+      "hybrid_cases": [
+        "PASS 4587 normal",
+        "PASS 4587 hrr",
+        "PASS 4587 server-point",
+        "PASS 4587 server-length",
+        "PASS 4587 server-ciphertext",
+        "PASS 4587 client-point",
+        "PASS 4587 client-public",
+        "PASS 4587 client-length",
+        "PASS 4587 wrong-hostname",
+        "PASS 4589 normal",
+        "PASS 4589 hrr",
+        "PASS 4589 server-point",
+        "PASS 4589 server-length",
+        "PASS 4589 server-ciphertext",
+        "PASS 4589 client-point",
+        "PASS 4589 client-public",
+        "PASS 4589 client-length",
+        "PASS 4589 wrong-hostname"
+      ],
+      "ccm_handshakes": [
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49308,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM",
+          "cipher_id": 49308,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49309,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM",
+          "cipher_id": 49309,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49310,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM",
+          "cipher_id": 49310,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49311,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM",
+          "cipher_id": 49311,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49312,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES128-CCM8",
+          "cipher_id": 49312,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49313,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "AES256-CCM8",
+          "cipher_id": 49313,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49314,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES128-CCM8",
+          "cipher_id": 49314,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49315,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "DHE-RSA-AES256-CCM8",
+          "cipher_id": 49315,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49324,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM",
+          "cipher_id": 49324,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49325,
+            "server_encrypted_record_lengths": [
+              16408,
+              16408,
+              8506
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM",
+          "cipher_id": 49325,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49326,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES128-CCM8",
+          "cipher_id": 49326,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 49327,
+            "server_encrypted_record_lengths": [
+              16400,
+              16400,
+              8498
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "ECDHE-ECDSA-AES256-CCM8",
+          "cipher_id": 49327,
+          "tls": "1_2",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53,
+              250,
+              250,
+              16401,
+              16401,
+              8359,
+              157,
+              19
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4868,
+            "server_encrypted_record_lengths": [
+              38,
+              879,
+              281,
+              53
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_SHA256",
+          "cipher_id": 4868,
+          "tls": "1_3",
+          "mode": "unsolicited-cipher",
+          "passed": true,
+          "wire": {
+            "injected_cipher": 4868,
+            "selected_cipher": 4865,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "valid",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45,
+              242,
+              242,
+              16393,
+              16393,
+              8351,
+              149,
+              11
+            ]
+          },
+          "http_requests": 2
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "bad-ciphertext",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45
+            ],
+            "mutated": true,
+            "mutation": "bad-ciphertext"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "bad-tag",
+          "passed": true,
+          "wire": {
+            "selected_cipher": 4869,
+            "server_encrypted_record_lengths": [
+              30,
+              871,
+              273,
+              45
+            ],
+            "mutated": true,
+            "mutation": "bad-tag"
+          },
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "unoffered",
+          "passed": true,
+          "wire": {},
+          "http_requests": 0
+        },
+        {
+          "cipher": "TLS_AES_128_CCM_8_SHA256",
+          "cipher_id": 4869,
+          "tls": "1_3",
+          "mode": "unsolicited-cipher",
+          "passed": true,
+          "wire": {
+            "injected_cipher": 4869,
+            "selected_cipher": 4865,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          },
+          "http_requests": 0
+        }
+      ],
+      "ccm_internal_limits": [
+        {
+          "kind": "record-budget",
+          "suite": 49308,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49309,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49310,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49311,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49312,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49313,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49314,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49315,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49324,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49325,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49326,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 49327,
+          "tls_version": 771,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": null
+        },
+        {
+          "kind": "record-budget",
+          "suite": 4868,
+          "tls_version": 772,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": true
+        },
+        {
+          "kind": "record-budget",
+          "suite": 4869,
+          "tls_version": 772,
+          "limit": 8388608,
+          "last_record_passed": true,
+          "next_record_rejected": true,
+          "key_update_rotation_passed": true
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4869,
+          "first_failure_fatal": true
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4868,
+          "first_failure_fatal": false
+        },
+        {
+          "kind": "rejected-0rtt-trial",
+          "suite": 4865,
+          "first_failure_fatal": false
+        }
+      ],
+      "summary_excerpts": [
+        "2026-09-22T17:01:21.5696469Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:01:21.5711052Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:01:21.5734734Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:01:22.3226047Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s",
+        "2026-09-22T17:01:23.0556593Z test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s",
+        "2026-09-22T17:01:23.1908193Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "2026-09-22T17:02:52.3877501Z Ran 27 tests in 62.546s",
+        "2026-09-22T17:02:52.3877720Z OK"
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": 106847151542,
+      "name": "regression / arm64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847151542"
+    },
+    {
+      "id": 106847151865,
+      "name": "fingerprints / fedora-43 / arm64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847151865"
+    },
+    {
+      "id": 106847152075,
+      "name": "fingerprints / ubuntu-24.04 / arm64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152075"
+    },
+    {
+      "id": 106847152083,
+      "name": "regression / amd64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152083"
+    },
+    {
+      "id": 106847152087,
+      "name": "fingerprints / fedora-43 / amd64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152087"
+    },
+    {
+      "id": 106847152098,
+      "name": "fingerprints / alpine-3.23 / arm64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152098"
+    },
+    {
+      "id": 106847152105,
+      "name": "fingerprints / debian-13 / arm64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152105"
+    },
+    {
+      "id": 106847152135,
+      "name": "fingerprints / debian-13 / amd64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152135"
+    },
+    {
+      "id": 106847152168,
+      "name": "fingerprints / alpine-3.23 / amd64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152168"
+    },
+    {
+      "id": 106847152350,
+      "name": "fingerprints / ubuntu-24.04 / amd64",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106847152350"
+    },
+    {
+      "id": 106850477619,
+      "name": "fingerprint consistency gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35757581608/job/106850477619"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 10709770067,
+      "name": "fingerprint-matrix-report",
+      "size_in_bytes": 1085,
+      "created_at": "2026-09-22T17:07:05Z",
+      "expires_at": "2026-10-06T17:07:04Z",
+      "digest": "sha256:7e4b5202dca3602733b7db62e5087c3272da12814d343371635753e70296d3c6",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10709770067"
+    },
+    {
+      "id": 10709060024,
+      "name": "matrix-evidence-arm64-debian-13",
+      "size_in_bytes": 166574,
+      "created_at": "2026-09-22T17:04:16Z",
+      "expires_at": "2026-10-06T17:04:15Z",
+      "digest": "sha256:7816f924a8560cf8d66dc8b8e2f8cf6e38d3c7d6c9ba21a68e08c68de93e4a92",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10709060024"
+    },
+    {
+      "id": 10708918477,
+      "name": "fingerprint-evidence-arm64",
+      "size_in_bytes": 203992,
+      "created_at": "2026-09-22T17:02:19Z",
+      "expires_at": "2026-10-06T17:02:18Z",
+      "digest": "sha256:be6102029e567cba3c744fb9e0cf57d78a88bf9e76a23405d7ae784423cf1ad9",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708918477"
+    },
+    {
+      "id": 10708748782,
+      "name": "matrix-evidence-amd64-alpine-3.23",
+      "size_in_bytes": 155412,
+      "created_at": "2026-09-22T17:02:16Z",
+      "expires_at": "2026-10-06T17:02:15Z",
+      "digest": "sha256:520bf5c43a4655fb61323418d52cc0de000f48a429a8241668bd617ec8a1a5e4",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708748782"
+    },
+    {
+      "id": 10708673896,
+      "name": "matrix-evidence-amd64-fedora-43",
+      "size_in_bytes": 196788,
+      "created_at": "2026-09-22T17:03:00Z",
+      "expires_at": "2026-10-06T17:02:59Z",
+      "digest": "sha256:bbb6a27ae74fa7389029dc157599022884b70436f3d8bbc6c947ce76aa5009f6",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708673896"
+    },
+    {
+      "id": 10708644685,
+      "name": "matrix-evidence-arm64-alpine-3.23",
+      "size_in_bytes": 155313,
+      "created_at": "2026-09-22T17:06:53Z",
+      "expires_at": "2026-10-06T17:06:53Z",
+      "digest": "sha256:436a2633d091da147c3cead8628e6e8ebc5c96125328e80ad0d148cad89d2b76",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708644685"
+    },
+    {
+      "id": 10708644642,
+      "name": "matrix-evidence-arm64-fedora-43",
+      "size_in_bytes": 196016,
+      "created_at": "2026-09-22T17:06:36Z",
+      "expires_at": "2026-10-06T17:06:35Z",
+      "digest": "sha256:55c038416dd8d777c01849dd1dae5e09ba26b36d8044b05aca8e78f021195a33",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708644642"
+    },
+    {
+      "id": 10708504239,
+      "name": "matrix-evidence-amd64-ubuntu-24.04",
+      "size_in_bytes": 146771,
+      "created_at": "2026-09-22T17:00:52Z",
+      "expires_at": "2026-10-06T17:00:52Z",
+      "digest": "sha256:5c44a65ce26fe49677df0f1f3d6a564f8d60716d2dbbb86072b7e8b33bef1775",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708504239"
+    },
+    {
+      "id": 10708369785,
+      "name": "matrix-evidence-arm64-ubuntu-24.04",
+      "size_in_bytes": 146614,
+      "created_at": "2026-09-22T17:03:52Z",
+      "expires_at": "2026-10-06T17:03:51Z",
+      "digest": "sha256:ea1192013ea5123c586a4974a0a4b291f0aa70e14b1964c453cd7c5e39696979",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708369785"
+    },
+    {
+      "id": 10708279639,
+      "name": "fingerprint-evidence-amd64",
+      "size_in_bytes": 204003,
+      "created_at": "2026-09-22T17:02:57Z",
+      "expires_at": "2026-10-06T17:02:56Z",
+      "digest": "sha256:27a307e9bc38f096949fa85c9f16937970490a9859473d6db06c7e47f399a39a",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10708279639"
+    },
+    {
+      "id": 10707948912,
+      "name": "matrix-evidence-amd64-debian-13",
+      "size_in_bytes": 166872,
+      "created_at": "2026-09-22T17:01:05Z",
+      "expires_at": "2026-10-06T17:01:04Z",
+      "digest": "sha256:31eb13ac98f700ea06ce148aa7a8bf141b1a1f6a7307cb7103b7eb352d717811",
+      "digest_locally_verified": false,
+      "url": "https://api.github.com/repos/csbxd/fingerprint-bridge/actions/artifacts/10707948912"
+    }
+  ]
+}

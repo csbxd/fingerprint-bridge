@@ -99,6 +99,8 @@ DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套�
 
 AES-CCM 专项验证覆盖 12 个 TLS 1.2 RSA / DHE-RSA / ECDHE-ECDSA 套件，以及 TLS 1.3 `TLS_AES_128_CCM_SHA256` / `TLS_AES_128_CCM_8_SHA256`。B 上游只按入站提供列表启用这些能力，使用真实 CCM 加解密及 16/8 字节标签；TLS 1.3 的内容类型和填充也参与认证。独立 OpenSSL 测试验证大于 16 KiB 的双向 HTTP、Cookie 和域名改写、密文/标签篡改，以及拒绝未提供的套件。CCM 每个 traffic key 限制为 `2^23` 条记录，达到限额前须轮换密钥或重新连接；CCM8 首次认证失败即终止。该能力不包含 DTLS，也不继承客户端的会话恢复或 0-RTT。
 
+实现范围、58 个真实握手案例、内部用量边界测试及双架构矩阵结果见 [CCM 验证记录](test-results/CCM-VALIDATION.md)。矩阵日志中的 `TLS_CAPABILITIES` 提供五组实测算法/扩展编号，不改变比较和严格门禁，也不替代原始报文复核。
+
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
 
 工作流 `.github/workflows/ci.yml` 在 push、pull request 和手动运行时执行。原有 Rust、HTTP/1.1、HTTP/2、证书拒绝测试保留；增加 **8 个原生环境、72 个客户端/协议组合**：
