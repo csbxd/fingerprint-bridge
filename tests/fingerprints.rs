@@ -651,6 +651,34 @@ async fn native_tls_mirror_preserves_supported_client_profile() {
 
 #[cfg(feature = "patched-tls")]
 #[tokio::test]
+async fn patched_tls_generates_all_rfc7919_key_share_sizes() {
+    use btls::ssl::{SslConnector, SslMethod};
+    for (group, bits) in [
+        (256, 2048),
+        (257, 3072),
+        (258, 4096),
+        (259, 6144),
+        (260, 8192),
+    ] {
+        let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+        c.set_curves_list(&format!("ffdhe{bits}")).unwrap();
+        let incoming =
+            emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+        assert_eq!(incoming.groups, [group]);
+        assert_eq!(incoming.key_share_groups, [group]);
+        assert_eq!(incoming.key_share_lengths, [bits / 8]);
+        let (ssl, limitations) =
+            fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+        assert!(limitations.is_empty(), "{limitations:?}");
+        let outgoing = emitted_hello(ssl).await;
+        assert_eq!(incoming.groups, outgoing.groups);
+        assert_eq!(incoming.key_share_groups, outgoing.key_share_groups);
+        assert_eq!(incoming.key_share_lengths, outgoing.key_share_lengths);
+    }
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
 async fn patched_tls_preserves_real_sha224_signature_schemes() {
     use btls::ssl::{SslConnector, SslMethod, SslSignatureAlgorithm, SslVersion};
     let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
