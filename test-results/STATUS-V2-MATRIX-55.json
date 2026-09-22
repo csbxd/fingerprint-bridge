@@ -1,0 +1,117 @@
+{
+  "run": {
+    "id": 35791784140,
+    "number": 55,
+    "sha": "2a4e20d64346c90d149c67783f19bc84963f08ff",
+    "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35791784140"
+  },
+  "source": {
+    "kind": "GitHub Actions job logs plus independently downloaded artifacts",
+    "matrix_cells": 72,
+    "samples_per_cell": ["direct-1", "direct-2", "bridged", "B-inbound", "B-outbound"],
+    "artifact_reaudit_completed": true,
+    "artifact_sha256_verified": true
+  },
+  "regression": {
+    "architectures": {
+      "amd64": {
+        "job_id": 106961745912,
+        "rust_tests": 63,
+        "python_test_methods": 35,
+        "hybrid_cases": 18,
+        "status_v2_wire_cases": 5,
+        "passed": true
+      },
+      "arm64": {
+        "job_id": 106961746114,
+        "rust_tests": 63,
+        "python_test_methods": 35,
+        "hybrid_cases": 18,
+        "status_v2_wire_cases": 5,
+        "passed": true
+      }
+    },
+    "status_v2_cases_per_architecture": {
+      "valid_good": "accepted with encrypted HTTP",
+      "revoked": "rejected with alert 113 before HTTP",
+      "bad_signature": "rejected with alert 113 before HTTP",
+      "malformed_list": "rejected with alert 50 before HTTP",
+      "omitted": "rejected with alert 113 before HTTP"
+    }
+  },
+  "counts": {
+    "baseline": {
+      "stable": 48,
+      "unstable_or_missing": 24
+    },
+    "tls": {
+      "MATCH": 32,
+      "DIFF": 40
+    },
+    "http": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "tcp": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "paired_tls": {
+      "MATCH": 48,
+      "DIFF": 24
+    },
+    "paired_http": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "status": {
+      "match": 24,
+      "mismatch": 24,
+      "inconclusive_baseline": 24
+    }
+  },
+  "ordered_vector_matches": {
+    "ciphers": 72,
+    "groups": 72,
+    "signature_algorithms": 72,
+    "certificate_signature_algorithms": 72,
+    "extensions": 72,
+    "point_formats": 48
+  },
+  "status_request_v2_retention": {
+    "extension_id": 17,
+    "offering_cells": 16,
+    "retained_cells": 16,
+    "clients": {"java": 16},
+    "full_matches_gained": 16
+  },
+  "remaining_capability_differences": [
+    {
+      "field": "point_formats",
+      "ids": [1, 2],
+      "affected_cells": 24,
+      "clients": {"python": 8, "node": 16}
+    }
+  ],
+  "artifact_sha256": {
+    "matrix-evidence-amd64-ubuntu-24.04": "ccfef66e0e060a541f1cebe57b0530afe8dc8f2e46315f21c6855ed64823dc28",
+    "matrix-evidence-amd64-debian-13": "72690783e11a3f97b65d2a4f8dce828766b0db8f26d841d8440f9e691741fa1d",
+    "matrix-evidence-amd64-fedora-43": "cce764a5bda3efd009cb334363bce68652e06bf796a3db2a1ad3455701a1593d",
+    "matrix-evidence-amd64-alpine-3.23": "f6c2fe5b033a167675d4ecda64d0cf7d071bd3fd36b11ae7e94096c46538335a",
+    "matrix-evidence-arm64-ubuntu-24.04": "09af0171c3501db8fdb653a5b35605920b8b6a8c79c0de12d4d2274a9d5e6294",
+    "matrix-evidence-arm64-debian-13": "c2b3ca1d5d0380b0d9ee599c2602d4e65c7c2236c443ed51ac2d8b21b15e940f",
+    "matrix-evidence-arm64-fedora-43": "ff182519e82d02ad3444fc610827b647ff029bd2e93b1a40a3f688b89828f47a",
+    "matrix-evidence-arm64-alpine-3.23": "bd7484e8472eaed2cd135c70e0628aba769531c380d0b818a35ad8bf09edfeb8",
+    "fingerprint-evidence-amd64": "e056fc67bf246e573dc4add1f7639cefa7928db2b765ed0f01c773d11859964d",
+    "fingerprint-evidence-arm64": "9caa7e5dac8841eb9f355e2815a1cfbaa84218d577bc1ed303728b3975723d6d",
+    "fingerprint-matrix-report": "ec50ad49c22177a2202ad2cd1a412c178f3ae46897cf94561a2e2d088eba0943"
+  },
+  "acceptance": {
+    "strict_gate_enabled": true,
+    "strict_gate_passed": false,
+    "ignore_list_changed": false,
+    "client_defaults_changed": false,
+    "certificate_verification_disabled": false,
+    "all_fingerprints_equal": false
+  }
+}
