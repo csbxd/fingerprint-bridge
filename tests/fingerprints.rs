@@ -569,13 +569,16 @@ async fn tls_catalog_includes_explicit_supported_ciphers_excluded_by_all_alias()
     c.set_min_proto_version(Some(SslVersion::TLS1_2)).unwrap();
     c.set_preserve_tls13_cipher_list(true);
     c.set_strict_cipher_list(
-        "TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256",
+        "TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:\
+         ECDHE-RSA-AES128-SHA256:DHE-RSA-CHACHA20-POLY1305",
     )
     .unwrap();
     let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
     assert!(incoming.ciphers.contains(&0xc027));
+    assert!(incoming.ciphers.contains(&0xccaa));
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
     assert!(!limitations.iter().any(|x| x == "unsupported cipher 49191"));
+    assert!(!limitations.iter().any(|x| x == "unsupported cipher 52394"));
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(incoming.ciphers, outgoing.ciphers);
 }
