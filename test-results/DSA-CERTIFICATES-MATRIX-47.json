@@ -1,0 +1,1392 @@
+{
+  "run": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35753503175",
+  "commit": "b167d644e9b8021c509fe7b62679be0ed6c54adf",
+  "source": {
+    "kind": "GitHub Actions job logs",
+    "summary_job_id": 106836995569,
+    "local_artifact_reaudit_completed": false,
+    "artifact_access_error": "Run #47 connector file URL returned HTTP 403 error code 1010. No browser security workaround attempted.",
+    "per_cell_dsa_certificate_retention": "Not independently re-audited; no per-cell new-algorithm retention counts claimed."
+  },
+  "counts": {
+    "baseline": {
+      "stable": 49,
+      "unstable/missing": 23
+    },
+    "tls": {
+      "DIFF": 56,
+      "MATCH": 16
+    },
+    "http": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "tcp": {
+      "MATCH": 72
+    },
+    "paired_tls": {
+      "DIFF": 40,
+      "MATCH": 32
+    },
+    "paired_http": {
+      "MATCH": 72
+    },
+    "status": {
+      "mismatch": 41,
+      "match": 8,
+      "inconclusive-baseline": 23
+    }
+  },
+  "rows": [
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    }
+  ],
+  "regressions": [
+    {
+      "arch": "amd64",
+      "job_id": 106833366495,
+      "conclusion": "success",
+      "rust_tests": 43,
+      "python_tests": 25,
+      "dsa_certificate_cases": [
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        }
+      ],
+      "log_excerpts": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s",
+        "test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "  \"lab_pass\": true,",
+        "test_sha384_sha512_certificates_and_corruptions (test_dsa_certificates.DsaCertificateTests.test_sha384_sha512_certificates_and_corruptions) ... ok",
+        "Ran 25 tests in 39.903s",
+        "OK",
+        "  \"lab_pass\": true,"
+      ],
+      "hybrid_cases": [
+        "PASS 4587 normal",
+        "PASS 4587 hrr",
+        "PASS 4587 server-point",
+        "PASS 4587 server-length",
+        "PASS 4587 server-ciphertext",
+        "PASS 4587 client-point",
+        "PASS 4587 client-public",
+        "PASS 4587 client-length",
+        "PASS 4587 wrong-hostname",
+        "PASS 4589 normal",
+        "PASS 4589 hrr",
+        "PASS 4589 server-point",
+        "PASS 4589 server-length",
+        "PASS 4589 server-ciphertext",
+        "PASS 4589 client-point",
+        "PASS 4589 client-public",
+        "PASS 4589 client-length",
+        "PASS 4589 wrong-hostname"
+      ],
+      "hybrid_case_count": 18
+    },
+    {
+      "arch": "arm64",
+      "job_id": 106833366232,
+      "conclusion": "success",
+      "rust_tests": 43,
+      "python_tests": 25,
+      "dsa_certificate_cases": [
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha384",
+          "certificate_oid": "2.16.840.1.101.3.4.3.3",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_2"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": true,
+          "mode": "valid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "tampered-signature",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        },
+        {
+          "certificate_digest": "sha512",
+          "certificate_oid": "2.16.840.1.101.3.4.3.4",
+          "http_at_origin": false,
+          "mode": "wrong-digest-oid",
+          "passed": true,
+          "tls_version": "TLSv1_3"
+        }
+      ],
+      "log_excerpts": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s",
+        "test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "  \"lab_pass\": true,",
+        "test_sha384_sha512_certificates_and_corruptions (test_dsa_certificates.DsaCertificateTests.test_sha384_sha512_certificates_and_corruptions) ... ok",
+        "Ran 25 tests in 42.419s",
+        "OK",
+        "  \"lab_pass\": true,"
+      ],
+      "hybrid_cases": [
+        "PASS 4587 normal",
+        "PASS 4587 hrr",
+        "PASS 4587 server-point",
+        "PASS 4587 server-length",
+        "PASS 4587 server-ciphertext",
+        "PASS 4587 client-point",
+        "PASS 4587 client-public",
+        "PASS 4587 client-length",
+        "PASS 4587 wrong-hostname",
+        "PASS 4589 normal",
+        "PASS 4589 hrr",
+        "PASS 4589 server-point",
+        "PASS 4589 server-length",
+        "PASS 4589 server-ciphertext",
+        "PASS 4589 client-point",
+        "PASS 4589 client-public",
+        "PASS 4589 client-length",
+        "PASS 4589 wrong-hostname"
+      ],
+      "hybrid_case_count": 18
+    }
+  ],
+  "jobs": [
+    {
+      "id": 106833366232,
+      "name": "regression / arm64",
+      "conclusion": "success"
+    },
+    {
+      "id": 106833366463,
+      "name": "fingerprints / ubuntu-24.04 / amd64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366495,
+      "name": "regression / amd64",
+      "conclusion": "success"
+    },
+    {
+      "id": 106833366606,
+      "name": "fingerprints / debian-13 / amd64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366613,
+      "name": "fingerprints / ubuntu-24.04 / arm64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366619,
+      "name": "fingerprints / alpine-3.23 / amd64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366703,
+      "name": "fingerprints / fedora-43 / arm64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366745,
+      "name": "fingerprints / debian-13 / arm64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833366844,
+      "name": "fingerprints / alpine-3.23 / arm64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106833367031,
+      "name": "fingerprints / fedora-43 / amd64",
+      "conclusion": "failure"
+    },
+    {
+      "id": 106836995569,
+      "name": "fingerprint consistency gate",
+      "conclusion": "failure"
+    }
+  ],
+  "artifact_digests": [
+    {
+      "id": 10707547117,
+      "name": "matrix-evidence-amd64-debian-13",
+      "sha256": "a8a76dfc3d574b95a192466a8ec8eac7a8d7eafe6846a980a81440c7439ab660",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10707183368,
+      "name": "matrix-evidence-arm64-fedora-43",
+      "sha256": "0d62bc3433df5a69dd751cf7657656a6fb63aca690c8d8e7e4730050b64e5a1b",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10707073435,
+      "name": "matrix-evidence-arm64-alpine-3.23",
+      "sha256": "c8f9d2a29ac52503582520cf1b731f9a25e448046a350b9e4d7651242fafb0ac",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706947795,
+      "name": "fingerprint-evidence-amd64",
+      "sha256": "49e2a31a7f497fd517c0f2166c5842b0e518406e75edd15490c10a65a9817a4e",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706868275,
+      "name": "matrix-evidence-arm64-debian-13",
+      "sha256": "ad9404656520b9eea02e27e7694f6065ea51c738380ff79f590c699dfd8bdc0a",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706797595,
+      "name": "fingerprint-evidence-arm64",
+      "sha256": "6342256f37cd126b7a56360f0ad7c8ac99f7e35b697b2309f6422453684a6a06",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706682902,
+      "name": "matrix-evidence-amd64-alpine-3.23",
+      "sha256": "0adb69a7f94770528ecffe199cbc637877cec4da7a2d6421ed7e43f039b48fec",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706208993,
+      "name": "matrix-evidence-arm64-ubuntu-24.04",
+      "sha256": "1014100b7e44e95fa00962ac720191d8133447f34c0ea3e75b3424d55dcfd90b",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706058624,
+      "name": "matrix-evidence-amd64-ubuntu-24.04",
+      "sha256": "906564fd16a55e8f57ea8c285a2ffaa40944b3712f509c00f23ade855208e075",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10706029611,
+      "name": "fingerprint-matrix-report",
+      "sha256": "bd549a6461558d39921dfe15cee02de25c77715ac8b9d64ab9b345295c8e3134",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    },
+    {
+      "id": 10705898859,
+      "name": "matrix-evidence-amd64-fedora-43",
+      "sha256": "57b9bb2cf5bd5c106bf2ce9cb0b0a40a9390dabe0251b53207af29ff6b7d7e77",
+      "source": "GitHub artifact metadata",
+      "locally_verified": false
+    }
+  ]
+}
