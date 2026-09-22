@@ -296,9 +296,7 @@ pub fn mirror(
         if grease(*id) {
             continue;
         }
-        // EVP verifies DSA SHA-384/512 handshake signatures, but the pinned
-        // X.509 backend has no OID mapping for those certificate signatures.
-        if SIGNATURES.contains(id) && ![0x0502, 0x0602].contains(id) {
+        if SIGNATURES.contains(id) {
             certificate_signatures.push(*id);
         } else {
             limitations.push(format!("unsupported certificate signature algorithm {id}"));

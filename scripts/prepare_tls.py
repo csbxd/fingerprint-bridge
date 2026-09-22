@@ -31,6 +31,7 @@ def prepare():
     patches.append(ROOT / "scripts/patches/bridge-signature-algorithms-cert.patch")
     patches.append(ROOT / "scripts/patches/bridge-ffdhe.patch")
     patches.append(ROOT / "scripts/patches/bridge-dsa.patch")
+    patches.append(ROOT / "scripts/patches/bridge-dsa-certificates.patch")
     digest = hashlib.sha256(b"btls-sys=0.5.6\0" + b"".join(p.read_bytes() for p in patches)).hexdigest()
     parent = Path(metadata["target_directory"]) / "bridge-native"
     destination = parent / digest

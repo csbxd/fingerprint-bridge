@@ -734,6 +734,25 @@ async fn patched_tls_preserves_independent_certificate_signature_algorithms() {
 }
 
 #[cfg(feature = "patched-tls")]
+#[test]
+fn patched_dsa_certificate_oids_are_distinct_from_existing_group_ids() {
+    use btls::{asn1::Asn1Object, nid::Nid};
+    let sha384 = Asn1Object::from_str("2.16.840.1.101.3.4.3.3").unwrap();
+    let sha512 = Asn1Object::from_str("2.16.840.1.101.3.4.3.4").unwrap();
+    assert_eq!(sha384.nid().short_name().unwrap(), "dsa_with_SHA384");
+    assert_eq!(sha512.nid().short_name().unwrap(), "dsa_with_SHA512");
+    assert_ne!(sha384.nid(), sha512.nid());
+    // The earlier backend patch reserved these IDs outside its OID registry.
+    // Regenerating the registry must preserve them without reusing their IDs.
+    for (id, name) in [(972, "ffdhe2048"), (973, "ffdhe3072")] {
+        let group = Nid::from_raw(id);
+        assert_eq!(group.short_name().unwrap(), name);
+        assert_ne!(sha384.nid(), group);
+        assert_ne!(sha512.nid(), group);
+    }
+}
+
+#[cfg(feature = "patched-tls")]
 #[tokio::test]
 async fn patched_tls_does_not_claim_unsupported_certificate_signature_algorithm() {
     use btls::ssl::{SslConnector, SslMethod};
@@ -748,14 +767,15 @@ async fn patched_tls_does_not_claim_unsupported_certificate_signature_algorithm(
     assert!(limitations
         .iter()
         .any(|item| item == "unsupported certificate signature algorithm 2056"));
-    assert!(limitations
-        .iter()
-        .any(|item| item == "unsupported certificate signature algorithm 1282"));
-    assert!(limitations
-        .iter()
-        .any(|item| item == "unsupported certificate signature algorithm 1538"));
+    assert!(!limitations.iter().any(|item| {
+        item == "unsupported certificate signature algorithm 1282"
+            || item == "unsupported certificate signature algorithm 1538"
+    }));
     let outgoing = emitted_hello(ssl).await;
-    assert_eq!(outgoing.signature_algorithms_cert, [0x0403, 0x0402]);
+    assert_eq!(
+        outgoing.signature_algorithms_cert,
+        [0x0403, 0x0402, 0x0502, 0x0602]
+    );
 }
 
 #[cfg(feature = "patched-tls")]

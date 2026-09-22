@@ -95,7 +95,7 @@ go build -o target/matrix-clients/hybrid-probe scripts/clients/hybrid_probe.go
 
 ML-DSA 另用 Go 1.27.1 `crypto/mldsa` 独立对端生成 ML-DSA-44 CA、服务器证书和密钥：有效证书必须完成 TLS 1.3 与 HTTP，篡改证书签名必须在 HTTP 到达 A 前失败；A 同时验证 B Cookie 和改写后的 authority。它验证真实协商和签名，不只是 ClientHello 中出现算法编号。
 
-DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套件与 SHA-1/224/256/384/512 五种握手签名的 30 个组合；另验证未提供签名算法和篡改证书必须失败。仅受控测试显式选择算法，矩阵客户端默认行为不变。DSA 的 SHA-384/512 **证书签名** OID 尚未实现，仍不声明支持；它与握手签名能力分开处理。结果见 [DSA 验证记录](test-results/DSA-VALIDATION.md)。
+DSA 专项测试使用独立 OpenSSL 对端，覆盖 6 个 TLS 1.2 DHE-DSS 套件与 SHA-1/224/256/384/512 五种握手签名的 30 个组合；另验证未提供签名算法和篡改证书必须失败。仅受控测试显式选择算法，矩阵客户端默认行为不变。SHA-384/512 的 DSA **证书签名**另由 OpenSSL 签发证书、独立 Go 服务端完成 TLS 1.2/1.3 握手验证；篡改签名和替换摘要 OID 均须在 HTTP 到达 A 前被拒绝。只有补丁后端声明这两项证书能力，未实现的 Ed448 仍被过滤。原握手能力结果见 [DSA 验证记录](test-results/DSA-VALIDATION.md)。
 
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
 
