@@ -1,0 +1,5405 @@
+{
+  "run": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35739991094",
+  "commit": "b3f3c207bafb31496fce414d193c0fdcb9fbebee",
+  "counts": {
+    "baseline": {
+      "stable": 48,
+      "unstable/missing": 24
+    },
+    "tls": {
+      "DIFF": 56,
+      "MATCH": 16
+    },
+    "http": {
+      "MATCH": 65,
+      "DIFF": 7
+    },
+    "tcp": {
+      "MATCH": 72
+    },
+    "paired_tls": {
+      "DIFF": 40,
+      "MATCH": 32
+    },
+    "paired_http": {
+      "MATCH": 72
+    },
+    "status": {
+      "mismatch": 40,
+      "match": 8,
+      "inconclusive-baseline": 24
+    }
+  },
+  "rows": [
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "amd64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "baseline": "stable",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "DIFF",
+      "paired_http": "MATCH",
+      "status": "mismatch"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    },
+    {
+      "arch": "arm64",
+      "distro": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline"
+    }
+  ],
+  "capabilities": [
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "go-h2",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "node-h2",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-alpine-3.23",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "go-h2",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "node-h2",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-debian-13",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "go-h2",
+      "raw_direct_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_bridged_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_bridged_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "node-h2",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-fedora-43",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "go-h2",
+      "raw_direct_groups": "0008001d001700180019",
+      "raw_bridged_groups": "0008001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "0008001d001700180019",
+      "raw_bridged_groups": "0008001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "node-h2",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-amd64-ubuntu-24.04",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "go-h2",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "node-h2",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-alpine-3.23",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "go-h2",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000a11ec001d001700180019",
+      "raw_bridged_groups": "000a11ec001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "node-h2",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001011ec001d0017001e0018001901000101",
+      "raw_bridged_groups": "000e11ec001d00170018001901000101",
+      "raw_direct_compression": "0400010003",
+      "raw_bridged_compression": "0400010003",
+      "ffdhe_offered": [
+        256,
+        257
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "inbound_groups": [
+        4588,
+        29,
+        23,
+        30,
+        24,
+        25,
+        256,
+        257
+      ],
+      "outbound_groups": [
+        4588,
+        29,
+        23,
+        24,
+        25,
+        256,
+        257
+      ],
+      "direct_compression": [
+        1,
+        3
+      ],
+      "bridged_compression": [
+        1,
+        3
+      ],
+      "inbound_compression": [
+        1,
+        3
+      ],
+      "outbound_compression": [
+        1,
+        3
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-debian-13",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "go-h2",
+      "raw_direct_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_bridged_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_bridged_groups": "000e11ec11eb11ed001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "node-h2",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "001a11ec11eb11ed001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "001811ec11eb11ed001d00170019001801000101010201030104",
+      "raw_direct_compression": "020001",
+      "raw_bridged_compression": "020001",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [
+        1
+      ],
+      "bridged_compression": [
+        1
+      ],
+      "inbound_compression": [
+        1
+      ],
+      "outbound_compression": [
+        1
+      ],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-fedora-43",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "go-h2",
+      "raw_direct_groups": "0008001d001700180019",
+      "raw_bridged_groups": "0008001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "go-http-1.1",
+      "raw_direct_groups": "0008001d001700180019",
+      "raw_bridged_groups": "0008001d001700180019",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "java-h2",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "java-http-1.1",
+      "raw_direct_groups": "0014001d001700180019001e01000101010201030104",
+      "raw_bridged_groups": "0012001d00170018001901000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        30,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24,
+        25,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "node-h2",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "node-http-1.1",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "python-http-1.1",
+      "raw_direct_groups": "0014001d0017001e0019001801000101010201030104",
+      "raw_bridged_groups": "0012001d00170019001801000101010201030104",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "ffdhe_preserved": true,
+      "all_groups_equal": false,
+      "direct_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        30,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        25,
+        24,
+        256,
+        257,
+        258,
+        259,
+        260
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "rust-h2",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    },
+    {
+      "environment": "matrix-evidence-arm64-ubuntu-24.04",
+      "case": "rust-http-1.1",
+      "raw_direct_groups": "0006001d00170018",
+      "raw_bridged_groups": "0006001d00170018",
+      "raw_direct_compression": "",
+      "raw_bridged_compression": "",
+      "ffdhe_offered": [],
+      "ffdhe_preserved": true,
+      "all_groups_equal": true,
+      "direct_groups": [
+        29,
+        23,
+        24
+      ],
+      "inbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "outbound_groups": [
+        29,
+        23,
+        24
+      ],
+      "direct_compression": [],
+      "bridged_compression": [],
+      "inbound_compression": [],
+      "outbound_compression": [],
+      "compression_equal": true
+    }
+  ],
+  "remaining_limitations": {
+    "unsupported cipher 163": 24,
+    "unsupported cipher 162": 24,
+    "unsupported cipher 106": 24,
+    "unsupported cipher 64": 24,
+    "unsupported cipher 56": 24,
+    "unsupported cipher 50": 24,
+    "unsupported group 30": 40,
+    "unsupported signature algorithm 2056": 40,
+    "unsupported signature algorithm 1026": 30,
+    "unsupported signature algorithm 770": 30,
+    "unsupported certificate signature algorithm 2056": 16,
+    "unsupported certificate signature algorithm 1026": 12,
+    "unsupported certificate signature algorithm 770": 12,
+    "unsupported certificate signature algorithm 514": 12,
+    "unsupported extension 17": 16,
+    "unsupported cipher 49325": 18,
+    "unsupported cipher 49311": 18,
+    "unsupported cipher 49245": 16,
+    "unsupported cipher 49249": 16,
+    "unsupported cipher 49239": 12,
+    "unsupported cipher 49235": 16,
+    "unsupported cipher 49324": 18,
+    "unsupported cipher 49310": 18,
+    "unsupported cipher 49244": 16,
+    "unsupported cipher 49248": 16,
+    "unsupported cipher 49238": 12,
+    "unsupported cipher 49234": 16,
+    "unsupported cipher 49309": 18,
+    "unsupported cipher 49233": 16,
+    "unsupported cipher 49308": 18,
+    "unsupported cipher 49232": 16,
+    "unsupported signature algorithm 2074": 12,
+    "unsupported signature algorithm 2075": 12,
+    "unsupported signature algorithm 2076": 12,
+    "unsupported signature algorithm 1282": 18,
+    "unsupported signature algorithm 1538": 18,
+    "unsupported extension 22": 24,
+    "unsupported cipher 4868": 2,
+    "unsupported cipher 49327": 4,
+    "unsupported cipher 49315": 4,
+    "unsupported cipher 49326": 4,
+    "unsupported cipher 49314": 4,
+    "unsupported cipher 49313": 4,
+    "unsupported cipher 49312": 4
+  },
+  "artifact_digests": [
+    {
+      "name": "fingerprint-evidence-arm64",
+      "sha256": "6a3d7341219d16959d1f7bd73dcd031bb0c59e5a2f866319269662785813f531",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-amd64-debian-13",
+      "sha256": "8f2d845ec2965d06c23187b8381863aaf6b3c0da82e513796c691f3db6cc6c49",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-amd64-fedora-43",
+      "sha256": "a98a199b061fa6fbb117cc62b31d1ce999b2547cd4586e67975841b742636577",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-amd64-ubuntu-24.04",
+      "sha256": "d1db64b847efb6f1aac7b2746d08a13ed920610facb0cabe0af77f16fbe5972f",
+      "verified": true
+    },
+    {
+      "name": "fingerprint-evidence-amd64",
+      "sha256": "daf7c465ffa4a64d219f96c6c362e3586779f6aa684e5b0b0442c1ea247d00e1",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-amd64-alpine-3.23",
+      "sha256": "18c39089b7de2c8e79d4ea9f6ef08fc511d83d62501dfe419a810e32c6ff3150",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-arm64-debian-13",
+      "sha256": "ffb650314dbc680d73579f98b6677304bd3a555289061e56cd0726451ab219ce",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-arm64-ubuntu-24.04",
+      "sha256": "968fcb86ef96d6a5301834591867548a4e3f75837dbf62b23d8b730530bbcfeb",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-arm64-fedora-43",
+      "sha256": "a6060c1f5128468771c9acd9d8eed8567d66940015e24b2c462c1254fa2289fc",
+      "verified": true
+    },
+    {
+      "name": "fingerprint-matrix-report",
+      "sha256": "7402b8ceebd7b4ea518cf65a7698330b42f82a3f8e5997392d8ac8154e7fab8e",
+      "verified": true
+    },
+    {
+      "name": "matrix-evidence-arm64-alpine-3.23",
+      "sha256": "e86d631f3bfe27a1fa7514326080f9aa287e1252dd140f3ef56854e8a047c32c",
+      "verified": true
+    }
+  ],
+  "regressions": {
+    "amd64": {
+      "rust_tests": 41,
+      "python_tests": 23,
+      "ffdhe_cases": [
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 256
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 384
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 512
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 768
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_2",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 768
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 1024
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_2",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 1024
+          }
+        }
+      ],
+      "hybrid_cases": 18,
+      "zstd_real_tls_cases": [
+        "verified HTTP and Host/Cookie preservation",
+        "invalid frame rejected: CERT_DECOMPRESSION_FAILED",
+        "tampered leaf signature rejected: CERTIFICATE_VERIFY_FAILED"
+      ],
+      "format_and_clippy": "pass"
+    },
+    "arm64": {
+      "rust_tests": 41,
+      "python_tests": 23,
+      "ffdhe_cases": [
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 256
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 256,
+            "server_share_bytes": 256,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 256,
+          "bits": 2048,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 384
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 257,
+            "server_share_bytes": 384,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 257,
+          "bits": 3072,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 512
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 258,
+            "server_share_bytes": 512,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 258,
+          "bits": 4096,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 768
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 259,
+            "server_share_bytes": 768,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 259,
+          "bits": 6144,
+          "tls": "1_2",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 768
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_2",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 1024
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "valid",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "zero",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "one",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "too-large",
+          "pass": true,
+          "wire": {
+            "client_hellos": 2,
+            "server_group": 260,
+            "server_share_bytes": 1024,
+            "mutated": true,
+            "client_alerts": [
+              47
+            ]
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_3",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1
+          }
+        },
+        {
+          "group": 260,
+          "bits": 8192,
+          "tls": "1_2",
+          "case": "unoffered",
+          "pass": true,
+          "wire": {
+            "client_hellos": 1,
+            "server_prime_bytes": 1024
+          }
+        }
+      ],
+      "hybrid_cases": 18,
+      "zstd_real_tls_cases": [
+        "verified HTTP and Host/Cookie preservation",
+        "invalid frame rejected: CERT_DECOMPRESSION_FAILED",
+        "tampered leaf signature rejected: CERTIFICATE_VERIFY_FAILED"
+      ],
+      "format_and_clippy": "pass"
+    }
+  },
+  "comparison_note": "Compared with run 40, HTTP match count varies from 64 to 65 only for amd64 Debian Go h2; its independent baseline remains unstable. This is not counted as a new passing cell or an HTTP fix."
+}
