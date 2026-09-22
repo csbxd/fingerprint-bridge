@@ -1,0 +1,92 @@
+{
+  "run_started_at": "2026-09-21T23:53:24Z",
+  "run_completed_at": "2026-09-22T00:03:39Z",
+  "code_sha": "ffaf72045f50b280da97a2f3c7f2954ae29c5f8b",
+  "run_id": 35669578415,
+  "run_url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35669578415",
+  "conclusion": "failure",
+  "expected_failure": "unchanged strict fingerprint consistency gate",
+  "source": "GitHub Actions rendered 72-row matrix summary, regression logs, artifact metadata, and all eight per-environment evidence archives",
+  "counts": {
+    "Direct baseline": {
+      "stable": 49,
+      "unstable/missing": 23
+    },
+    "TLS": {
+      "MATCH": 8,
+      "DIFF": 64
+    },
+    "HTTP": {
+      "MATCH": 64,
+      "DIFF": 8
+    },
+    "TCP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "B-paired TLS": {
+      "MATCH": 24,
+      "DIFF": 48
+    },
+    "B-paired HTTP": {
+      "MATCH": 72,
+      "DIFF": 0
+    },
+    "Verdict": {
+      "match": 4,
+      "mismatch": 45,
+      "inconclusive-baseline": 23
+    }
+  },
+  "rsapss_pss_matrix_assertion": {
+    "signature_schemes": [2057, 2058, 2059],
+    "direct_cells_offering_all_three": 40,
+    "bridge_outbound_cells_preserving_all_three": 40,
+    "by_client": {
+      "python": {"offering": 8, "preserved": 8},
+      "node": {"offering": 16, "preserved": 16},
+      "java": {"offering": 16, "preserved": 16}
+    }
+  },
+  "regressions": [
+    {
+      "architecture": "amd64",
+      "job_id": 106563166736,
+      "conclusion": "success",
+      "rust_tests": 34,
+      "python_tests": 20,
+      "hybrid_cases": 18,
+      "rsapss_pss_cases": {
+        "real_tls13_certificate_verify": "pass",
+        "negotiated_scheme": "rsa_pss_pss_sha256 (0x0809)",
+        "tampered_certificate_signature": "rejected before HTTP"
+      }
+    },
+    {
+      "architecture": "arm64",
+      "job_id": 106563166557,
+      "conclusion": "success",
+      "rust_tests": 34,
+      "python_tests": 20,
+      "hybrid_cases": 18,
+      "rsapss_pss_cases": {
+        "real_tls13_certificate_verify": "pass",
+        "negotiated_scheme": "rsa_pss_pss_sha256 (0x0809)",
+        "tampered_certificate_signature": "rejected before HTTP"
+      }
+    }
+  ],
+  "artifacts": [
+    {"id": 10670763649, "name": "matrix-evidence-arm64-ubuntu-24.04", "digest": "sha256:18ec81c8614df556917c5fe2537536de6000074c85abad7b584479cd0dd936d7", "size_in_bytes": 135557},
+    {"id": 10670714018, "name": "matrix-evidence-arm64-alpine-3.23", "digest": "sha256:cc008943f5ce9c9f47edb82df792b53aa2db50ce26c057223700a54bee396d86", "size_in_bytes": 147194},
+    {"id": 10670603597, "name": "matrix-evidence-amd64-debian-13", "digest": "sha256:a25b96f1dad7f68676374f7123dade345fa2a6bef6464c7ec8a6947afea0c009", "size_in_bytes": 156392},
+    {"id": 10670579122, "name": "matrix-evidence-arm64-fedora-43", "digest": "sha256:0e4bd42bb3affe325af6e651b657b3662ab2e7b9a42db9333e9ebac0930c51ba", "size_in_bytes": 190166},
+    {"id": 10670528684, "name": "fingerprint-evidence-amd64", "digest": "sha256:c4c24fea5cce0c50534902b83f81f0d720d34d0141a71206107bba5edf00ff14", "size_in_bytes": 165864},
+    {"id": 10670373949, "name": "matrix-evidence-arm64-debian-13", "digest": "sha256:b01ca7c0eb05564c375a5e1d025dd5ace5e1acf6f158834d5f357cf5fef7ffa4", "size_in_bytes": 156596},
+    {"id": 10670323680, "name": "fingerprint-evidence-arm64", "digest": "sha256:6c40fc312d5b5b766404d3d31bde1fe60048645b467481554374c89c5af3f425", "size_in_bytes": 165864},
+    {"id": 10670253933, "name": "matrix-evidence-amd64-ubuntu-24.04", "digest": "sha256:73a93e041a94f4d22793da2fa4944a08606a037c01f1b61752f51104065c768e", "size_in_bytes": 136246},
+    {"id": 10670158066, "name": "matrix-evidence-amd64-fedora-43", "digest": "sha256:1d5266e95a75e32c96d490268b445987fe8cd0c82f940a0cf4f7e128b90a1160", "size_in_bytes": 189420},
+    {"id": 10670068659, "name": "fingerprint-matrix-report", "digest": "sha256:55943b3252d001d74bc6ded7f27df0a023a57598e11378423b8f4463509fab2c", "size_in_bytes": 1101},
+    {"id": 10669898432, "name": "matrix-evidence-amd64-alpine-3.23", "digest": "sha256:f53d3418cb3bc5aca59bf0f158721913eb409679c11a33362cc8b56f741fb733", "size_in_bytes": 147352}
+  ]
+}
