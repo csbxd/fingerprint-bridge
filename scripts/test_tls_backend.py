@@ -207,7 +207,8 @@ class BackendHandshakeTests(unittest.TestCase):
                                 'openssl', 's_client', '-connect', f'127.0.0.1:{port}',
                                 '-servername', 'b.test', '-CAfile', str(path / 'ca.pem'),
                                 '-verify_return_error', '-tls1_2', '-cipher',
-                                'ECDHE-RSA-AES128-GCM-SHA256:@SECLEVEL=0',
+                                'ECDHE-RSA-AES128-GCM-SHA256:'
+                                'ECDHE-ECDSA-AES128-GCM-SHA256:@SECLEVEL=0',
                                 '-sigalgs', sigalgs, '-quiet'
                             ], input=request, capture_output=True, text=True, timeout=30)
                             trace = origin.communicate(timeout=15)[0]
