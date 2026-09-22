@@ -646,6 +646,31 @@ async fn patched_tls_preserves_ccm_suite_order_without_adding_unoffered_suites()
 
 #[cfg(feature = "patched-tls")]
 #[tokio::test]
+async fn patched_tls_preserves_all_aria_gcm_suites_in_client_order() {
+    use btls::ssl::{SslConnector, SslMethod};
+    let c = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut incoming =
+        emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    // Interleave every RFC 6209 ARIA-GCM suite with an existing AES suite. The
+    // bridge must neither drop ARIA nor synthesize a suite the client omitted.
+    incoming.ciphers = vec![
+        0xc05d, 0xc02f, 0xc050, 0xc061, 0xc052, 0xc056, 0xc051, 0xc060, 0xc053, 0xc05c, 0xc057,
+        0x00ff,
+    ];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item.starts_with("unsupported cipher")));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.ciphers, incoming.ciphers);
+
+    incoming.ciphers = vec![0x1301, 0xc02f];
+    let (ssl, _) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert_eq!(emitted_hello(ssl).await.ciphers, incoming.ciphers);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
 async fn patched_tls_supports_ccm_only_tls13_profile() {
     use btls::ssl::{SslConnector, SslMethod, SslVersion};
     let mut c = SslConnector::builder(SslMethod::tls()).unwrap();

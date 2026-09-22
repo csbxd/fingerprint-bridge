@@ -105,6 +105,8 @@ AES-CCM 专项验证覆盖 12 个 TLS 1.2 RSA / DHE-RSA / ECDHE-ECDSA 套件，�
 
 TLS 1.2 CBC 的 `encrypt_then_mac` 扩展按入站实际提供情况启用，真实执行先验 MAC、后解密，覆盖 AES/3DES 与已有 SHA-1/256/384 HMAC 组合。独立 OpenSSL/Go 对端验证真实 Finished、加密 HTTP 和篡改拒绝；未提供扩展、服务端拒绝扩展和 AEAD 套件保留原有行为。这不意味着两侧会话恢复状态或重协商指纹相同。
 
+TLS 1.2 的十个 ARIA-GCM 套件采用真实 ARIA-128/256 与 GCM 记录保护，仅在入站 ClientHello 实际提供对应套件时映射到 B→A。独立 OpenSSL 对端覆盖 RSA、DHE-RSA、DHE-DSS、ECDHE-RSA 与 ECDHE-ECDSA 的成功握手和大于 16 KiB 的加密 HTTP，并验证密文/认证标签篡改及未提供套件均被拒绝。实现限制为 TLS 1.2 GCM，不把 ARIA 标识伪装成 AES，也不宣称具备 TLS 1.3、CBC 或 DTLS ARIA 能力。
+
 Brainpool 专项握手需要识别 RFC 8734 的独立对端：`scripts/prepare_test_openssl.py` 下载并校验固定版本 OpenSSL 源码，在 `target/test-tools` 构建专用 CLI。测试只通过绝对路径使用该 CLI，不替换系统 OpenSSL、PATH 或 72 项矩阵的默认客户端。X448/Ed448、CBC EtM 的其他 OpenSSL 测试继续使用系统版本。实现边界、双架构 78 个新增握手案例及 72 项矩阵结果见 [TLS 能力验证记录](test-results/TLS-CAPABILITY-VALIDATION.md)。
 
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵
