@@ -127,7 +127,7 @@ func serve(c net.Conn, certificate tls.Certificate, response []byte, mode string
 	signature, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:]); if err != nil { return err }
 	ske := append(append(append([]byte{}, params...), 4, 1), u16(len(signature))...)
 	ske = append(ske, signature...)
-	messages := [][]byte{handshake(2, sh), handshake(11, append(u24(len(chain)), chain...)), handshake(12, ske)}
+	messages := [][]byte{handshake(2, sh), handshake(11, append(u24(len(chain)), chain...))}
 	if mode != "omitted" {
 		staple := append([]byte{}, response...)
 		if mode == "bad-signature" { staple[len(staple)-1] ^= 1 }
@@ -136,7 +136,7 @@ func serve(c net.Conn, certificate tls.Certificate, response []byte, mode string
 		if mode == "malformed-list" { status[3]++ }
 		messages = append(messages, handshake(22, status))
 	}
-	messages = append(messages, handshake(14, nil))
+	messages = append(messages, handshake(12, ske), handshake(14, nil))
 	for _, msg := range messages {
 		if _, err = c.Write(record(22, msg)); err != nil { return err }
 		transcript = append(transcript, msg...)
