@@ -614,6 +614,27 @@ async fn native_tls_mirror_preserves_supported_client_profile() {
 
 #[cfg(feature = "patched-tls")]
 #[tokio::test]
+async fn patched_tls_preserves_real_sha224_signature_schemes() {
+    use btls::ssl::{SslConnector, SslMethod, SslSignatureAlgorithm, SslVersion};
+    let mut c = SslConnector::builder(SslMethod::tls()).unwrap();
+    c.set_max_proto_version(Some(SslVersion::TLS1_2)).unwrap();
+    c.set_verify_algorithm_prefs(&[
+        SslSignatureAlgorithm::from(0x0301),
+        SslSignatureAlgorithm::from(0x0303),
+        SslSignatureAlgorithm::RSA_PSS_RSAE_SHA256,
+    ])
+    .unwrap();
+    let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
+    assert_eq!(&incoming.signature_algorithms[..2], &[0x0301, 0x0303]);
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations.iter().any(|s| s.contains("signature algorithm 769")));
+    assert!(!limitations.iter().any(|s| s.contains("signature algorithm 771")));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
+}
+
+#[cfg(feature = "patched-tls")]
+#[tokio::test]
 async fn patched_tls_preserves_interleaved_ciphers_scsv_and_padding_presence() {
     use btls::ssl::{SslConnector, SslMethod};
     let c = SslConnector::builder(SslMethod::tls()).unwrap();
