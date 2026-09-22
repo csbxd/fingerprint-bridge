@@ -150,6 +150,70 @@ class BackendHandshakeTests(unittest.TestCase):
                             origin.terminate()
                             origin.wait(timeout=5)
 
+    def test_sha224_signature_real_negotiation_and_unoffered_rejection(self):
+        binary = ROOT / 'target/debug/fingerprint-bridge'
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            certificates(path)
+            for offer_sha224 in (True, False):
+                with self.subTest(client_offers_rsa_pkcs1_sha224=offer_sha224):
+                    case = path / ('sha224-offered' if offer_sha224 else 'sha224-absent')
+                    case.mkdir()
+                    with socket.socket() as reserved:
+                        reserved.bind(('127.0.0.1', 0))
+                        origin_port = reserved.getsockname()[1]
+                    origin = subprocess.Popen([
+                        'openssl', 's_server', '-accept', f'127.0.0.1:{origin_port}',
+                        '-cert', str(path / 'a.pem'), '-key', str(path / 'a.key'),
+                        '-www', '-tls1_2', '-cipher',
+                        'ECDHE-RSA-AES128-GCM-SHA256:@SECLEVEL=0',
+                        '-sigalgs', 'rsa_pkcs1_sha224', '-trace', '-naccept', '1'
+                    ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                    proc = log = None
+                    try:
+                        time.sleep(0.2)
+                        self.assertIsNone(origin.poll(), origin.stdout.read() if origin.poll() else '')
+                        proc, port, log = start_bridge(
+                            binary, path, SimpleNamespace(port=origin_port), case / 'runtime')
+                        sigalgs = 'rsa_pss_rsae_sha256'
+                        if offer_sha224:
+                            sigalgs += ':rsa_pkcs1_sha224'
+                        request = (f'GET /sha224 HTTP/1.1\r\nHost: b.test:{port}\r\n'
+                                   'Cookie: sid=from_B\r\nConnection: close\r\n\r\n')
+                        client = subprocess.run([
+                            'openssl', 's_client', '-connect', f'127.0.0.1:{port}',
+                            '-servername', 'b.test', '-CAfile', str(path / 'ca.pem'),
+                            '-verify_return_error', '-tls1_2', '-cipher',
+                            'ECDHE-RSA-AES128-GCM-SHA256:@SECLEVEL=0',
+                            '-sigalgs', sigalgs, '-quiet'
+                        ], input=request, capture_output=True, text=True, timeout=30)
+                        trace = origin.communicate(timeout=15)[0]
+                        log.flush()
+                        log.seek(0)
+                        diagnostics = (client.stdout + client.stderr + '\norigin: ' + trace +
+                                       '\nbridge: ' + log.read())
+                        outgoing, = (case / 'runtime').glob('*.outbound.json')
+                        signatures = json.loads(outgoing.read_text())['tls']['fields'][
+                            'signature_algorithms']
+                        if offer_sha224:
+                            self.assertIn(0x0301, signatures, diagnostics)
+                            self.assertIn('sha224', trace.lower(), diagnostics)
+                            self.assertIn('HTTP/1.0 200', client.stdout, diagnostics)
+                        else:
+                            self.assertNotIn(0x0301, signatures, diagnostics)
+                            self.assertNotIn('HTTP/1.0 200', client.stdout, diagnostics)
+                            self.assertTrue(client.returncode or 'fatal' in diagnostics.lower(),
+                                            diagnostics)
+                    finally:
+                        if proc:
+                            proc.terminate()
+                            proc.wait(timeout=5)
+                        if log:
+                            log.close()
+                        if origin.poll() is None:
+                            origin.terminate()
+                            origin.wait(timeout=5)
+
     @staticmethod
     def _rsapss_certificate(path, tamper):
         root_key = path / 'root.key'
