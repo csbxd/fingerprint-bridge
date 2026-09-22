@@ -627,8 +627,12 @@ async fn patched_tls_preserves_real_sha224_signature_schemes() {
     let incoming = emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
     assert_eq!(&incoming.signature_algorithms[..2], &[0x0301, 0x0303]);
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
-    assert!(!limitations.iter().any(|s| s.contains("signature algorithm 769")));
-    assert!(!limitations.iter().any(|s| s.contains("signature algorithm 771")));
+    assert!(!limitations
+        .iter()
+        .any(|s| s.contains("signature algorithm 769")));
+    assert!(!limitations
+        .iter()
+        .any(|s| s.contains("signature algorithm 771")));
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(incoming.signature_algorithms, outgoing.signature_algorithms);
 }
