@@ -690,7 +690,9 @@ async fn patched_tls_preserves_independent_certificate_signature_algorithms() {
     ];
 
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
-    assert!(limitations.is_empty(), "{limitations:?}");
+    // The pinned backend's default profile also offers the unsupported group
+    // 65074. Keep that limitation explicit; this test isolates extension 50.
+    assert_eq!(limitations, ["unsupported group 65074"]);
     let outgoing = emitted_hello(ssl).await;
     assert_eq!(incoming.extensions, outgoing.extensions);
     assert_eq!(
