@@ -99,8 +99,10 @@ func parseHello(data []byte, expectedGroup uint16, evidence map[string]any) ([]b
 		if pos+size > len(data) { return nil, false, errors.New("bad extension") }
 		if id == 11 {
 			body := data[pos:pos+size]
-			found = len(body) == 3 && body[0] == 2 && body[1] == 0 && body[2] == 1
-			evidence["outgoing_point_formats"] = []int{int(body[1]), int(body[2])}
+			found = bytes.Equal(body, []byte{3, 0, 1, 2})
+			formats := []int{}
+			if len(body) > 0 { for _, value := range body[1:] { formats = append(formats, int(value)) } }
+			evidence["outgoing_point_formats"] = formats
 		}
 		if id == 10 {
 			body := data[pos:pos+size]
@@ -113,7 +115,7 @@ func parseHello(data []byte, expectedGroup uint16, evidence map[string]any) ([]b
 		if id == 65281 { reneg = true }
 		pos += size
 	}
-	if !found { return nil, false, errors.New("exact point formats [0,1] not offered") }
+	if !found { return nil, false, errors.New("exact point formats [0,1,2] not offered") }
 	if !groupOffered { return nil, false, errors.New("selected EC group not offered") }
 	evidence["compressed_prime_offered"] = true
 	evidence["selected_group_offered"] = true

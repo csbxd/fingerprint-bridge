@@ -1,4 +1,6 @@
 #[cfg(feature = "patched-tls")]
+mod crypto_char2;
+#[cfg(feature = "patched-tls")]
 pub mod crypto_ed448;
 #[cfg(feature = "patched-tls")]
 mod crypto_x448;

@@ -14,6 +14,8 @@ RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh 
 COPY scripts/requirements-test.txt /tmp/requirements-test.txt
 RUN python3 -m venv /opt/fp-venv && pip install --no-cache-dir -r /tmp/requirements-test.txt
 COPY Cargo.toml Cargo.lock ./
+COPY build.rs ./
+COPY native ./native
 COPY src ./src
 COPY tests ./tests
 COPY examples ./examples

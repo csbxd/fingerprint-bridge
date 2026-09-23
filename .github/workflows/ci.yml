@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Native dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake perl libclang-dev build-essential ca-certificates pkg-config
+        run: sudo apt-get update && sudo apt-get install -y cmake perl libclang-dev build-essential ca-certificates pkg-config libssl-dev binutils
       - name: Install pinned toolchain
         run: rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
       - run: cargo fmt --check

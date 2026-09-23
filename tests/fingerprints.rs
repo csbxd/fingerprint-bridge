@@ -707,14 +707,29 @@ async fn patched_tls_preserves_only_real_ec_point_formats() {
     c.set_max_proto_version(Some(SslVersion::TLS1_2)).unwrap();
     let mut incoming =
         emitted_hello(c.build().configure().unwrap().into_ssl("b.test").unwrap()).await;
-    incoming.point_formats = vec![0, 1, 2];
+    incoming.point_formats = vec![0, 1, 2, 255];
 
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
     let outgoing = emitted_hello(ssl).await;
-    assert_eq!(outgoing.point_formats, vec![0, 1]);
+    assert_eq!(outgoing.point_formats, vec![0, 1, 2]);
+    // Implementing a point format does not add any curve the client omitted.
+    assert_eq!(outgoing.groups, incoming.groups);
     assert!(limitations
         .iter()
+        .any(|item| item == "unsupported EC point format 255"));
+    assert!(!limitations
+        .iter()
         .any(|item| item == "unsupported EC point format 2"));
+
+    incoming.groups = vec![10, 23];
+    incoming.point_formats = vec![0, 2];
+    let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();
+    assert!(!limitations
+        .iter()
+        .any(|item| item == "unsupported group 10"));
+    let outgoing = emitted_hello(ssl).await;
+    assert_eq!(outgoing.groups, vec![10, 23]);
+    assert_eq!(outgoing.point_formats, vec![0, 2]);
 
     incoming.point_formats = vec![0];
     let (ssl, limitations) = fingerprint_bridge::tls::mirror(&incoming, "a.test", None).unwrap();

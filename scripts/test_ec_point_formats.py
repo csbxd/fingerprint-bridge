@@ -78,7 +78,7 @@ class ECPointFormatTests(unittest.TestCase):
             evidence = json.loads(output)
             log.flush(); log.seek(0)
             diagnostic = repr(evidence) + errors + log.read()
-            self.assertEqual(evidence.get('outgoing_point_formats'), [0, 1], diagnostic)
+            self.assertEqual(evidence.get('outgoing_point_formats'), [0, 1, 2], diagnostic)
             self.assertTrue(evidence.get('compressed_prime_offered'), diagnostic)
             self.assertTrue(evidence.get('selected_group_offered'), diagnostic)
             self.assertTrue(evidence.get('compressed_server_key_sent'), diagnostic)

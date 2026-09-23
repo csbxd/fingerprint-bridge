@@ -231,6 +231,77 @@ def browser(path, protocol, host, port, authority):
                         assert data==b'OK'
                         if flags&1:finished.add(stream)
 
+def strict_mismatch_hello(path):
+    """Create an explicit negative fixture; never change a matrix client.
+
+    A default Python ClientHello is now legitimately reproducible by B. Add
+    one unknown non-GREASE extension to force a measurable unsupported input,
+    while keeping the ClientHello structure and record lengths valid.
+    """
+    context = ssl.create_default_context(cafile=str(path / 'ca.pem'))
+    context.set_alpn_protocols(['http/1.1'])
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    incoming, outgoing = ssl.MemoryBIO(), ssl.MemoryBIO()
+    client = context.wrap_bio(incoming, outgoing, server_hostname='b.test')
+    try:
+        client.do_handshake()
+    except ssl.SSLWantReadError:
+        pass
+    else:
+        raise AssertionError('ClientHello fixture unexpectedly completed handshake')
+    records = outgoing.read()
+    pieces = []
+    cursor = 0
+    while cursor < len(records):
+        assert cursor + 5 <= len(records), 'truncated fixture record'
+        header = records[cursor:cursor + 5]
+        size = int.from_bytes(header[3:5], 'big')
+        assert header[0] == 22 and cursor + 5 + size <= len(records)
+        pieces.append((header[:3], bytearray(records[cursor + 5:cursor + 5 + size])))
+        cursor += 5 + size
+    assert pieces, 'no ClientHello fixture records'
+    hello = bytearray().join(part for _, part in pieces)
+    assert hello[0] == 1 and int.from_bytes(hello[1:4], 'big') == len(hello) - 4
+    cursor = 38
+    cursor += 1 + hello[cursor]  # legacy_session_id
+    cursor += 2 + int.from_bytes(hello[cursor:cursor + 2], 'big')  # cipher_suites
+    cursor += 1 + hello[cursor]  # legacy_compression_methods
+    extensions_offset = cursor
+    size = int.from_bytes(hello[cursor:cursor + 2], 'big')
+    cursor += 2
+    assert cursor + size == len(hello), 'invalid fixture extension length'
+    while cursor < len(hello):
+        assert cursor + 4 <= len(hello)
+        extension = int.from_bytes(hello[cursor:cursor + 2], 'big')
+        assert extension != 65000, 'fixture already contains the negative extension'
+        cursor += 4 + int.from_bytes(hello[cursor + 2:cursor + 4], 'big')
+        assert cursor <= len(hello)
+    added = struct.pack('!HH', 65000, 1) + b'\x01'
+    hello.extend(added)
+    hello[1:4] = (len(hello) - 4).to_bytes(3, 'big')
+    hello[extensions_offset:extensions_offset + 2] = (size + len(added)).to_bytes(2, 'big')
+    # Preserve the original record boundaries and absorb the extension into
+    # the last record. The default ClientHello is well below the TLS limit.
+    result = bytearray()
+    cursor = 0
+    for index, (prefix, previous) in enumerate(pieces):
+        length = len(previous) + (len(added) if index == len(pieces) - 1 else 0)
+        assert length <= 16384, 'negative fixture would exceed a TLS plaintext record'
+        result.extend(prefix + length.to_bytes(2, 'big') + hello[cursor:cursor + length])
+        cursor += length
+    assert cursor == len(hello)
+    return bytes(result)
+
+
+def strict_mismatch_client(path, port):
+    with socket.create_connection(('127.0.0.1', port), timeout=10) as client:
+        client.sendall(strict_mismatch_hello(path))
+        try:
+            response = client.recv(4096)
+        except ConnectionResetError:
+            response = b''
+        assert not response, 'strict gate continued to the downstream TLS handshake'
+
 def start_bridge(binary, path, origin, reports, extra=None):
     with socket.socket() as free:
         free.bind(("127.0.0.1",0)); port=free.getsockname()[1]
@@ -314,17 +385,49 @@ def run(binary, output, capture_interface=None):
             reports=path/mode
             proc,port,log=start_bridge(binary,path,origin,reports,extra)
             try:
-                try: browser(path,'http/1.1','b.test',port,f'b.test:{port}')
-                except (ssl.SSLError,EOFError,ConnectionResetError):pass
-                else:raise AssertionError(f'{mode} unexpectedly accepted a request')
+                if mode=='strict_tls':
+                    strict_mismatch_client(path,port)
+                else:
+                    try: browser(path,'http/1.1','b.test',port,f'b.test:{port}')
+                    except (ssl.SSLError,EOFError,ConnectionResetError):pass
+                    else:raise AssertionError(f'{mode} unexpectedly accepted a request')
                 assert origin.done.wait(10)
                 assert not origin.evidence, 'HTTP reached origin despite rejection'
+                checked={'case':mode,'rejected_before_http':True}
                 if mode=='strict_tls':
                     report_files=list(reports.glob('*.report.json'))
-                    assert report_files and json.loads(report_files[0].read_text())['comparison']['pass'] is False
-                security.append({'case':mode,'rejected_before_http':True})
+                    assert len(report_files)==1, 'strict gate produced no unique comparison report'
+                    report=json.loads(report_files[0].read_text())
+                    comparison=report['comparison']
+                    assert comparison['pass'] is False and not comparison['missing_layers']
+                    assert 'unsupported extension 65000' in report['limitations']
+                    assert any(d['field']=='/tls/fields/extensions' and
+                               65000 in d['baseline'] and 65000 not in d['observed']
+                               for d in comparison['differences']), comparison
+                    log.flush();log.seek(0)
+                    assert 'strict TLS comparison failed; no HTTP forwarded' in log.read(), 'rejection did not come from the strict comparison gate'
+                    checked.update(unknown_extension=65000,strict_gate_triggered=True,
+                                   comparison=comparison)
+                security.append(checked)
             finally:
                 proc.terminate();proc.wait(timeout=10);log.close()
+        # Ordinary Python defaults must remain accepted when the fingerprints
+        # match. This also detects a strict gate that simply rejects everything.
+        origin=Origin(path,'http/1.1',connections=1)
+        reports=path/'strict_tls_positive'
+        proc,port,log=start_bridge(binary,path,origin,reports,['--strict-tls'])
+        try:
+            browser(path,'http/1.1','b.test',port,f'b.test:{port}')
+            assert origin.done.wait(10), 'strict positive origin did not finish'
+            assert not origin.errors and len(origin.evidence)==1, origin.errors
+            report_files=list(reports.glob('*.report.json'))
+            assert len(report_files)==1
+            comparison=json.loads(report_files[0].read_text())['comparison']
+            assert comparison['pass'] is True, comparison
+            security.append({'case':'strict_tls_matching_default_client',
+                             'accepted_http':True,'comparison':comparison})
+        finally:
+            proc.terminate();proc.wait(timeout=10);log.close()
     summary={'lab_pass':True,'scope':'loopback Python/OpenSSL client, HTTP/1.1 and HTTP/2; no Chrome/Firefox/Safari certification','results':results,'security_checks':security}
     (output/'lab-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     print(json.dumps(summary,indent=2))

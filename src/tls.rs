@@ -126,6 +126,8 @@ impl CertificateCompressor for Zstd {
 }
 fn group(id: u16) -> Option<&'static str> {
     match id {
+        #[cfg(feature = "patched-tls")]
+        10 => Some("sect283r1"),
         23 => Some("P-256"),
         24 => Some("P-384"),
         25 => Some("P-521"),
@@ -186,6 +188,11 @@ pub fn mirror(
     host: &str,
     ca: Option<&Path>,
 ) -> Result<(btls::ssl::Ssl, Vec<String>)> {
+    #[cfg(feature = "patched-tls")]
+    ensure!(
+        crate::crypto_char2::register(),
+        "binary-field EC provider registration failed"
+    );
     #[cfg(feature = "patched-tls")]
     ensure!(
         crate::crypto_x448::register(),
@@ -473,10 +480,10 @@ pub fn mirror(
             .point_formats
             .iter()
             .copied()
-            .filter(|format| *format <= 1)
+            .filter(|format| *format <= 2)
             .collect();
         for format in &hello.point_formats {
-            if *format > 1 {
+            if *format > 2 {
                 limitations.push(format!("unsupported EC point format {format}"));
             }
         }
