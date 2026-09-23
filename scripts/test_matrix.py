@@ -12,7 +12,7 @@ import unittest
 from lab import certificates, hello_peek
 from matrix_config import ARCHITECTURES, CASES, DISTRIBUTIONS, LAYERS, SAMPLES
 from matrix_lab import classify
-from matrix_report import collect, inspect_summary, layer_status
+from matrix_report import baseline_instability_reason, collect, inspect_summary, layer_status
 
 
 def matched():
@@ -45,6 +45,29 @@ class VerdictTests(unittest.TestCase):
 
     def test_contradictory_boolean_not_a_match(self):
         self.assertEqual(layer_status({"pass": True, "differences": ["changed"], "missing_layers": []}), "DIFF")
+
+    def test_extension_permutation_is_diagnostic_only(self):
+        baseline = comparisons()
+        baseline["tls"] = {"pass": False, "missing_layers": [], "differences": [
+            {"field": "/tls/fields/extensions", "baseline": [0, 10, 43],
+             "observed": [43, 0, 10]},
+            {"field": "/tls/ja3", "baseline": "one", "observed": "two"},
+        ]}
+        result = {"baseline": baseline}
+        self.assertEqual(baseline_instability_reason(result),
+                         "TLS extension-order permutation")
+        self.assertEqual(classify(baseline, comparisons()), "inconclusive-baseline")
+
+    def test_http2_byte_difference_is_diagnostic_only(self):
+        baseline = comparisons()
+        baseline["http"] = {"pass": False, "missing_layers": [], "differences": [
+            {"field": "/http/requests", "baseline": [{"hpack_sha256": "one"}],
+             "observed": [{"hpack_sha256": "two"}]},
+        ]}
+        result = {"baseline": baseline}
+        self.assertEqual(baseline_instability_reason(result),
+                         "HTTP/2 request/HPACK bytes differ")
+        self.assertEqual(classify(baseline, comparisons()), "inconclusive-baseline")
 
 
 class CoverageTests(unittest.TestCase):

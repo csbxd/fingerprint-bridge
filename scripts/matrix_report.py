@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Aggregate all eight environments and 72 cases; incomplete evidence fails."""
 import argparse
+from collections import Counter
 import json
 from pathlib import Path
 import sys
@@ -16,6 +17,41 @@ def layer_status(comparison):
     if comparison.get("pass") is True and comparison.get("differences") == [] and comparison.get("missing_layers") == []:
         return "MATCH"
     return "DIFF"
+
+
+def _same_multiset(left, right):
+    if not isinstance(left, list) or not isinstance(right, list):
+        return False
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":"))
+    return Counter(map(canonical, left)) == Counter(map(canonical, right))
+
+
+def baseline_instability_reason(result):
+    """Describe an unstable direct baseline without changing its verdict."""
+    baseline = result.get("baseline", {})
+    comparisons = [baseline.get(layer) for layer in LAYERS]
+    if any(not isinstance(item, dict) or item.get("missing_layers") for item in comparisons):
+        return "missing direct evidence"
+    if all(item.get("pass") is True for item in comparisons):
+        return ""
+
+    tls_differences = baseline.get("tls", {}).get("differences", [])
+    derived = {"/tls/ja3", "/tls/ja3_string"}
+    structural = [item for item in tls_differences if item.get("field") not in derived]
+    permutation_fields = {"/tls/fields/extensions", "/tls/fields/other_extensions"}
+    if structural and all(item.get("field") in permutation_fields and
+                          _same_multiset(item.get("baseline"), item.get("observed"))
+                          for item in structural):
+        return "TLS extension-order permutation"
+
+    http_differences = baseline.get("http", {}).get("differences", [])
+    if (not tls_differences and len(http_differences) == 1 and
+            http_differences[0].get("field") == "/http/requests"):
+        return "HTTP/2 request/HPACK bytes differ"
+
+    changed = [layer.upper() for layer in LAYERS
+               if baseline.get(layer, {}).get("pass") is not True]
+    return "direct " + "/".join(changed) + " differs"
 
 
 def inspect_summary(document, directory):
@@ -55,6 +91,7 @@ def inspect_summary(document, directory):
             raise AssertionError("summary claims a match despite differences")
         rows.append({"arch": key[0], "distro": key[1], "client": client, "protocol": protocol,
                      "baseline": "stable" if set(baseline) == {"MATCH"} else "unstable/missing",
+                     "baseline_reason": baseline_instability_reason(r),
                      **dict(zip(LAYERS, layers)), "paired_tls": paired_tls, "paired_http": paired_http_status, "status": status})
     return key, rows
 
@@ -79,7 +116,8 @@ def collect(root):
                 errors.append(f"missing environment: {arch}/{distro}")
                 for client, protocol in CASES:
                     rows.append({"arch": arch, "distro": distro, "client": client, "protocol": protocol,
-                                 "baseline": "missing", **{layer: "MISSING" for layer in LAYERS}, "paired_tls": "MISSING", "paired_http": "MISSING", "status": "missing-evidence"})
+                                 "baseline": "missing", "baseline_reason": "missing environment/evidence",
+                                 **{layer: "MISSING" for layer in LAYERS}, "paired_tls": "MISSING", "paired_http": "MISSING", "status": "missing-evidence"})
     return rows, errors
 
 
@@ -95,6 +133,12 @@ def markdown(rows, errors):
     lines += ["", f"Matches: {sum(r['status']=='match' for r in rows)}/{len(rows)}. Missing, unstable or failed cells are never passes.", "",
               "Artifacts contain actual ClientHello bytes, A-side SYN PCAPs, structured evidence, field differences, client/bridge logs and runtime versions.",
               "HTTP/2 comparison includes HPACK bytes and frame layout; semantic equality alone does not imply a match.", ""]
+    reasons = Counter(row["baseline_reason"] for row in rows if row["baseline"] != "stable")
+    if reasons:
+        lines += ["## Direct-baseline instability diagnostics", "",
+                  "These counts are diagnostic only; no field is ignored and every affected cell remains non-passing.", ""]
+        lines += [f"- {reason}: {count}" for reason, count in sorted(reasons.items())]
+        lines.append("")
     if errors:
         lines += ["## Coverage / infrastructure errors", ""] + [f"- {e}" for e in errors]
     return "\n".join(lines) + "\n"
