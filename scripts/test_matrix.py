@@ -12,7 +12,8 @@ import unittest
 from lab import certificates, hello_peek
 from matrix_config import ARCHITECTURES, CASES, DISTRIBUTIONS, LAYERS, SAMPLES
 from matrix_lab import classify
-from matrix_report import baseline_instability_reason, collect, inspect_summary, layer_status
+from matrix_report import (baseline_instability_reason, collect, inspect_summary,
+                           layer_status, stable_mismatch_reason)
 
 
 def matched():
@@ -68,6 +69,43 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(baseline_instability_reason(result),
                          "HTTP/2 request/HPACK bytes differ")
         self.assertEqual(classify(baseline, comparisons()), "inconclusive-baseline")
+
+    def test_char2_without_binary_group_is_still_a_mismatch(self):
+        observed = comparisons()
+        observed["tls"] = {"pass": False, "missing_layers": [], "differences": [
+            {"field": "/tls/fields/point_formats", "baseline": [0, 1, 2],
+             "observed": [0, 1]},
+            {"field": "/tls/ja3", "baseline": "one", "observed": "two"},
+        ]}
+        result = {
+            "status": classify(comparisons(), observed),
+            "layers": observed,
+            "tls_capabilities": {
+                "inbound": {"groups": [29, 23, 30, 25, 24, 256],
+                            "point_formats": [0, 1, 2]},
+                "outbound": {"groups": [29, 23, 30, 25, 24, 256],
+                             "point_formats": [0, 1]},
+            },
+        }
+        self.assertEqual(stable_mismatch_reason(result),
+                         "deprecated char2 point format advertised without binary group")
+        self.assertEqual(result["status"], "mismatch")
+
+    def test_char2_with_binary_group_is_not_misclassified(self):
+        observed = comparisons()
+        observed["tls"] = {"pass": False, "missing_layers": [], "differences": [
+            {"field": "/tls/fields/point_formats", "baseline": [0, 2],
+             "observed": [0]},
+        ]}
+        result = {
+            "status": "mismatch",
+            "layers": observed,
+            "tls_capabilities": {
+                "inbound": {"groups": [10], "point_formats": [0, 2]},
+                "outbound": {"groups": [10], "point_formats": [0]},
+            },
+        }
+        self.assertEqual(stable_mismatch_reason(result), "bridged TLS differs")
 
 
 class CoverageTests(unittest.TestCase):

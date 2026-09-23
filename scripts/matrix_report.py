@@ -54,6 +54,28 @@ def baseline_instability_reason(result):
     return "direct " + "/".join(changed) + " differs"
 
 
+def stable_mismatch_reason(result):
+    """Describe a stable mismatch from captured capabilities, never waive it."""
+    if result.get("status") != "mismatch":
+        return ""
+    tls_differences = result.get("layers", {}).get("tls", {}).get("differences", [])
+    fields = {item.get("field") for item in tls_differences}
+    point_only = fields and fields <= {
+        "/tls/fields/point_formats", "/tls/ja3", "/tls/ja3_string"
+    }
+    capabilities = result.get("tls_capabilities", {})
+    inbound = capabilities.get("inbound", {})
+    outbound = capabilities.get("outbound", {})
+    groups = inbound.get("groups", [])
+    has_binary_group = any((1 <= group <= 14) or group == 0xff02 for group in groups)
+    if (point_only and 2 in inbound.get("point_formats", []) and
+            2 not in outbound.get("point_formats", []) and not has_binary_group):
+        return "deprecated char2 point format advertised without binary group"
+    changed = [layer.upper() for layer in LAYERS
+               if result.get("layers", {}).get(layer, {}).get("pass") is not True]
+    return "bridged " + "/".join(changed) + " differs"
+
+
 def inspect_summary(document, directory):
     env = document["environment"]
     key = (env["matrix_arch"], env["matrix_distro"])
@@ -92,6 +114,7 @@ def inspect_summary(document, directory):
         rows.append({"arch": key[0], "distro": key[1], "client": client, "protocol": protocol,
                      "baseline": "stable" if set(baseline) == {"MATCH"} else "unstable/missing",
                      "baseline_reason": baseline_instability_reason(r),
+                     "mismatch_reason": stable_mismatch_reason(r),
                      **dict(zip(LAYERS, layers)), "paired_tls": paired_tls, "paired_http": paired_http_status, "status": status})
     return key, rows
 
@@ -117,6 +140,7 @@ def collect(root):
                 for client, protocol in CASES:
                     rows.append({"arch": arch, "distro": distro, "client": client, "protocol": protocol,
                                  "baseline": "missing", "baseline_reason": "missing environment/evidence",
+                                 "mismatch_reason": "missing environment/evidence",
                                  **{layer: "MISSING" for layer in LAYERS}, "paired_tls": "MISSING", "paired_http": "MISSING", "status": "missing-evidence"})
     return rows, errors
 
@@ -138,6 +162,13 @@ def markdown(rows, errors):
         lines += ["## Direct-baseline instability diagnostics", "",
                   "These counts are diagnostic only; no field is ignored and every affected cell remains non-passing.", ""]
         lines += [f"- {reason}: {count}" for reason, count in sorted(reasons.items())]
+        lines.append("")
+    mismatch_reasons = Counter(row["mismatch_reason"] for row in rows
+                               if row["status"] == "mismatch")
+    if mismatch_reasons:
+        lines += ["## Stable mismatch diagnostics", "",
+                  "These counts are diagnostic only; every listed cell remains a strict mismatch.", ""]
+        lines += [f"- {reason}: {count}" for reason, count in sorted(mismatch_reasons.items())]
         lines.append("")
     if errors:
         lines += ["## Coverage / infrastructure errors", ""] + [f"- {e}" for e in errors]
