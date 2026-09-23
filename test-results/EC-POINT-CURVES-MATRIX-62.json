@@ -1,0 +1,70 @@
+{
+  "source_commit": "1ad7797be00b48cf9dfcd6aa8fda64e8457aa073",
+  "workflow_run": {
+    "id": 35799224464,
+    "number": 62,
+    "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35799224464",
+    "conclusion": "failure",
+    "expected_failure": "strict fingerprint consistency gate"
+  },
+  "regression_jobs": [
+    {
+      "architecture": "amd64",
+      "job_id": 106985488121,
+      "conclusion": "success"
+    },
+    {
+      "architecture": "arm64",
+      "job_id": 106985488383,
+      "conclusion": "success"
+    }
+  ],
+  "per_architecture": {
+    "rust_tests": 64,
+    "python_test_methods": 36,
+    "hybrid_group_cases": 18,
+    "compressed_point_cases": 6
+  },
+  "compressed_point_cases": [
+    {"curve": "p256", "group_id": 23, "mode": "valid", "passed": true},
+    {"curve": "p256", "group_id": 23, "mode": "malformed", "alert": 47, "http_at_origin": false, "passed": true},
+    {"curve": "p384", "group_id": 24, "mode": "valid", "passed": true},
+    {"curve": "p384", "group_id": 24, "mode": "malformed", "alert": 47, "http_at_origin": false, "passed": true},
+    {"curve": "p521", "group_id": 25, "mode": "valid", "passed": true},
+    {"curve": "p521", "group_id": 25, "mode": "malformed", "alert": 47, "http_at_origin": false, "passed": true}
+  ],
+  "matrix": {
+    "total": 72,
+    "match": 24,
+    "mismatch": 24,
+    "inconclusive_baseline": 24,
+    "tls_match": 32,
+    "http_match": 64,
+    "tcp_match": 72,
+    "same_connection_tls_match": 48,
+    "same_connection_http_match": 72
+  },
+  "artifacts": [
+    {
+      "name": "fingerprint-evidence-amd64",
+      "id": 10725043243,
+      "sha256": "ead960b977be3873d201311e8f5092d5db724be9b3245b57692ce116b78f4493"
+    },
+    {
+      "name": "fingerprint-evidence-arm64",
+      "id": 10725092936,
+      "sha256": "6b10fad8b1a3c204ac4a12220370c50e47d01ea79a59bbdc838a436d20f0b996"
+    },
+    {
+      "name": "fingerprint-matrix-report",
+      "id": 10725162728,
+      "sha256": "5a4bde3ab4676a28f02825125f35f7e70de0e37f1560d4f7dedaca67232bc202"
+    }
+  ],
+  "remaining_stable_tls_limitation": {
+    "affected_cells": 24,
+    "direct_point_formats": [0, 1, 2],
+    "bridged_point_formats": [0, 1],
+    "reason": "unsupported EC point format 2"
+  }
+}
