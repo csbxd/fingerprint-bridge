@@ -111,6 +111,8 @@ Brainpool 专项握手需要识别 RFC 8734 的独立对端：`scripts/prepare_t
 
 TLS 1.2 的 `ansiX962_compressed_char2` 点格式由真实 `sect283r1`（组 10）ECDHE 支持。仅保留入站提供的格式与组，不把二元域组加入默认客户端列表；它不能用于 TLS 1.3 key_share 或 HelloRetryRequest。二元域运算使用 SHA256 固定的 OpenSSL 3.5.8 静态库，全部符号加独立前缀，与 BoringSSL 对象隔离；配置文件、动态模块和引擎加载关闭。点解析检查编码长度、规范坐标、曲线方程、无穷点和素数阶子群成员资格，然后才执行私钥运算。该能力不包含二元域 ECDSA 证书或其他二元域曲线。
 
+上述二元域能力用于 B→A；B 的入站握手仍需双方共有常规组，尚未认证仅提供组 10 的客户端。真实握手、负例及矩阵证据见 [二元域点格式验证记录](test-results/CHAR2-VALIDATION.md)。
+
 推荐构建额外需要 `nm`、`objcopy`、`ar`（Linux 的 binutils）并下载校验固定源码；内容缓存供 build/test/clippy 复用。当前补丁构建支持原生 Linux x86_64/ARM64。独立系统 OpenSSL 测试对端验证压缩/非压缩点的真实 TLS 1.2、Finished、加密 HTTP、Cookie、authority，以及畸形点、子群和协商负例；默认矩阵客户端不变。
 
 ## GitHub Actions 跨架构 / 发行版 / 语言矩阵

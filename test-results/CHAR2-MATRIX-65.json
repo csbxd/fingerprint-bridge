@@ -1,0 +1,2622 @@
+{
+  "source_commit": "51a2bc1303bd55b01bece59a4e8df551f4ed87da",
+  "workflow_run": {
+    "id": 35823249113,
+    "number": 65,
+    "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35823249113",
+    "created_at": "2026-09-23T05:38:32Z",
+    "updated_at": "2026-09-23T05:52:00Z",
+    "status": "completed",
+    "conclusion": "failure",
+    "expected_failure": "24 independent direct-baseline instabilities; strict gate remains enabled"
+  },
+  "regression_jobs": [
+    {
+      "architecture": "amd64",
+      "job_id": 107059422316,
+      "conclusion": "success"
+    },
+    {
+      "architecture": "arm64",
+      "job_id": 107059422590,
+      "conclusion": "success"
+    }
+  ],
+  "per_architecture": {
+    "rust_tests": 66,
+    "python_test_methods": 41,
+    "hybrid_group_cases": 18,
+    "prime_compressed_point_cases": 6,
+    "char2_cases": 12
+  },
+  "matrix": {
+    "total": 72,
+    "match": 48,
+    "inconclusive-baseline": 24,
+    "stable_mismatch": 0,
+    "missing_or_error": 0,
+    "layer_matches": {
+      "tls": 56,
+      "http": 64,
+      "tcp": 72,
+      "paired_tls": 72,
+      "paired_http": 72
+    },
+    "direct_baseline_reasons": {
+      "TLS extension-order permutation": 16,
+      "HTTP/2 request/HPACK bytes differ": 8
+    }
+  },
+  "comparison": {
+    "reference_full_run": 35802831047,
+    "reference_run_number": 63,
+    "reference_stable_mismatches": 24,
+    "current_stable_mismatches": 0,
+    "reference_matches": 24,
+    "current_matches": 48,
+    "run64_incomplete_cells": 9
+  },
+  "guardrails": {
+    "ignore_list_changed": false,
+    "default_matrix_clients_changed": false,
+    "certificate_verification_enabled": true,
+    "strict_gate_enabled": true,
+    "independent_direct1_direct2_bridged_preserved": true,
+    "same_request_b_in_out_preserved": true,
+    "real_A_modified": false
+  },
+  "scope": "Synthetic loopback TLS/HTTP and SYN fingerprints; distro containers share native runner kernel. No browser certification or general network-path TCP equivalence claim.",
+  "limitations": [
+    "Only sect283r1 binary-field ECDHE is implemented, not binary ECDSA certificates or other binary curves.",
+    "B's inbound acceptor still needs a mutually supported standard group; group-10-only clients are not certified.",
+    "TLS 1.3 legacy binary-group key shares and HRR selections are rejected.",
+    "Independent Rust TLS extension ordering and Go HTTP/2 ordering remain non-passing unstable baselines."
+  ],
+  "artifacts": [
+    {
+      "name": "matrix-evidence-arm64-ubuntu-24.04",
+      "id": 10734955694,
+      "digest": "sha256:e271fa6ee1025455d5135a950e177ac9cdaf9b04a7ee53dc9fcd2426c483c83a",
+      "size_in_bytes": 131653,
+      "expired": false
+    },
+    {
+      "name": "fingerprint-evidence-arm64",
+      "id": 10734885661,
+      "digest": "sha256:5e1dbc0fb2ec83649e5beae61af9b284f8eb66d78a61b5ebb6c8afc925c6ceea",
+      "size_in_bytes": 266359,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-arm64-alpine-3.23",
+      "id": 10734656687,
+      "digest": "sha256:88dc2ccae0991b98c6a755ed182fbde08392737c5829801648b3c14f2a773931",
+      "size_in_bytes": 140241,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-arm64-debian-13",
+      "id": 10734486643,
+      "digest": "sha256:daca22722997fdc517eaea19a4645b64828d5c5e03dd62d699ee322204c08880",
+      "size_in_bytes": 151112,
+      "expired": false
+    },
+    {
+      "name": "fingerprint-evidence-amd64",
+      "id": 10734460652,
+      "digest": "sha256:aa9f8ab13197b49d1420c7e297ced6867a19fa6a385a5355ec34cd7bbb0a78fe",
+      "size_in_bytes": 266357,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-amd64-fedora-43",
+      "id": 10734226113,
+      "digest": "sha256:58fd60d4e3567f2c09153fa7cc5a3e3d05262225fb7061606a816b599c045aa6",
+      "size_in_bytes": 161871,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-arm64-fedora-43",
+      "id": 10734067370,
+      "digest": "sha256:0d33a905acd68ce213451c7c25f7938e781155f8964e89da9ee8c09d7cd69bfd",
+      "size_in_bytes": 161763,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-amd64-ubuntu-24.04",
+      "id": 10734054830,
+      "digest": "sha256:2a94aa5393c0e3ffef4bf9654d92c2d82f7d66c566492f3169e071798e5b9a3e",
+      "size_in_bytes": 131976,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-amd64-alpine-3.23",
+      "id": 10733559158,
+      "digest": "sha256:ef2c780204a29b2045b40057231bbaa4c926cdd1b0d5116f4a4db9a5c11c7574",
+      "size_in_bytes": 140093,
+      "expired": false
+    },
+    {
+      "name": "fingerprint-matrix-report",
+      "id": 10733544816,
+      "digest": "sha256:1f8b63c653368841ae9e731a696c1a9266193c9dd0d77f160fc9fe047d80983f",
+      "size_in_bytes": 1190,
+      "expired": false
+    },
+    {
+      "name": "matrix-evidence-amd64-debian-13",
+      "id": 10733474125,
+      "digest": "sha256:6ef7ef703139e87edec1119434532d416d309b6a2f7182c5970351daa39a4167",
+      "size_in_bytes": 151440,
+      "expired": false
+    }
+  ],
+  "char2_handshakes": {
+    "amd64": [
+      {
+        "authority_rewritten": true,
+        "client_finished_verified": true,
+        "client_point_bytes": 73,
+        "client_point_prefix": 4,
+        "compressed_char2_offered": true,
+        "cookie_preserved": true,
+        "curve": "sect283r1",
+        "http_request_received": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "compressed",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": 0
+      },
+      {
+        "authority_rewritten": true,
+        "client_finished_verified": true,
+        "client_point_bytes": 73,
+        "client_point_prefix": 4,
+        "compressed_char2_offered": true,
+        "cookie_preserved": true,
+        "curve": "sect283r1",
+        "http_request_received": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "uncompressed",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 73,
+        "server_point_prefix": 4,
+        "passed": true,
+        "downstream_exit": 0
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "malformed",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 36,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_off_curve_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "off-curve",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 73,
+        "server_point_prefix": 4,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_order_two_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "small-subgroup",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_mixed_subgroup_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "mixed-subgroup",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "infinity",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 1,
+        "server_point_prefix": 0,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": false,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "format-not-offered",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": null
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "group-not-offered",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": false,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": null
+      },
+      {
+        "client_alert": 51,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "bad-certificate",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 51,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "bad-handshake-signature",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "mode": "tls13-hrr-binary-group",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_versions": [
+          772,
+          771
+        ],
+        "outgoing_keyshare_groups": [
+          23
+        ],
+        "hrr_group": 10,
+        "hrr_sent": true,
+        "client_alert": 47,
+        "rejected_before_second_client_hello": true,
+        "records_after_hrr": [
+          20,
+          21
+        ],
+        "passed": true
+      }
+    ],
+    "arm64": [
+      {
+        "authority_rewritten": true,
+        "client_finished_verified": true,
+        "client_point_bytes": 73,
+        "client_point_prefix": 4,
+        "compressed_char2_offered": true,
+        "cookie_preserved": true,
+        "curve": "sect283r1",
+        "http_request_received": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "compressed",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": 0
+      },
+      {
+        "authority_rewritten": true,
+        "client_finished_verified": true,
+        "client_point_bytes": 73,
+        "client_point_prefix": 4,
+        "compressed_char2_offered": true,
+        "cookie_preserved": true,
+        "curve": "sect283r1",
+        "http_request_received": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "uncompressed",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 73,
+        "server_point_prefix": 4,
+        "passed": true,
+        "downstream_exit": 0
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "malformed",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 36,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_off_curve_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "off-curve",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 73,
+        "server_point_prefix": 4,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_order_two_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "small-subgroup",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "fixture_mixed_subgroup_confirmed": true,
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "mixed-subgroup",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "infinity",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 1,
+        "server_point_prefix": 0,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": false,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "format-not-offered",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": null
+      },
+      {
+        "client_alert": 47,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "group-not-offered",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": false,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 3,
+        "passed": true,
+        "downstream_exit": null
+      },
+      {
+        "client_alert": 51,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "bad-certificate",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "client_alert": 51,
+        "compressed_char2_offered": true,
+        "curve": "sect283r1",
+        "independent_crypto": "OpenSSL 3.0.13 30 Jan 2024",
+        "mode": "bad-handshake-signature",
+        "negative_rejected": true,
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_point_formats": [
+          0,
+          1,
+          2
+        ],
+        "rejected_before_client_key_exchange": true,
+        "selected_group_offered": true,
+        "server_group": 10,
+        "server_key_sent": true,
+        "server_point_bytes": 37,
+        "server_point_prefix": 2,
+        "passed": true,
+        "downstream_exit": 1
+      },
+      {
+        "mode": "tls13-hrr-binary-group",
+        "outgoing_groups": [
+          23,
+          10
+        ],
+        "outgoing_versions": [
+          772,
+          771
+        ],
+        "outgoing_keyshare_groups": [
+          23
+        ],
+        "hrr_group": 10,
+        "hrr_sent": true,
+        "client_alert": 47,
+        "rejected_before_second_client_hello": true,
+        "records_after_hrr": [
+          20,
+          21
+        ],
+        "passed": true
+      }
+    ]
+  },
+  "point_format_evidence": [
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422448,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422448,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422448,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422471,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422471,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422471,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422490,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422490,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422490,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422520,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422520,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422520,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422525,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422525,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422525,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422527,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422527,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422527,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422562,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422562,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422562,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "job_id": 107059422572,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "job_id": 107059422572,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "job_id": 107059422572,
+      "samples": {
+        "bridged": [
+          0,
+          1,
+          2
+        ],
+        "direct-1": [
+          0,
+          1,
+          2
+        ],
+        "direct-2": [
+          0,
+          1,
+          2
+        ],
+        "inbound": [
+          0,
+          1,
+          2
+        ],
+        "outbound": [
+          0,
+          1,
+          2
+        ]
+      },
+      "limitations": []
+    }
+  ],
+  "rows": [
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422527
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422520
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422471
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "amd64",
+      "distribution": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422562
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "ubuntu-24.04",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422490
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "debian-13",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422525
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "fedora-43",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422572
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "python",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "node",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "go",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "go",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "MATCH",
+      "http": "DIFF",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "java",
+      "protocol": "http/1.1",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "java",
+      "protocol": "h2",
+      "direct_baseline": "stable",
+      "tls": "MATCH",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "match",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "rust",
+      "protocol": "http/1.1",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422448
+    },
+    {
+      "architecture": "arm64",
+      "distribution": "alpine-3.23",
+      "client": "rust",
+      "protocol": "h2",
+      "direct_baseline": "unstable/missing",
+      "tls": "DIFF",
+      "http": "MATCH",
+      "tcp": "MATCH",
+      "paired_tls": "MATCH",
+      "paired_http": "MATCH",
+      "status": "inconclusive-baseline",
+      "job_id": 107059422448
+    }
+  ]
+}
