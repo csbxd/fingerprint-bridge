@@ -1,0 +1,53 @@
+{
+  "source_commit": "af28b4731dd4a6db264bb5e1614f95dba8b0318d",
+  "workflow_run": {
+    "id": 35802831047,
+    "number": 63,
+    "url": "https://github.com/csbxd/fingerprint-bridge/actions/runs/35802831047",
+    "conclusion": "failure",
+    "expected_failure": "strict fingerprint consistency gate"
+  },
+  "regression_jobs": [
+    {"architecture": "amd64", "job_id": 106996839276, "conclusion": "success"},
+    {"architecture": "arm64", "job_id": 106996839105, "conclusion": "success"}
+  ],
+  "per_architecture": {
+    "rust_tests": 64,
+    "python_test_methods": 38,
+    "hybrid_group_cases": 18,
+    "compressed_point_cases": 6
+  },
+  "matrix": {
+    "total": 72,
+    "match": 24,
+    "mismatch": 24,
+    "inconclusive_baseline": 24,
+    "direct_baseline_reasons": {
+      "TLS extension-order permutation": 16,
+      "HTTP/2 request/HPACK bytes differ": 8
+    }
+  },
+  "guardrails": {
+    "verdict_changed": false,
+    "ignore_list_changed": false,
+    "client_defaults_changed": false,
+    "strict_gate_enabled": true
+  },
+  "artifacts": [
+    {
+      "name": "fingerprint-evidence-amd64",
+      "id": 10726643397,
+      "sha256": "0d54a6ba47e37ccac84a3f5c06b96b7b9572aa3fd02121ecbe8d97a922cf6015"
+    },
+    {
+      "name": "fingerprint-evidence-arm64",
+      "id": 10725929841,
+      "sha256": "0cab413741aa3f6f98e8088c3bf58fb99a5397eda10435fbc49b51767616ef33"
+    },
+    {
+      "name": "fingerprint-matrix-report",
+      "id": 10726084348,
+      "sha256": "84400b8bb69c89e6f230c0813a7c851bd07b5b3207852a2f3a89f0e36e9601bf"
+    }
+  ]
+}
