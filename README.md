@@ -131,7 +131,7 @@ TLS 1.2 的 `ansiX962_compressed_char2` 点格式由真实 `sect283r1`（组 10�
 
 每个组合由**同一个客户端进程依次建立直连 1、直连 2、中转三个独立连接**，每条连接发送两次请求，验证 keep-alive/流复用。A 是隔离的测试站点，保持固定端口、证书、HTTP 响应；B 仅执行正常中转。证书链和主机名校验开启，Cookie 固定为浏览器保存在 B 的测试值，不访问真实网站或真实账号。
 
-`scripts/matrix_lab.py` 在 A 侧采集实际 ClientHello、原始 HTTP/1.1 头部、有序 HTTP/2 头部、SETTINGS/WINDOW_UPDATE/PRIORITY、完整 HPACK 头部块及摘要、HEADERS/CONTINUATION 长度/标志/优先级/填充，以及按源端口关联的初始 TCP SYN。先比较两次直连，建立基线；再逐层比较直连和中转。自然随机字段沿用前述归一化规则，原始比较结果始终保留。
+`scripts/matrix_lab.py` 在 A 侧采集实际 ClientHello、原始 HTTP/1.1 头部、有序 HTTP/2 头部、SETTINGS/WINDOW_UPDATE/PRIORITY、完整 HPACK 头部块及摘要、HEADERS/CONTINUATION 长度/标志/优先级/填充，以及按源端口关联的初始 TCP SYN。HTTP/2 采集保留线上 Cookie 分字段及其位置，不使用库默认的合并/移至末尾行为；Cookie 值另按原顺序拼接验证。先比较两次直连，建立基线；再逐层比较直连和中转。自然随机字段沿用前述归一化规则，原始比较结果始终保留。
 
 按用户明确授权，矩阵增加 `independent-order-v1` 验收规则：独立连接之间仅有 TLS 扩展排列及其 JA3 派生变化，或 HTTP/2 不同名称头部的排列及其 HPACK 动态索引变化时，可标记 `match-order-variance`。三个独立样本都必须通过实际内容核对；重复头部的相对顺序、两次请求的先后、密码套件/组/签名列表顺序、头部值、字面量/Huffman/索引方式、表大小更新、控制帧、分片边界、标志、填充及 TCP 仍参与检查。HPACK 仅允许由已证明的动态索引宽度变化造成的末片长度差异。客户端默认实现不变，不把语义相同的任意 HPACK 字节判为一致。
 

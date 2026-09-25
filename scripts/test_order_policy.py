@@ -1,14 +1,18 @@
 """Positive order allowances and counterexamples against real HPACK bytes."""
 import hashlib
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
 
 import hpack
+import h2.config
+import h2.connection
 
 from matrix_config import LAYERS, SAMPLES
 from matrix_report import inspect_summary
+from matrix_lab import MatrixOrigin, validate_requests
 from order_policy import (HpackOrderProof, equal, http_order_form, order_allowance, origin_http_wire,
                           tls_order_form)
 from paired_http import compare
@@ -117,6 +121,33 @@ class OrderPolicyTests(unittest.TestCase):
     def test_http_only_allowance(self):
         result = fixture(self.path, tls_order=False)
         self.assertEqual(order_allowance(result, self.path)["layers"], ["http"])
+
+    def test_origin_captures_split_cookie_fields_in_actual_hpack_order(self):
+        client = h2.connection.H2Connection(config=h2.config.H2Configuration(
+            split_outbound_cookies=True))
+        client.initiate_connection()
+        for n, stream in enumerate((1, 3), 1):
+            client.send_headers(stream, [(":method", "GET"), (":scheme", "https"),
+                (":authority", "a.test:9443"), (":path", f"/fingerprint/{n}?encoded=%2F"),
+                ("cookie", "sid=from_B; flag=yes"), ("origin", "https://a.test:9443"),
+                ("referer", "https://a.test:9443/home")], end_stream=True)
+        class Wire:
+            def __init__(self, data):
+                self.data = io.BytesIO(data)
+            def recv(self, size):
+                return self.data.read(size)
+            def sendall(self, data):
+                pass
+        origin = object.__new__(MatrixOrigin)
+        origin.port = 9443
+        observed = origin.h2(Wire(client.data_to_send()))
+        validate_requests(observed, origin.port)
+        proof = HpackOrderProof()
+        for request in observed["requests"]:
+            fields = request["headers"]
+            self.assertEqual([value for name, value in fields if name == "cookie"], ["sid=from_B", "flag=yes"])
+            self.assertEqual([name for name, _ in fields][-3:], ["cookie", "origin", "referer"])
+            proof.block(bytes.fromhex(request["hpack_block"]), fields)
 
     def test_stable_sample_coincidence_still_requires_proven_order_only(self):
         # Two direct samples can choose the same order by chance. The third

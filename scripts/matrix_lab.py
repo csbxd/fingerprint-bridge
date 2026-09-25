@@ -57,7 +57,10 @@ def validate_requests(http, port):
             assert (":method", "GET") in headers
             assert (":path", f"/fingerprint/{n}?encoded=%2F") in headers
             authority = ":authority"
-        for item in [(authority, f"a.test:{port}"), ("cookie", "sid=from_B; flag=yes"),
+        # HTTP/2 permits multiple Cookie fields. Check the ordered semantic
+        # value without merging/reordering the captured fingerprint headers.
+        assert "; ".join(value for name, value in headers if name == "cookie") == "sid=from_B; flag=yes", "incorrect B Cookie"
+        for item in [(authority, f"a.test:{port}"),
                      ("origin", f"https://a.test:{port}"), ("referer", f"https://a.test:{port}/home")]:
             assert item in headers, f"missing or incorrectly rewritten {item[0]}"
 
@@ -124,7 +127,10 @@ class MatrixOrigin:
         return {"protocol": "http/1.1", "requests": requests}
 
     def h2(self, conn):
-        server = h2.connection.H2Connection(config=h2.config.H2Configuration(client_side=False, header_encoding="utf-8"))
+        # h2's default normalization merges Cookie fields and moves them to
+        # the end. Evidence must retain the actual HPACK order and fragments.
+        server = h2.connection.H2Connection(config=h2.config.H2Configuration(
+            client_side=False, header_encoding="utf-8", normalize_inbound_headers=False))
         server.initiate_connection()
         conn.sendall(server.data_to_send())
         preface = exact(conn, len(PREFACE))
