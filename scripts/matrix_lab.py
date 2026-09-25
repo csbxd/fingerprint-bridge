@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A-side wire evidence for independent native language clients.
 
-0 = all requested fingerprints match; 1 = differences/missing/unstable baseline;
+0 = all requested fingerprints meet the recorded policy; 1 = unallowed differences/missing/unstable baseline;
 2 = infrastructure, client, protocol or capture error. --report-only relaxes 1,
 never 2, and does not change any recorded fingerprint verdict.
 """
@@ -27,6 +27,7 @@ import h2.events
 from lab import PREFACE, SynCapture, certificates, exact, frame, head, hello_peek, read_frame, start_bridge
 from matrix_config import CASES, LAYERS, SAMPLES
 from paired_http import compare as compare_paired_http
+from order_policy import ACCEPTED, order_allowance, paired_match
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -150,6 +151,7 @@ class MatrixOrigin:
                 if isinstance(event, h2.events.RequestReceived):
                     requests.append({"stream": event.stream_id, "headers": event.headers,
                                      "hpack_sha256": hashlib.sha256(blocks[event.stream_id]).hexdigest(),
+                                     "hpack_block": bytes(blocks[event.stream_id]).hex(),
                                      "header_frames": layouts[event.stream_id]})
                 elif isinstance(event, h2.events.DataReceived):
                     raise AssertionError("unexpected GET request body")
@@ -225,6 +227,7 @@ def run_case(binary, path, output, client, protocol, interface):
     try:
         capture = SynCapture(interface, origin.port) if interface else None
         proc, port, log = start_bridge(binary, path, origin, output / "runtime", ["--http-evidence"])
+        result["mapping"] = {"public": f"b.test:{port}", "upstream": f"a.test:{origin.port}"}
         completed = subprocess.run(client_command(client, path, protocol, origin.port, port),
                                    capture_output=True, text=True, timeout=65)
         (output / "client.log").write_text(completed.stdout + completed.stderr)
@@ -276,9 +279,14 @@ def run_case(binary, path, output, client, protocol, interface):
                 result["baseline"][layer] = compare(binary, output / "direct-1.json", output / "direct-2.json", [layer])
                 result["layers"][layer] = compare(binary, output / "direct-1.json", output / "bridged.json", [layer])
             if "error" not in result:
-                result["status"] = classify(result["baseline"], result["layers"])
-                if result["status"] == "match" and not (result["paired_http"]["pass"] and result["paired_tls"]["pass"]):
+                result["raw_status"] = classify(result["baseline"], result["layers"])
+                result["status"] = result["raw_status"]
+                if result["status"] != "missing-evidence" and not paired_match(result):
                     result["status"] = "mismatch"
+                elif result["status"] in ("mismatch", "inconclusive-baseline"):
+                    result["order_allowance"] = order_allowance(result, output)
+                    if result["order_allowance"]["accepted"]:
+                        result["status"] = "match-order-variance"
         except Exception:
             result["evidence_error"] = traceback.format_exc()
             result["status"] = "error"
@@ -337,11 +345,15 @@ def main():
                     "samples": result["tls_capabilities"],
                     "limitations": result.get("tls_limitations", []),
                 }, sort_keys=True), flush=True)
+                if "order_allowance" in result:
+                    print("ORDER_ALLOWANCE=" + json.dumps({"client": client, "protocol": protocol,
+                          "raw_status": result["raw_status"], **result["order_allowance"]}, sort_keys=True), flush=True)
                 for error_key in ("error", "evidence_error"):
                     if result.get(error_key):
                         print(result[error_key], flush=True)
     summary = {"schema_version": 1, "environment": environment(), "results": results,
-               "fingerprint_pass": bool(results) and all(r["status"] == "match" for r in results),
+               "fingerprint_pass": bool(results) and all(r["status"] in ACCEPTED for r in results),
+               "exact_fingerprint_pass": bool(results) and all(r["status"] == "match" for r in results),
                "report_only": args.report_only, "tcp_capture_requested": not args.no_capture}
     write_json(args.output / "matrix-summary.json", summary)
     if any(r["status"] == "error" for r in results):

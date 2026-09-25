@@ -131,9 +131,13 @@ TLS 1.2 的 `ansiX962_compressed_char2` 点格式由真实 `sect283r1`（组 10�
 
 每个组合由**同一个客户端进程依次建立直连 1、直连 2、中转三个独立连接**，每条连接发送两次请求，验证 keep-alive/流复用。A 是隔离的测试站点，保持固定端口、证书、HTTP 响应；B 仅执行正常中转。证书链和主机名校验开启，Cookie 固定为浏览器保存在 B 的测试值，不访问真实网站或真实账号。
 
-`scripts/matrix_lab.py` 在 A 侧采集实际 ClientHello、原始 HTTP/1.1 头部、有序 HTTP/2 头部、SETTINGS/WINDOW_UPDATE/PRIORITY、HPACK 字节摘要、HEADERS/CONTINUATION 长度/标志/优先级/填充，以及按源端口关联的初始 TCP SYN。先比较两次直连，建立基线；再逐层比较直连和中转。自然随机字段沿用前述归一化规则；**不按观察到的差异自动扩大忽略列表**。例如 rustls 自身随机排列扩展时，会保留 JA3/JA4 和原始顺序证据，报告基线不稳定，不伪称全层匹配。
+`scripts/matrix_lab.py` 在 A 侧采集实际 ClientHello、原始 HTTP/1.1 头部、有序 HTTP/2 头部、SETTINGS/WINDOW_UPDATE/PRIORITY、完整 HPACK 头部块及摘要、HEADERS/CONTINUATION 长度/标志/优先级/填充，以及按源端口关联的初始 TCP SYN。先比较两次直连，建立基线；再逐层比较直连和中转。自然随机字段沿用前述归一化规则，原始比较结果始终保留。
 
-默认启用严格验收：`match` 才通过；`mismatch`、`missing-evidence`、`inconclusive-baseline` 退出 1；编译、抓包、协议、客户端或采集错误退出 2。已知 TLS/HPACK 差异会让一致性检查变红，这是实际验收结果，不用 `continue-on-error` 掩盖。各环境 `fail-fast: false`，任何一个失败仍继续收集其他环境。
+按用户明确授权，矩阵增加 `independent-order-v1` 验收规则：独立连接之间仅有 TLS 扩展排列及其 JA3 派生变化，或 HTTP/2 不同名称头部的排列及其 HPACK 动态索引变化时，可标记 `match-order-variance`。三个独立样本都必须通过实际内容核对；重复头部的相对顺序、两次请求的先后、密码套件/组/签名列表顺序、头部值、字面量/Huffman/索引方式、表大小更新、控制帧、分片边界、标志、填充及 TCP 仍参与检查。HPACK 仅允许由已证明的动态索引宽度变化造成的末片长度差异。客户端默认实现不变，不把语义相同的任意 HPACK 字节判为一致。
+
+**顺序豁免必须同时满足同一请求进出 B 的严格 TLS/HTTP 对照。** 检查器重新读取实际入站/出站报文，验证 B 没有改变收到的顺序，并把出站证据与 A 收到的中转样本绑定；汇总任务再次独立核验，不信任单个 `pass` 标志。无法证明、报文缺失、B 改序或其他不一致均不豁免。两次直连偶然选中相同顺序、第三个独立连接选中另一顺序时，也必须完成同样的证明。
+
+默认启用严格验收：`match`（严格一致）与 `match-order-variance`（已证明的顺序波动豁免）分别计数；`mismatch`、`missing-evidence`、未获豁免的 `inconclusive-baseline` 退出 1；编译、抓包、协议、客户端或采集错误退出 2。原始 `raw_status`、逐层 DIFF 和基线诊断不会被重写，`exact_fingerprint_pass` 仅在全部严格一致时为真。Rust `compare` 与运行时 `--strict-tls` 的规则不变。各环境 `fail-fast: false`，任何一个失败仍继续收集其他环境，不使用 `continue-on-error` 掩盖。
 
 手动运行可设置 `strict=false` 只收集差异；它只放宽差异退出码，基础设施错误仍失败，报告中的 `fingerprint_pass` 不变。报告模式下绿色的任务不表示指纹一致。
 
@@ -182,7 +186,7 @@ sudo .venv/bin/python scripts/lab.py \
 
 运行时 `--reports` 生成 `<id>.inbound.json`、`<id>.outbound.json` 和 `<id>.report.json`。它比较 **B 入站与 B 出站**；与独立的直连 A 基线是不同证据，不能混为一谈。这些 TLS 文件中的 HTTP/TCP 是 `null`，不会虚构在线观测。
 
-实验室额外开启 `--http-evidence`，在 TLS 解密后、HTTP 改写前后记录同一条连接，并生成 `<id>.http.json`。该选项默认关闭，要求 `--reports`，会记录请求 Cookie 等明文；只用于受控测试，Unix 文件权限为 0600，每侧最多 1 MiB，截断会使验证失败。独立 Python 检查器比较请求顺序、控制帧、HPACK 表示/Huffman/索引及帧布局，仅豁免允许改写的 authority/origin/referer 值和必要编码长度。矩阵新增 B-paired TLS/HTTP 列；它们不替代 A 侧的两次直连与中转比较，也不会把不稳定基线改成通过。
+实验室额外开启 `--http-evidence`，在 TLS 解密后、HTTP 改写前后记录同一条连接，并生成 `<id>.http.json`。该选项默认关闭，要求 `--reports`，会记录请求 Cookie 等明文；只用于受控测试，Unix 文件权限为 0600，每侧最多 1 MiB，截断会使验证失败。独立 Python 检查器比较请求顺序、控制帧、HPACK 表示/Huffman/索引及帧布局，仅豁免允许改写的 authority/origin/referer 值和必要编码长度。矩阵的 B-paired TLS/HTTP 列保持严格；它们不替代 A 侧的两次直连与中转比较，单凭配对通过也不足以获得独立连接的顺序豁免。
 
 ```sh
 ./target/release/fingerprint-bridge compare reports/ID.inbound.json reports/ID.outbound.json --layers tls

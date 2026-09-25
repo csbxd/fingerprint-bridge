@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       strict:
-        description: Fail on any fingerprint difference, missing layer or unstable direct baseline
+        description: Enforce strict paired fingerprints and the documented independent-order allowance
         type: boolean
         default: true
 permissions:
@@ -137,12 +137,16 @@ jobs:
         with:
           pattern: matrix-evidence-*
           path: collected-evidence
+      - name: Install independent HPACK evidence validator
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r scripts/requirements-test.txt
       - name: Require all architectures, distributions, clients and evidence
         run: |
           args=()
           if [ "$ENFORCE" != true ]; then args+=(--report-only); fi
-          python3 scripts/matrix_report.py --root collected-evidence \
-            --output matrix-report.md "${args[@]}"
+          .venv/bin/python scripts/matrix_report.py --root collected-evidence \
+            --output matrix-report.md --json-output matrix-report.json "${args[@]}"
       - name: Publish comparison table
         if: always()
         run: |
@@ -151,6 +155,8 @@ jobs:
         if: always()
         with:
           name: fingerprint-matrix-report
-          path: matrix-report.md
+          path: |
+            matrix-report.md
+            matrix-report.json
           if-no-files-found: error
           retention-days: 14

@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 
 from matrix_config import ARCHITECTURES, CASES, DISTRIBUTIONS, LAYERS, SAMPLES
+from order_policy import ACCEPTED, order_allowance
 
 
 def layer_status(comparison):
@@ -111,10 +112,17 @@ def inspect_summary(document, directory):
             status = "missing-evidence" if status != "error" else "error"
         if status == "match" and (set(baseline) != {"MATCH"} or set(layers + [paired_tls, paired_http_status]) != {"MATCH"}):
             raise AssertionError("summary claims a match despite differences")
+        if status == "match-order-variance":
+            assert "MISSING" not in baseline + layers, "missing layer cannot receive an order allowance"
+            proof = order_allowance(r, case_dir)
+            assert proof["accepted"] and proof == r.get("order_allowance"), "unverified order allowance"
+            assert paired_tls == paired_http_status == "MATCH", "B-paired difference cannot be waived"
         rows.append({"arch": key[0], "distro": key[1], "client": client, "protocol": protocol,
                      "baseline": "stable" if set(baseline) == {"MATCH"} else "unstable/missing",
                      "baseline_reason": baseline_instability_reason(r),
                      "mismatch_reason": stable_mismatch_reason(r),
+                     "order_allowance": r.get("order_allowance"),
+                     "raw_status": r.get("raw_status", r["status"]),
                      **dict(zip(LAYERS, layers)), "paired_tls": paired_tls, "paired_http": paired_http_status, "status": status})
     return key, rows
 
@@ -149,18 +157,20 @@ def markdown(rows, errors):
     lines = ["# Direct versus bridged fingerprint matrix", "",
              "Two direct connections establish the baseline; one connection goes through B. Each carries two requests.",
              "Distro containers share the runner kernel. This is loopback coverage, not cross-OS TCP cloning or browser certification.", "",
-             "B-paired columns compare the very same connection entering/leaving B; they do not replace independent A-side comparisons.", "",
+             "B-paired columns remain strict. Only proven independent TLS-extension/HTTP2-header order variance receives an explicit allowance; raw DIFF columns remain visible.", "",
              "| Architecture | Distro | Client | Protocol | Direct baseline | TLS | HTTP | TCP | B-paired TLS | B-paired HTTP | Verdict |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for row in rows:
         lines.append("| " + " | ".join(str(row[k]) for k in ["arch", "distro", "client", "protocol", "baseline", "tls", "http", "tcp", "paired_tls", "paired_http", "status"]) + " |")
-    lines += ["", f"Matches: {sum(r['status']=='match' for r in rows)}/{len(rows)}. Missing, unstable or failed cells are never passes.", "",
+    lines += ["", f"Exact matches: {sum(r['status']=='match' for r in rows)}/{len(rows)}.",
+              f"Order allowances: {sum(r['status']=='match-order-variance' for r in rows)}/{len(rows)}.",
+              f"Accepted: {sum(r['status'] in ACCEPTED for r in rows)}/{len(rows)}. Missing, unproven instability or failed cells never pass.", "",
               "Artifacts contain actual ClientHello bytes, A-side SYN PCAPs, structured evidence, field differences, client/bridge logs and runtime versions.",
               "HTTP/2 comparison includes HPACK bytes and frame layout; semantic equality alone does not imply a match.", ""]
     reasons = Counter(row["baseline_reason"] for row in rows if row["baseline"] != "stable")
     if reasons:
         lines += ["## Direct-baseline instability diagnostics", "",
-                  "These counts are diagnostic only; no field is ignored and every affected cell remains non-passing.", ""]
+                  "Raw direct differences remain recorded. Only explicitly proved order variance with strict B-paired equality is accepted.", ""]
         lines += [f"- {reason}: {count}" for reason, count in sorted(reasons.items())]
         lines.append("")
     mismatch_reasons = Counter(row["mismatch_reason"] for row in rows
@@ -179,15 +189,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--json-output", type=Path)
     parser.add_argument("--report-only", action="store_true")
     args = parser.parse_args()
     rows, errors = collect(args.root)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(markdown(rows, errors))
+    if args.json_output:
+        args.json_output.parent.mkdir(parents=True, exist_ok=True)
+        args.json_output.write_text(json.dumps({"rows": rows, "errors": errors,
+            "accepted": not errors and all(r["status"] in ACCEPTED for r in rows)}, indent=2) + "\n")
     print(args.output.read_text())
     if errors or any(r["status"] == "error" for r in rows):
         return 2
-    return 0 if args.report_only or all(r["status"] == "match" for r in rows) else 1
+    return 0 if args.report_only or all(r["status"] in ACCEPTED for r in rows) else 1
 
 
 if __name__ == "__main__":
